@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
+import { Button } from "@digdir/designsystemet-react";
 import Layout from '../components/Layout'; // Import Layout
 import { fetchCategories } from '../lib/api'; // Import fetchCategories
 import { Category } from '../types'; // Import Category
@@ -60,6 +61,8 @@ export default function Home({ categories }: HomeProps) { // Use HomeProps
             </li>
             <li>Save and see your changes instantly.</li>
           </ol>
+
+          <Button variant="secondary">Click Me</Button>
 
           <div className={styles.ctas}>
             <a

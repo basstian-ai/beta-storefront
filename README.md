@@ -91,12 +91,6 @@ To maintain a clean and scalable codebase as we build out the Starter Kit, pleas
   * Prefer React local state for now.
   * Future-proofing: consider Zustand if shared state grows complex.
 
-### 2. Testing Strategy
-
-* Use **Vitest** or **Jest** for unit testing.
-* Plan for future integration testing with **Playwright** or **Cypress**.
-* Prioritize simple testable components to start with.
-
 ### 3. Dummy Data Use
 
 * Fetch from [https://dummyjson.com](https://dummyjson.com) in the `/bff` layer.
@@ -115,6 +109,39 @@ To maintain a clean and scalable codebase as we build out the Starter Kit, pleas
   * `PDP-1`
   * `CART-1`
   * `AUTH-1`
+
+---
+
+## Testing Strategy
+
+### Overview
+Testing is a critical component of this project, ensuring code quality, reliability, and maintainability. Our strategy focuses on comprehensive unit testing for backend logic and BFF services, with plans to expand to other forms of testing as the project evolves.
+
+### Unit Testing
+-   **Framework**: We use [Vitest](https://vitest.dev/) for unit testing. Vitest provides a fast and modern testing experience, compatible with Vite-based projects.
+-   **Location**: Unit tests are co-located within `__tests__` directories, mirroring the structure of the code being tested. For example, tests for `bff/utils/fetchData.js` would be found in `__tests__/bff/utils/fetchData.test.js`.
+-   **Execution**: Tests can be run using the following command:
+    ```bash
+    npm test
+    ```
+    Alternatively, you can run Vitest directly:
+    ```bash
+    npx vitest
+    ```
+
+### BFF Service Testing
+The Backend-for-Frontend (BFF) services (e.g., `getProducts`, `getUsers` located in the `/bff` directory) are unit tested to ensure their correctness and resilience. These tests specifically verify:
+-   **Data Fetching and Processing**: Correct interaction with data sources (like `dummyjson.com`) and that data is processed as expected.
+-   **Application Insights Integration**: Proper integration with Application Insights. This involves mocking the `applicationinsights` module to assert that telemetry methods (e.g., `trackTrace`, `trackEvent`, `trackMetric`, `trackException`) are called with the correct parameters (message, severity, properties, event name, exception details).
+-   **Error Handling**: Graceful handling of errors, ensuring that exceptions are caught, logged to Application Insights, and then re-thrown as appropriate.
+
+### Coverage
+Code coverage is actively monitored using Vitest's built-in coverage reporting capabilities. While a strict target is not enforced for early development stages, contributions should aim to maintain or ideally improve the existing code coverage. This helps in identifying untested parts of the codebase and ensuring new features are adequately tested.
+
+### Future Considerations
+As the project grows, we plan to incorporate additional testing methodologies:
+-   **Integration Testing**: To test the interactions between different parts of the application, such as BFF services and actual downstream APIs (once we move beyond `dummyjson`).
+-   **End-to-End (E2E) Testing**: For UI components and user flows, we will consider tools like [Playwright](https://playwright.dev/) or [Cypress](https://www.cypress.io/) to automate browser testing and ensure the application works as expected from a user's perspective.
 
 ---
 

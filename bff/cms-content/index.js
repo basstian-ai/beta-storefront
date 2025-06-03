@@ -11,14 +11,14 @@ export async function getCMSContent() {
     client.trackTrace({
       message: 'Calling dummyjson for CMS content (posts)',
       severity: 1, // Info
-      properties: { origin: 'bff/cms-content', context: 'getCMSContent' },
+      properties: { origin: 'bff/cms-content', method: 'getCMSContent' },
     });
 
     // Assuming a dummy endpoint for CMS content, using posts as an example
     const data = await fetchData('https://dummyjson.com/posts');
 
     client.trackEvent({
-      name: 'CmsContentFetch',
+      name: 'CmsContentFetchSuccess',
       properties: {
         source: 'dummyjson',
         contentType: 'posts', // Example content type
@@ -37,7 +37,7 @@ export async function getCMSContent() {
   } catch (error) {
     client.trackException({
       exception: error,
-      properties: { origin: 'bff/cms-content', context: 'getCMSContent' },
+      properties: { origin: 'bff/cms-content', method: 'getCMSContent' },
     });
     throw error; // Re-throw the error so the caller can handle it
   }

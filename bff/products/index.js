@@ -11,13 +11,13 @@ export async function getProducts() {
     client.trackTrace({
       message: 'Calling dummyjson for products',
       severity: 1, // Info
-      properties: { origin: 'bff/products', context: 'getProducts' },
+      properties: { origin: 'bff/products', method: 'getProducts' },
     });
 
     const data = await fetchData('https://dummyjson.com/products');
 
     client.trackEvent({
-      name: 'ProductFetch',
+      name: 'ProductsFetchSuccess',
       properties: {
         source: 'dummyjson',
         userType: 'anonymous', // Assuming anonymous for now, can be enhanced with actual user context
@@ -36,7 +36,7 @@ export async function getProducts() {
   } catch (error) {
     client.trackException({
       exception: error,
-      properties: { origin: 'bff/products', context: 'getProducts' },
+      properties: { origin: 'bff/products', method: 'getProducts' },
     });
     throw error; // Re-throw the error so the caller can handle it
   }

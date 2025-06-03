@@ -11,11 +11,11 @@ jest.mock('next/link', () => {
   };
 });
 
-// A more robust mock for DropdownMenu and its sub-components:
+// A more robust mock for Dropdown and its sub-components:
 jest.mock('@digdir/designsystemet-react', () => {
   const originalModule = jest.requireActual('@digdir/designsystemet-react');
 
-  type DropdownMenuComponent = React.FC<any> & {
+  type DropdownComponent = React.FC<any> & { // Renamed type
     Trigger?: React.FC<any>;
     Content?: React.FC<any>;
     Item?: React.FC<any>;
@@ -25,7 +25,7 @@ jest.mock('@digdir/designsystemet-react', () => {
   let currentOnOpenChange: ((open: boolean) => void) | null = null;
   let currentIsOpen: boolean = false;
 
-  const MockDropdownMenu: DropdownMenuComponent = jest.fn(({ children, open, onOpenChange }) => {
+  const MockDropdown: DropdownComponent = jest.fn(({ children, open, onOpenChange }) => { // Renamed const
     currentIsOpen = open;
     currentOnOpenChange = onOpenChange; // Store onOpenChange
 
@@ -55,49 +55,46 @@ jest.mock('@digdir/designsystemet-react', () => {
     );
   });
 
-  MockDropdownMenu.Trigger = jest.fn(({ children, asChild, ...props_passed_to_trigger_component }) => {
-    // These are the props for the actual element that gets rendered (e.g. button)
-    const triggerElementProps = {
-      // ...props_passed_to_trigger_component, // these are props for the Trigger component itself
-      onClick: () => {
-        if (currentOnOpenChange) {
-          currentOnOpenChange(!currentIsOpen); // Call the stored onOpenChange
-        }
-      },
+  MockDropdown.Trigger = jest.fn(({ children, asChild }) => { // Simplified signature
+    const newOnClick = () => {
+      if (currentOnOpenChange) {
+        currentOnOpenChange(!currentIsOpen);
+      }
     };
 
     if (asChild && React.isValidElement(children)) {
-      // children is the <button> from MobileMenu.tsx
-      // We need to merge its existing props (like aria-label, className)
-      // with the onClick handler we want the mock to enforce.
-      return React.cloneElement(children, { ...children.props, ...triggerElementProps });
+      // Children is the actual <button> from MobileMenu.tsx
+      // Clone it and override/set its onClick.
+      // Ensure other props from the original button (like aria-label, className) are preserved.
+      return React.cloneElement(children, { ...children.props, onClick: newOnClick });
     }
-    // Fallback if not asChild (though MobileMenu uses asChild)
-    return <button {...triggerElementProps}>{children}</button>;
+    // Fallback: if not asChild, render a new button.
+    // This case should not be hit by MobileMenu.tsx's usage.
+    return <button onClick={newOnClick}>{children}</button>;
   });
-  MockDropdownMenu.Trigger.displayName = 'DropdownMenu.Trigger';
+  MockDropdown.Trigger.displayName = 'Dropdown.Trigger'; // Renamed
 
 
-  MockDropdownMenu.Content = jest.fn(({ children, ...props }) => (
+  MockDropdown.Content = jest.fn(({ children, ...props }) => ( // Renamed
     <div {...props} data-testid="mobile-menu-drawer">
       {children}
     </div>
   ));
-  MockDropdownMenu.Content.displayName = 'DropdownMenu.Content';
+  MockDropdown.Content.displayName = 'Dropdown.Content'; // Renamed
 
-  MockDropdownMenu.Item = jest.fn(({ children, asChild, ...props }) => {
+  MockDropdown.Item = jest.fn(({ children, asChild, ...props }) => { // Renamed
     if (asChild && React.isValidElement(children)) {
       // children is <Link href="/">Home</Link>
-      // We need to pass props like className, role if DropdownMenu.Item adds them.
+      // We need to pass props like className, role if Dropdown.Item adds them.
       return React.cloneElement(children, {...children.props, ...props});
     }
     return <li {...props}>{children}</li>; // Fallback
   });
-  MockDropdownMenu.Item.displayName = 'DropdownMenu.Item';
+  MockDropdown.Item.displayName = 'Dropdown.Item'; // Renamed
 
   return {
     ...originalModule,
-    DropdownMenu: MockDropdownMenu,
+    Dropdown: MockDropdown, // Export the mock as Dropdown
   };
 });
 

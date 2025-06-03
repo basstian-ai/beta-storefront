@@ -1,22 +1,16 @@
 // components/MobileMenu.tsx
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { DropdownMenu } from '@digdir/designsystemet-react'; // Added import
+import { Dropdown } from '@digdir/designsystemet-react'; // Updated import
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // toggleMenu is not strictly needed if onOpenChange handles state directly with setIsOpen
-  // const toggleMenu = () => {
-  //   setIsOpen(!isOpen);
-  // };
-
   return (
     <div className="mobile-menu-container">
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenu.Trigger asChild>
+      <Dropdown open={isOpen} onOpenChange={setIsOpen}> {/* Updated */}
+        <Dropdown.Trigger asChild> {/* Updated */}
           <button
-            // onClick={toggleMenu} // Removed as onOpenChange should handle this
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
             className="mobile-menu-button"
@@ -31,21 +25,21 @@ const MobileMenu = () => {
               </svg>
             )}
           </button>
-        </DropdownMenu.Trigger>
+        </Dropdown.Trigger>
 
-        <DropdownMenu.Content side="bottom" align="end" className="mobile-menu-drawer-ds">
-          <DropdownMenu.Item asChild>
+        <Dropdown.Content side="bottom" align="end" className="mobile-menu-drawer-ds"> {/* Updated */}
+          <Dropdown.Item asChild> {/* Updated */}
             <Link href="/">Home</Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item asChild>
+          </Dropdown.Item>
+          <Dropdown.Item asChild> {/* Updated */}
             <Link href="/products">Products</Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item asChild>
+          </Dropdown.Item>
+          <Dropdown.Item asChild> {/* Updated */}
             <Link href="/cart">Cart</Link>
-          </DropdownMenu.Item>
-          {/* Add other DropdownMenu.Item as needed */}
-        </DropdownMenu.Content>
-      </DropdownMenu>
+          </Dropdown.Item>
+          {/* Add other Dropdown.Item as needed */}
+        </Dropdown.Content>
+      </Dropdown>
 
       <style jsx>{`
         .mobile-menu-container {
@@ -60,7 +54,7 @@ const MobileMenu = () => {
           align-items: center;
           justify-content: center;
         }
-        /* Styles for the DropdownMenu content */
+        /* Styles for the Dropdown content */
         :global(.mobile-menu-drawer-ds) { /* Use :global for classes applied to Designsystemet components */
           background-color: white;
           border: 1px solid #ccc;
@@ -70,7 +64,7 @@ const MobileMenu = () => {
           /* Ensure items are displayed as block for full-width clickability if needed */
         }
         :global(.mobile-menu-drawer-ds a), :global(.mobile-menu-drawer-ds button[role="menuitem"]) {
-          /* Targeting links directly or buttons if DropdownMenu.Item renders a button for accessibility with asChild */
+          /* Targeting links directly or buttons if Dropdown.Item renders a button for accessibility with asChild */
           display: block;
           padding: 0.5rem 1rem;
           text-decoration: none;

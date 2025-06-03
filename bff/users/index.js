@@ -11,13 +11,13 @@ export async function getUsers() {
     client.trackTrace({
       message: 'Calling dummyjson for users',
       severity: 1, // Info
-      properties: { origin: 'bff/users', context: 'getUsers' },
+      properties: { origin: 'bff/users', method: 'getUsers' },
     });
 
     const data = await fetchData('https://dummyjson.com/users');
 
     client.trackEvent({
-      name: 'UserFetch',
+      name: 'UsersFetchSuccess',
       properties: {
         source: 'dummyjson',
         resultCount: data?.users?.length ?? 0,
@@ -35,7 +35,7 @@ export async function getUsers() {
   } catch (error) {
     client.trackException({
       exception: error,
-      properties: { origin: 'bff/users', context: 'getUsers' },
+      properties: { origin: 'bff/users', method: 'getUsers' },
     });
     throw error; // Re-throw the error so the caller can handle it
   }

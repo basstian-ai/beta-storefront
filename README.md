@@ -28,6 +28,27 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Application Insights Setup
+
+This project uses Application Insights for logging and telemetry. To enable Application Insights, you need to set the `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable.
+
+### Local Development
+
+Add the following line to your `.env` file:
+
+```
+APPINSIGHTS_INSTRUMENTATIONKEY=<your-application-insights-instrumentation-key>
+```
+
+Replace `<your-application-insights-instrumentation-key>` with your actual Application Insights Instrumentation Key.
+
+### Vercel Deployment
+
+In your Vercel project settings, go to **Settings > Environment Variables** and add a new variable:
+
+-   **Name:** `APPINSIGHTS_INSTRUMENTATIONKEY`
+-   **Value:** (copy from your Azure Application Insights resource)
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

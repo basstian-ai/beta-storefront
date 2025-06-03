@@ -39,19 +39,19 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
         {/* This div acts as the Dropdown content panel */}
         {isOpen && (
           <div className="mobile-menu-drawer-ds" data-testid="mobile-menu-drawer">
-            <DropdownItem>
+            <DropdownItem asChild>
               <Link href="/">Home</Link>
             </DropdownItem>
             {/* Dynamically render category links */}
             {categories.map(cat => (
-              <DropdownItem key={cat.id}>
+              <DropdownItem key={cat.id} asChild>
                 <Link href={`/category/${cat.slug}`}>{cat.name}</Link>
               </DropdownItem>
             ))}
-            <DropdownItem>
+            <DropdownItem asChild>
               <Link href="/products">Products</Link>
             </DropdownItem>
-            <DropdownItem>
+            <DropdownItem asChild>
               <Link href="/cart">Cart</Link>
             </DropdownItem>
             {/* Add other DropdownItem as needed */}

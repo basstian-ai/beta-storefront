@@ -1,10 +1,10 @@
-const { fetchData } = require('../utils/fetchData');
+import { fetchData } from '../utils/fetchData.js';
 
 /**
  * Fetches CMS content (posts) from dummyjson.com.
  * @returns {Promise<Object>} A promise that resolves to the CMS content.
  */
-async function getCMSContent() {
+export async function getCMSContent() {
   try {
     const data = await fetchData('https://dummyjson.com/posts');
     return data;
@@ -13,8 +13,3 @@ async function getCMSContent() {
     throw error; // Re-throw the error so the caller can handle it
   }
 }
-
-// Export the function
-module.exports = {
-  getCMSContent,
-};

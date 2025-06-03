@@ -1,10 +1,10 @@
-const { fetchData } = require('../utils/fetchData');
+import { fetchData } from '../utils/fetchData.js';
 
 /**
  * Fetches product data from dummyjson.com.
  * @returns {Promise<Object>} A promise that resolves to the product data.
  */
-async function getProducts() {
+export async function getProducts() {
   try {
     const data = await fetchData('https://dummyjson.com/products');
     return data;
@@ -13,8 +13,3 @@ async function getProducts() {
     throw error; // Re-throw the error so the caller can handle it
   }
 }
-
-// Export the function
-module.exports = {
-  getProducts,
-};

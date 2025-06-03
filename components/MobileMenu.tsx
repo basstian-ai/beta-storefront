@@ -1,19 +1,19 @@
 // components/MobileMenu.tsx
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Dropdown } from '@digdir/designsystemet-react'; // Updated import
+import { DropdownMenu } from '@digdir/designsystemet-react'; // Updated import
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="mobile-menu-container">
-      <Dropdown
+      <DropdownMenu
         open={isOpen}
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
       > {/* Updated */}
-        <Dropdown.Trigger asChild> {/* Updated */}
+        <DropdownMenu.Trigger asChild> {/* Updated */}
           <button
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
@@ -29,21 +29,21 @@ const MobileMenu = () => {
               </svg>
             )}
           </button>
-        </Dropdown.Trigger>
+        </DropdownMenu.Trigger>
 
-        <Dropdown.Content side="bottom" align="end" className="mobile-menu-drawer-ds"> {/* Updated */}
-          <Dropdown.Item asChild> {/* Updated */}
+        <DropdownMenu.Content side="bottom" align="end" className="mobile-menu-drawer-ds"> {/* Updated */}
+          <DropdownMenu.Item asChild> {/* Updated */}
             <Link href="/">Home</Link>
-          </Dropdown.Item>
-          <Dropdown.Item asChild> {/* Updated */}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild> {/* Updated */}
             <Link href="/products">Products</Link>
-          </Dropdown.Item>
-          <Dropdown.Item asChild> {/* Updated */}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild> {/* Updated */}
             <Link href="/cart">Cart</Link>
-          </Dropdown.Item>
-          {/* Add other Dropdown.Item as needed */}
-        </Dropdown.Content>
-      </Dropdown>
+          </DropdownMenu.Item>
+          {/* Add other DropdownMenu.Item as needed */}
+        </DropdownMenu.Content>
+      </DropdownMenu>
 
       <style jsx>{`
         .mobile-menu-container {
@@ -58,7 +58,7 @@ const MobileMenu = () => {
           align-items: center;
           justify-content: center;
         }
-        /* Styles for the Dropdown content */
+        /* Styles for the DropdownMenu content */
         :global(.mobile-menu-drawer-ds) { /* Use :global for classes applied to Designsystemet components */
           background-color: white;
           border: 1px solid #ccc;
@@ -68,7 +68,7 @@ const MobileMenu = () => {
           /* Ensure items are displayed as block for full-width clickability if needed */
         }
         :global(.mobile-menu-drawer-ds a), :global(.mobile-menu-drawer-ds button[role="menuitem"]) {
-          /* Targeting links directly or buttons if Dropdown.Item renders a button for accessibility with asChild */
+          /* Targeting links directly or buttons if DropdownMenu.Item renders a button for accessibility with asChild */
           display: block;
           padding: 0.5rem 1rem;
           text-decoration: none;

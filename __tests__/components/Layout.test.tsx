@@ -22,11 +22,11 @@ jest.mock('../../components/MobileMenu', () => {
   };
 });
 
-// Mock @digdir/designsystemet-react for Dropdown used in MobileMenu
+// Mock @digdir/designsystemet-react for DropdownMenu used in MobileMenu
 jest.mock('@digdir/designsystemet-react', () => {
   const originalModule = jest.requireActual('@digdir/designsystemet-react');
 
-  type DropdownComponent = React.FC<any> & { // Renamed
+  type DropdownMenuComponent = React.FC<any> & { // Changed back
     Trigger?: React.FC<any>;
     Content?: React.FC<any>;
     Item?: React.FC<any>;
@@ -37,7 +37,7 @@ jest.mock('@digdir/designsystemet-react', () => {
   let currentOnClose: (() => void) | null = null;
   let currentIsOpen: boolean = false;
 
-  const MockDropdown: DropdownComponent = jest.fn(({ children, open, onOpen, onClose }) => { // Renamed, updated props
+  const MockDropdownMenu: DropdownMenuComponent = jest.fn(({ children, open, onOpen, onClose }) => { // Changed back
     currentIsOpen = open;
     currentOnOpen = onOpen;
     currentOnClose = onClose;
@@ -53,7 +53,7 @@ jest.mock('@digdir/designsystemet-react', () => {
     return <div>{trigger}{currentIsOpen && content}</div>;
   });
 
-  MockDropdown.Trigger = jest.fn(({ children, asChild }) => { // Simplified signature
+  MockDropdownMenu.Trigger = jest.fn(({ children, asChild }) => { // Changed back
     const newOnClick = () => {
       // Simulate the toggle behavior based on the new props
       if (currentIsOpen && currentOnClose) {
@@ -65,29 +65,29 @@ jest.mock('@digdir/designsystemet-react', () => {
 
     if (asChild && React.isValidElement(children)) {
       // Children is the actual <button> from MobileMenu.tsx (if MobileMenu was not mocked)
-      // or from any component using Dropdown.Trigger asChild.
+      // or from any component using DropdownMenu.Trigger asChild.
       // Clone it and override/set its onClick.
       return React.cloneElement(children, { ...children.props, onClick: newOnClick });
     }
     // Fallback: if not asChild, render a new button.
     return <button onClick={newOnClick}>{children}</button>;
   });
-  MockDropdown.Trigger.displayName = 'Dropdown.Trigger'; // Renamed
+  MockDropdownMenu.Trigger.displayName = 'DropdownMenu.Trigger'; // Changed back
 
-  MockDropdown.Content = jest.fn(({ children, ...props }) => <div {...props} data-testid="mobile-menu-drawer">{children}</div>); // Renamed
-  MockDropdown.Content.displayName = 'Dropdown.Content'; // Renamed
+  MockDropdownMenu.Content = jest.fn(({ children, ...props }) => <div {...props} data-testid="mobile-menu-drawer">{children}</div>); // Changed back
+  MockDropdownMenu.Content.displayName = 'DropdownMenu.Content'; // Changed back
 
-  MockDropdown.Item = jest.fn(({ children, asChild, ...props }) => { // Renamed
+  MockDropdownMenu.Item = jest.fn(({ children, asChild, ...props }) => { // Changed back
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children, { ...children.props, ...props });
     }
     return <li {...props}>{children}</li>;
   });
-  MockDropdown.Item.displayName = 'Dropdown.Item'; // Renamed
+  MockDropdownMenu.Item.displayName = 'DropdownMenu.Item'; // Changed back
 
   return {
     ...originalModule,
-    Dropdown: MockDropdown, // Export Renamed
+    DropdownMenu: MockDropdownMenu, // Export Changed back
   };
 });
 

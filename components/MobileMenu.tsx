@@ -8,7 +8,11 @@ const MobileMenu = () => {
 
   return (
     <div className="mobile-menu-container">
-      <Dropdown open={isOpen} onOpenChange={setIsOpen}> {/* Updated */}
+      <Dropdown
+        open={isOpen}
+        onOpen={() => setIsOpen(true)}
+        onClose={() => setIsOpen(false)}
+      > {/* Updated */}
         <Dropdown.Trigger asChild> {/* Updated */}
           <button
             aria-label={isOpen ? "Close menu" : "Open menu"}

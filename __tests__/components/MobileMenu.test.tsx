@@ -21,13 +21,15 @@ jest.mock('@digdir/designsystemet-react', () => {
     Item?: React.FC<any>;
   };
 
-  // This is the function that will be called by the Trigger
-  let currentOnOpenChange: ((open: boolean) => void) | null = null;
-  let currentIsOpen: boolean = false;
+  // Store onOpen and onClose from props
+  let currentOnOpen: (() => void) | null = null;
+  let currentOnClose: (() => void) | null = null;
+  let currentIsOpen: boolean = false; // Keep track of internal state for the mock
 
-  const MockDropdown: DropdownComponent = jest.fn(({ children, open, onOpenChange }) => { // Renamed const
-    currentIsOpen = open;
-    currentOnOpenChange = onOpenChange; // Store onOpenChange
+  const MockDropdown: DropdownComponent = jest.fn(({ children, open, onOpen, onClose }) => { // Renamed const, updated props
+    currentIsOpen = open; // The component's state is still the source of truth for 'open'
+    currentOnOpen = onOpen;
+    currentOnClose = onClose;
 
     let trigger: React.ReactNode = null;
     let content: React.ReactNode = null;
@@ -57,8 +59,11 @@ jest.mock('@digdir/designsystemet-react', () => {
 
   MockDropdown.Trigger = jest.fn(({ children, asChild }) => { // Simplified signature
     const newOnClick = () => {
-      if (currentOnOpenChange) {
-        currentOnOpenChange(!currentIsOpen);
+      // Simulate the toggle behavior
+      if (currentIsOpen && currentOnClose) {
+        currentOnClose();
+      } else if (!currentIsOpen && currentOnOpen) {
+        currentOnOpen();
       }
     };
 

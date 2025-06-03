@@ -2,13 +2,11 @@ import React from 'react';
 import Layout from '../components/Layout';
 import { fetchCategories } from '../lib/api';
 import { Category } from '../types';
-import Breadcrumb from '../components/Breadcrumb'; // Correct path
-import { buildBreadcrumbs } from '../lib/buildBreadcrumbs'; // Correct path
+import BreadcrumbNav from '../components/BreadcrumbNav'; // Import BreadcrumbNav
 import { GetServerSidePropsContext } from 'next';
 
 interface ProductsPageProps {
   categories: Category[];
-  breadcrumbs: Awaited<ReturnType<typeof buildBreadcrumbs>>;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -18,14 +16,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } catch (error) {
     console.error("Error fetching categories for Products page:", error);
   }
-  const breadcrumbs = await buildBreadcrumbs(context.resolvedUrl, context.query);
-  return { props: { categories, breadcrumbs } };
+  return { props: { categories } };
 }
 
-const ProductsPage = ({ categories, breadcrumbs }: ProductsPageProps) => {
+const ProductsPage = ({ categories }: ProductsPageProps) => {
   return (
     <Layout categories={categories}>
-      <Breadcrumb segments={breadcrumbs} />
+      <BreadcrumbNav /> {/* Add BreadcrumbNav */}
       <div>
         <h1>Products Page</h1>
         <p>This is a placeholder for the products page.</p>

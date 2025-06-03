@@ -18,13 +18,12 @@ jest.mock('next/link', () => {
 
 // Mock @digdir/designsystemet-react
 jest.mock('@digdir/designsystemet-react', () => {
-  const ActualBreadcrumb = jest.requireActual('@digdir/designsystemet-react').Breadcrumb;
-  // Mock Breadcrumb and its sub-component Item
-  const MockBreadcrumb = ({ children }: { children: React.ReactNode }) => <ol>{children}</ol>;
-  MockBreadcrumb.Item = ({ children }: { children: React.ReactNode }) => <li role="listitem">{children}</li>;
+  // Mock Breadcrumbs and its sub-component Item
+  const MockBreadcrumbs = ({ children }: { children: React.ReactNode }) => <ol>{children}</ol>;
+  MockBreadcrumbs.Item = ({ children }: { children: React.ReactNode }) => <li role="listitem">{children}</li>;
   return {
     ...jest.requireActual('@digdir/designsystemet-react'), // Import and retain other exports
-    Breadcrumb: MockBreadcrumb, // Override Breadcrumb with our mock
+    Breadcrumbs: MockBreadcrumbs, // Override Breadcrumbs with our mock
   };
 });
 

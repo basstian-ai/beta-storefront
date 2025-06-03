@@ -91,3 +91,49 @@ To maintain a clean and scalable codebase as we build out the Starter Kit, pleas
   * `CART-1`
   * `AUTH-1`
 
+---
+
+## CI/CD with Vercel Preview Deployments
+
+This project uses GitHub Actions to deploy preview environments to Vercel for each pull request. This allows for easy testing and review of changes before merging to the main branch.
+
+### 1. Connect GitHub Repository to Vercel
+
+*   Go to your Vercel dashboard and create a new project.
+*   Choose "Import Git Repository" and select your GitHub repository.
+*   Vercel will automatically detect that it's a Next.js project and configure the build settings. You can usually leave these as default.
+*   For detailed steps, refer to the [Vercel documentation on importing a project](https://vercel.com/docs/projects/importing-projects).
+
+### 2. Enable PR Previews (Git Integration Settings)
+
+*   Once the project is imported, navigate to your Vercel project's settings.
+*   Go to the "Git" section.
+*   Ensure that "Automatic Deployments" is enabled for your production branch (e.g., `main` or `master`).
+*   Crucially, ensure that "Create a unique URL for each Git branch and pull request" (or similar wording for Preview Deployments) is enabled. This will automatically deploy new pull requests.
+*   Vercel typically enables this by default when you import a project. You can find more information in the [Vercel Git Integration documentation](https://vercel.com/docs/projects/git).
+
+### 3. Add GitHub Secrets for Vercel Action
+
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) requires the following secrets to be added to your GitHub repository settings. This allows the action to authenticate with Vercel and deploy your project.
+
+*   `VERCEL_ORG_ID`: Your Vercel organization ID.
+    *   You can find this by going to your Vercel account settings, under "General", your organization/team slug is often part of the URL (e.g., `vercel.com/your-org-slug`). The ID itself can be found via the Vercel API or sometimes in project settings URLs. A more reliable way is to use the Vercel CLI: run `vercel link` in your local project directory (after installing Vercel CLI with `npm i -g vercel` and logging in with `vercel login`), which will create a `.vercel` folder containing a `project.json` file with both `orgId` and `projectId`.
+*   `VERCEL_PROJECT_ID`: The Project ID from your Vercel project.
+    *   In your Vercel project, go to "Settings" -> "General". The Project ID is usually displayed there.
+    *   Alternatively, as mentioned above, linking your local project using `vercel link` will generate a `.vercel/project.json` file containing this ID.
+*   `VERCEL_TOKEN`: A Vercel Access Token.
+    *   Go to your Vercel account settings.
+    *   Navigate to the "Tokens" section.
+    *   Create a new token. Give it a descriptive name (e.g., "GitHub Actions CI").
+    *   Ensure the token has permissions to deploy projects within your organization/scope.
+    *   Copy the token immediately, as it will not be shown again.
+    *   For more details, see [Vercel's documentation on Access Tokens](https://vercel.com/docs/rest-api#creating-an-access-token).
+
+To add these secrets to GitHub:
+
+1.  Go to your GitHub repository.
+2.  Click on "Settings".
+3.  In the left sidebar, navigate to "Secrets and variables" -> "Actions".
+4.  Click on "New repository secret" for each of the three secrets listed above, pasting the corresponding values.
+
+Once these steps are completed, any new pull request to your repository should trigger the GitHub Action, which will then deploy a preview environment to Vercel. The deployment URL will typically be commented on the pull request by the Vercel bot.

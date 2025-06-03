@@ -1,0 +1,181 @@
+name: Deploy to Vercel
+
+on:
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          # Optional: Specify other Vercel CLI options here
+          # vercel-args: '--prod' # Example: Deploy to production
+          # working-directory: './frontend' # Example: If your project is in a subdirectory
+          # vercel-project-name: 'my-project' # Example: If you want to specify a project name
+          # vercel-scope: 'my-team' # Example: If you want to specify a team scope
+          # debug: true # Example: Enable debug output for the action
+          # force: false # Example: Force a new deployment even if nothing has changed
+          # prebuilt: false # Example: Whether the project has been prebuilt
+          # github-comment: true # Example: Add a comment to the PR with the deployment URL
+          # github-deployment: true # Example: Create a GitHub deployment
+          # github-token: ${{ secrets.GITHUB_TOKEN }} # Example: Required if github-comment or github-deployment is true
+          # alias-domains: | # Example: Assign alias domains to the deployment
+          #   example.com
+          #   www.example.com
+          # build-env: | # Example: Set build environment variables
+          #   NODE_ENV=production
+          #   API_URL=https://api.example.com
+          # env: | # Example: Set environment variables for the deployment
+          #   DATABASE_URL=${{ secrets.DATABASE_URL }}
+          # metadata: | # Example: Add metadata to the deployment
+          #   key1=value1
+          #   key2=value2
+          # regions: | # Example: Specify regions for the deployment
+          #   sfo1
+          #   bru1
+          # team-id: 'team_xxxxxxxxxxxxxxx' # Example: Specify a team ID (deprecated, use vercel-scope)
+          # user-id: 'user_xxxxxxxxxxxxxxx' # Example: Specify a user ID (deprecated, use vercel-scope)
+          # wait-for-deployment: true # Example: Wait for the deployment to finish before exiting
+          # timeout: '15m' # Example: Set a timeout for the deployment
+          # cancel-previous-deployments: true # Example: Cancel previous deployments for the same PR
+          # functions: | # Example: Configure serverless functions
+          #   api/index.js:
+          #     memory: 128
+          #     maxDuration: 10
+          # public: false # Example: Make the deployment public or private
+          # routes: | # Example: Configure routing rules
+          #   - src: /old-path
+          #     dest: /new-path
+          #     status: 301
+          #   - src: /api/(.*)
+          #     dest: /api/index.js
+          # target: 'production' # Example: Specify the deployment target (production, staging, etc.)
+          # with-cache: true # Example: Use Vercel build cache
+          # no-output-timeout: '10m' # Example: Set a timeout for no output from Vercel
+          # auto-assign-custom-domains: false # Example: Automatically assign custom domains based on Git branch
+          # build-command: 'npm run build' # Example: Specify a custom build command
+          # install-command: 'npm install' # Example: Specify a custom install command
+          # output-directory: 'public' # Example: Specify the output directory
+          # root-directory: '.' # Example: Specify the root directory of the project
+          # serverless-function-region: 'sfo1' # Example: Specify the region for serverless functions
+          # disable-collect-build-logs: false # Example: Disable collecting build logs
+          # project-settings: | # Example: Override project settings
+          #   framework: 'nextjs'
+          #   buildCommand: 'next build'
+          #   outputDirectory: 'out'
+          # skip-domain-validation: false # Example: Skip domain validation
+          # skip-tls-validation: false # Example: Skip TLS validation
+          # skip-cname-validation: false # Example: Skip CNAME validation
+          # skip-mx-validation: false # Example: Skip MX validation
+          # skip-txt-validation: false # Example: Skip TXT validation
+          # skip-caa-validation: false # Example: Skip CAA validation
+          # skip-dns-validation: false # Example: Skip DNS validation
+          # skip-nameserver-validation: false # Example: Skip nameserver validation
+          # skip-ptr-validation: false # Example: Skip PTR validation
+          # skip-srv-validation: false # Example: Skip SRV validation
+          # skip-tlsa-validation: false # Example: Skip TLSA validation
+          # skip-ds-validation: false # Example: Skip DS validation
+          # skip-dnskey-validation: false # Example: Skip DNSKEY validation
+          # skip-nsec-validation: false # Example: Skip NSEC validation
+          # skip-nsec3-validation: false # Example: Skip NSEC3 validation
+          # skip-nsec3param-validation: false # Example: Skip NSEC3PARAM validation
+          # skip-rrsig-validation: false # Example: Skip RRSIG validation
+          # skip-soa-validation: false # Example: Skip SOA validation
+          # skip-spf-validation: false # Example: Skip SPF validation
+          # skip-sshfp-validation: false # Example: Skip SSHFP validation
+          # skip-uri-validation: false # Example: Skip URI validation
+          # skip-dmarc-validation: false # Example: Skip DMARC validation
+          # skip-dkim-validation: false # Example: Skip DKIM validation
+          # skip-bimivalidation: false # Example: Skip BIMI validation
+          # skip-openpgpkey-validation: false # Example: Skip OpenPGPKey validation
+          # skip-cert-validation: false # Example: Skip certificate validation
+          # skip-crl-validation: false # Example: Skip CRL validation
+          # skip-ocsp-validation: false # Example: Skip OCSP validation
+          # skip-stapling-validation: false # Example: Skip stapling validation
+          # skip-ct-validation: false # Example: Skip Certificate Transparency validation
+          # skip-expect-ct-validation: false # Example: Skip Expect-CT validation
+          # skip-expect-staple-validation: false # Example: Skip Expect-Staple validation
+          # skip-hsts-validation: false # Example: Skip HSTS validation
+          # skip-hpkp-validation: false # Example: Skip HPKP validation
+          # skip-referrer-policy-validation: false # Example: Skip Referrer-Policy validation
+          # skip-x-content-type-options-validation: false # Example: Skip X-Content-Type-Options validation
+          # skip-x-download-options-validation: false # Example: Skip X-Download-Options validation
+          # skip-x-frame-options-validation: false # Example: Skip X-Frame-Options validation
+          # skip-x-permitted-cross-domain-policies-validation: false # Example: Skip X-Permitted-Cross-Domain-Policies validation
+          # skip-x-xss-protection-validation: false # Example: Skip X-XSS-Protection validation
+          # skip-content-security-policy-validation: false # Example: Skip Content-Security-Policy validation
+          # skip-feature-policy-validation: false # Example: Skip Feature-Policy validation
+          # skip-permissions-policy-validation: false # Example: Skip Permissions-Policy validation
+          # skip-strict-transport-security-validation: false # Example: Skip Strict-Transport-Security validation
+          # skip-public-key-pins-validation: false # Example: Skip Public-Key-Pins validation
+          # skip-x-powered-by-validation: false # Example: Skip X-Powered-By validation
+          # skip-x-aspnet-version-validation: false # Example: Skip X-AspNet-Version validation
+          # skip-x-aspnetmvc-version-validation: false # Example: Skip X-AspNetMvc-Version validation
+          # skip-server-validation: false # Example: Skip Server validation
+          # skip-via-validation: false # Example: Skip Via validation
+          # skip-etag-validation: false # Example: Skip ETag validation
+          # skip-last-modified-validation: false # Example: Skip Last-Modified validation
+          # skip-expires-validation: false # Example: Skip Expires validation
+          # skip-cache-control-validation: false # Example: Skip Cache-Control validation
+          # skip-pragma-validation: false # Example: Skip Pragma validation
+          # skip-vary-validation: false # Example: Skip Vary validation
+          # skip-content-encoding-validation: false # Example: Skip Content-Encoding validation
+          # skip-content-language-validation: false # Example: Skip Content-Language validation
+          # skip-content-length-validation: false # Example: Skip Content-Length validation
+          # skip-content-location-validation: false # Example: Skip Content-Location validation
+          # skip-content-md5-validation: false # Example: Skip Content-MD5 validation
+          # skip-content-range-validation: false # Example: Skip Content-Range validation
+          # skip-content-type-validation: false # Example: Skip Content-Type validation
+          # skip-date-validation: false # Example: Skip Date validation
+          # skip-link-validation: false # Example: Skip Link validation
+          # skip-location-validation: false # Example: Skip Location validation
+          # skip-p3p-validation: false # Example: Skip P3P validation
+          # skip-refresh-validation: false # Example: Skip Refresh validation
+          # skip-retry-after-validation: false # Example: Skip Retry-After validation
+          # skip-set-cookie-validation: false # Example: Skip Set-Cookie validation
+          # skip-status-validation: false # Example: Skip Status validation
+          # skip-trailer-validation: false # Example: Skip Trailer validation
+          # skip-transfer-encoding-validation: false # Example: Skip Transfer-Encoding validation
+          # skip-upgrade-validation: false # Example: Skip Upgrade validation
+          # skip-warning-validation: false # Example: Skip Warning validation
+          # skip-www-authenticate-validation: false # Example: Skip WWW-Authenticate validation
+          # skip-access-control-allow-credentials-validation: false # Example: Skip Access-Control-Allow-Credentials validation
+          # skip-access-control-allow-headers-validation: false # Example: Skip Access-Control-Allow-Headers validation
+          # skip-access-control-allow-methods-validation: false # Example: Skip Access-Control-Allow-Methods validation
+          # skip-access-control-allow-origin-validation: false # Example: Skip Access-Control-Allow-Origin validation
+          # skip-access-control-expose-headers-validation: false # Example: Skip Access-Control-Expose-Headers validation
+          # skip-access-control-max-age-validation: false # Example: Skip Access-Control-Max-Age validation
+          # skip-access-control-request-headers-validation: false # Example: Skip Access-Control-Request-Headers validation
+          # skip-access-control-request-method-validation: false # Example: Skip Access-Control-Request-Method validation
+          # skip-timing-allow-origin-validation: false # Example: Skip Timing-Allow-Origin validation
+          # skip-x-dns-prefetch-control-validation: false # Example: Skip X-DNS-Prefetch-Control validation
+          # skip-x-ua-compatible-validation: false # Example: Skip X-UA-Compatible validation
+          # skip-x-robots-tag-validation: false # Example: Skip X-Robots-Tag validation
+          # skip-x-csrf-token-validation: false # Example: Skip X-CSRF-Token validation
+          # skip-x-request-id-validation: false # Example: Skip X-Request-ID validation
+          # skip-x-correlation-id-validation: false # Example: Skip X-Correlation-ID validation
+          # skip-x-trace-id-validation: false # Example: Skip X-Trace-ID validation
+          # skip-x-span-id-validation: false # Example: Skip X-Span-ID validation
+          # skip-x-parent-id-validation: false # Example: Skip X-Parent-ID validation
+          # skip-x-b3-traceid-validation: false # Example: Skip X-B3-TraceId validation
+          # skip-x-b3-spanid-validation: false # Example: Skip X-B3-SpanId validation
+          # skip-x-b3-parentspanid-validation: false # Example: Skip X-B3-ParentSpanId validation
+          # skip-x-b3-sampled-validation: false # Example: Skip X-B3-Sampled validation
+          # skip-x-b3-flags-validation: false # Example: Skip X-B3-Flags validation
+          # skip-x-ot-span-context-validation: false # Example: Skip X-OT-Span-Context validation
+          # skip-grpc-trace-bin-validation: false # Example: Skip grpc-trace-bin validation
+          # skip-traceparent-validation: false # Example: Skip traceparent validation
+          # skip-tracestate-validation: false # Example: Skip tracestate validation

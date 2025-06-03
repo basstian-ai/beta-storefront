@@ -83,11 +83,12 @@ jest.mock('@digdir/designsystemet-react', () => {
   MockDropdown.Trigger.displayName = 'Dropdown.Trigger';
 
 
-  const MockDropdownItem: DropdownItemComponent = jest.fn(({ children, asChild, ...props }) => {
-    if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children, { ...children.props, ...props });
-    }
-    return <div {...props}>{children}</div>; // DropdownItem usually renders a div or li
+  const MockDropdownItem: DropdownItemComponent = jest.fn(({ children, ...props }) => {
+    // Since asChild is removed, DropdownItem likely wraps children in a clickable element (e.g., div or button)
+    // For testing links, we want the Link component to be a direct child if possible,
+    // but if DropdownItem wraps, tests should account for that.
+    // A simple div wrapper is a common behavior for such items.
+    return <div {...props}>{children}</div>;
   });
   // MockDropdownItem.displayName = 'DropdownItem'; // Optional: for debugging
 

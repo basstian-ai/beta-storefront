@@ -74,11 +74,10 @@ jest.mock('@digdir/designsystemet-react', () => {
   });
   MockDropdown.Trigger.displayName = 'Dropdown.Trigger'; // Updated
 
-  const MockDropdownItem: DropdownItemComponent = jest.fn(({ children, asChild, ...props }) => { // Updated
-    if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children, { ...children.props, ...props });
-    }
-    return <div {...props}>{children}</div>; // Or <li>
+  const MockDropdownItem: DropdownItemComponent = jest.fn(({ children, ...props }) => { // Updated
+    // Since asChild is removed, DropdownItem likely wraps children.
+    // A simple div wrapper is a common behavior for such items.
+    return <div {...props}>{children}</div>;
   });
 
   return {

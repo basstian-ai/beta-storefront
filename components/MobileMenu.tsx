@@ -34,13 +34,13 @@ const MobileMenu = () => {
         {/* This div acts as the Dropdown content panel */}
         {isOpen && (
           <div className="mobile-menu-drawer-ds" data-testid="mobile-menu-drawer">
-            <DropdownItem asChild>
+            <DropdownItem>
               <Link href="/">Home</Link>
             </DropdownItem>
-            <DropdownItem asChild>
+            <DropdownItem>
               <Link href="/products">Products</Link>
             </DropdownItem>
-            <DropdownItem asChild>
+            <DropdownItem>
               <Link href="/cart">Cart</Link>
             </DropdownItem>
             {/* Add other DropdownItem as needed */}

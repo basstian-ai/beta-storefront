@@ -1,6 +1,6 @@
 // components/MobileMenu.tsx
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Dropdown, DropdownItem } from '@digdir/designsystemet-react'; // Updated import
 import { Category } from '../types'; // Ensure Category type is imported
 
@@ -9,6 +9,7 @@ interface MobileMenuProps { // Define props
 }
 
 const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -39,21 +40,13 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
         {/* This div acts as the Dropdown content panel */}
         {isOpen && (
           <div className="mobile-menu-drawer-ds" data-testid="mobile-menu-drawer">
-            <DropdownItem asChild>
-              <Link href="/">Home</Link>
-            </DropdownItem>
+            <DropdownItem onClick={() => router.push('/')}>Home</DropdownItem>
             {/* Dynamically render category links */}
             {categories.map(cat => (
-              <DropdownItem key={cat.id} asChild>
-                <Link href={`/category/${cat.slug}`}>{cat.name}</Link>
-              </DropdownItem>
+              <DropdownItem key={cat.id} onClick={() => router.push(`/category/${cat.slug}`)}>{cat.name}</DropdownItem>
             ))}
-            <DropdownItem asChild>
-              <Link href="/products">Products</Link>
-            </DropdownItem>
-            <DropdownItem asChild>
-              <Link href="/cart">Cart</Link>
-            </DropdownItem>
+            <DropdownItem onClick={() => router.push('/products')}>Products</DropdownItem>
+            <DropdownItem onClick={() => router.push('/cart')}>Cart</DropdownItem>
             {/* Add other DropdownItem as needed */}
           </div>
         )}
@@ -84,16 +77,6 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
           padding: 0.5rem;
           z-index: 1000;
           min-width: 150px;
-        }
-        /* Styling for Link components within DropdownItem */
-        :global(.mobile-menu-drawer-ds a) {
-          display: block;
-          padding: 0.5rem 1rem; /* Ensure links are easily clickable */
-          text-decoration: none;
-          color: #333;
-        }
-        :global(.mobile-menu-drawer-ds a:hover) {
-          background-color: #f0f0f0;
         }
       `}</style>
     </div>

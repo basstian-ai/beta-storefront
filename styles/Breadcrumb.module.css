@@ -1,0 +1,36 @@
+.breadcrumbNav {
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.breadcrumbList {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.breadcrumbItem {
+  display: flex;
+  align-items: center;
+}
+
+.separator {
+  margin: 0 0.5rem;
+  color: #6c757d; /* A muted color for the separator */
+}
+
+.link {
+  color: #007bff; /* Standard link color */
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.currentSegment {
+  color: #1a1a1a; /* Darker color for current segment */
+  font-weight: 600; /* Bolder font for current segment */
+}

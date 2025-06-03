@@ -2,8 +2,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Dropdown, DropdownItem } from '@digdir/designsystemet-react'; // Updated import
+import { Category } from '../types'; // Ensure Category type is imported
 
-const MobileMenu = () => {
+interface MobileMenuProps { // Define props
+  categories: Category[];
+}
+
+const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -37,6 +42,12 @@ const MobileMenu = () => {
             <DropdownItem>
               <Link href="/">Home</Link>
             </DropdownItem>
+            {/* Dynamically render category links */}
+            {categories.map(cat => (
+              <DropdownItem key={cat.id}>
+                <Link href={`/category/${cat.slug}`}>{cat.name}</Link>
+              </DropdownItem>
+            ))}
             <DropdownItem>
               <Link href="/products">Products</Link>
             </DropdownItem>
@@ -58,6 +69,7 @@ const MobileMenu = () => {
           border: none;
           cursor: pointer;
           padding: 0.5rem;
+          color: #333; /* Dark color for SVG icon */
           display: inline-flex;
           align-items: center;
           justify-content: center;

@@ -20,7 +20,8 @@ const Layout = ({ categories, children }: LayoutProps) => (
         <Navbar categories={categories} />
       </div>
       <div className="mobile-nav-container">
-        <MobileMenu />
+        {/* Pass categories to MobileMenu */}
+        <MobileMenu categories={categories} />
       </div>
     </header>
     <main>{children}</main>

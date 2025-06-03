@@ -1,3 +1,7 @@
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=YOUR_REPO_URL&project-name=YOUR_PROJECT_NAME&repository-name=YOUR_REPO_NAME)
+
+**Note:** Replace `YOUR_REPO_URL`, `YOUR_PROJECT_NAME`, and `YOUR_REPO_NAME` in the badge URL above with your actual repository URL, desired Vercel project name, and repository name.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
 ## Getting Started

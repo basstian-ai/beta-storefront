@@ -21,6 +21,9 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-comment: true
+          github-deployment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }} # Required for github-comment and github-deployment
           # Optional: Specify other Vercel CLI options here
           # vercel-args: '--prod' # Example: Deploy to production
           # working-directory: './frontend' # Example: If your project is in a subdirectory
@@ -29,9 +32,6 @@ jobs:
           # debug: true # Example: Enable debug output for the action
           # force: false # Example: Force a new deployment even if nothing has changed
           # prebuilt: false # Example: Whether the project has been prebuilt
-          # github-comment: true # Example: Add a comment to the PR with the deployment URL
-          # github-deployment: true # Example: Create a GitHub deployment
-          # github-token: ${{ secrets.GITHUB_TOKEN }} # Example: Required if github-comment or github-deployment is true
           # alias-domains: | # Example: Assign alias domains to the deployment
           #   example.com
           #   www.example.com

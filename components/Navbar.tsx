@@ -1,9 +1,14 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router'; // Import useRouter
-import styles from '../styles/Navbar.module.css'; // Will create this file in the next step
+import { useRouter } from 'next/router';
+import styles from '../styles/Navbar.module.css';
+import { Category } from '../types'; // Import Category type
 
-const Navbar = () => {
-  const router = useRouter(); // Get router object
+interface NavbarProps {
+  categories: Category[]; // Add categories prop
+}
+
+const Navbar = ({ categories }: NavbarProps) => { // Destructure categories from props
+  const router = useRouter();
 
   return (
     <nav className={styles.navbar}>
@@ -18,6 +23,19 @@ const Navbar = () => {
             </a>
           </Link>
         </li>
+        {/* Dynamically render category links */}
+        {categories.map(cat => (
+          <li key={cat.id}>
+            <Link href={`/category/${cat.slug}`} legacyBehavior>
+              <a
+                className={router.asPath === `/category/${cat.slug}` ? styles.active : ''}
+                aria-current={router.asPath === `/category/${cat.slug}` ? 'page' : undefined}
+              >
+                {cat.name}
+              </a>
+            </Link>
+          </li>
+        ))}
         <li>
           <Link href="/products" legacyBehavior>
             <a

@@ -2,8 +2,8 @@ import React from 'react';
 import Layout from '../components/Layout';
 import { fetchCategories } from '../lib/api';
 import { Category } from '../types';
-import Breadcrumb from '../../components/Breadcrumb'; // Corrected path
-import { buildBreadcrumbs } from '../../lib/buildBreadcrumbs'; // Corrected path
+import Breadcrumb from '../components/Breadcrumb'; // Correct path
+import { buildBreadcrumbs } from '../lib/buildBreadcrumbs'; // Correct path
 import { GetServerSidePropsContext } from 'next';
 
 interface ProductsPageProps {

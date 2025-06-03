@@ -1,19 +1,19 @@
 // components/MobileMenu.tsx
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { DropdownMenu } from '@digdir/designsystemet-react'; // Updated import
+import { Dropdown, DropdownItem } from '@digdir/designsystemet-react'; // Updated import
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="mobile-menu-container">
-      <DropdownMenu
+      <Dropdown
         open={isOpen}
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
-      > {/* Updated */}
-        <DropdownMenu.Trigger asChild> {/* Updated */}
+      >
+        <Dropdown.Trigger asChild>
           <button
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
@@ -29,58 +29,59 @@ const MobileMenu = () => {
               </svg>
             )}
           </button>
-        </DropdownMenu.Trigger>
+        </Dropdown.Trigger>
 
-        <DropdownMenu.Content side="bottom" align="end" className="mobile-menu-drawer-ds"> {/* Updated */}
-          <DropdownMenu.Item asChild> {/* Updated */}
-            <Link href="/">Home</Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item asChild> {/* Updated */}
-            <Link href="/products">Products</Link>
-          </DropdownMenu.Item>
-          <DropdownMenu.Item asChild> {/* Updated */}
-            <Link href="/cart">Cart</Link>
-          </DropdownMenu.Item>
-          {/* Add other DropdownMenu.Item as needed */}
-        </DropdownMenu.Content>
-      </DropdownMenu>
+        {/* This div acts as the Dropdown content panel */}
+        {isOpen && (
+          <div className="mobile-menu-drawer-ds" data-testid="mobile-menu-drawer">
+            <DropdownItem asChild>
+              <Link href="/">Home</Link>
+            </DropdownItem>
+            <DropdownItem asChild>
+              <Link href="/products">Products</Link>
+            </DropdownItem>
+            <DropdownItem asChild>
+              <Link href="/cart">Cart</Link>
+            </DropdownItem>
+            {/* Add other DropdownItem as needed */}
+          </div>
+        )}
+      </Dropdown>
 
       <style jsx>{`
         .mobile-menu-container {
           /* Styles will be added/refined in a later step for visibility based on screen size */
+          position: relative; /* Needed for absolute positioning of the drawer */
         }
         .mobile-menu-button {
           background: none;
           border: none;
           cursor: pointer;
           padding: 0.5rem;
-          display: inline-flex; /* Helps align SVG nicely */
+          display: inline-flex;
           align-items: center;
           justify-content: center;
         }
-        /* Styles for the DropdownMenu content */
-        :global(.mobile-menu-drawer-ds) { /* Use :global for classes applied to Designsystemet components */
+        /* Styles for the Dropdown content div */
+        .mobile-menu-drawer-ds {
+          position: absolute; /* Ensure it can overlay */
+          top: 100%; /* Position below the trigger */
+          right: 0; /* Align to the right of the container */
           background-color: white;
           border: 1px solid #ccc;
           padding: 0.5rem;
           z-index: 1000;
-          min-width: 150px; /* Example */
-          /* Ensure items are displayed as block for full-width clickability if needed */
+          min-width: 150px;
         }
-        :global(.mobile-menu-drawer-ds a), :global(.mobile-menu-drawer-ds button[role="menuitem"]) {
-          /* Targeting links directly or buttons if DropdownMenu.Item renders a button for accessibility with asChild */
+        /* Styling for Link components within DropdownItem */
+        :global(.mobile-menu-drawer-ds a) {
           display: block;
-          padding: 0.5rem 1rem;
+          padding: 0.5rem 1rem; /* Ensure links are easily clickable */
           text-decoration: none;
           color: #333;
-          background: none;
-          border: none;
-          text-align: left;
-          width: 100%;
         }
-        :global(.mobile-menu-drawer-ds a:hover), :global(.mobile-menu-drawer-ds button[role="menuitem"]:hover) {
-          background-color: #f0f0f0; /* Example hover */
-          cursor: pointer;
+        :global(.mobile-menu-drawer-ds a:hover) {
+          background-color: #f0f0f0;
         }
       `}</style>
     </div>

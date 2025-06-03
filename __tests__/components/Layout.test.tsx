@@ -22,72 +22,69 @@ jest.mock('../../components/MobileMenu', () => {
   };
 });
 
-// Mock @digdir/designsystemet-react for DropdownMenu used in MobileMenu
+// Mock @digdir/designsystemet-react for Dropdown and DropdownItem used in MobileMenu
 jest.mock('@digdir/designsystemet-react', () => {
   const originalModule = jest.requireActual('@digdir/designsystemet-react');
 
-  type DropdownMenuComponent = React.FC<any> & { // Changed back
+  type DropdownComponent = React.FC<any> & {
     Trigger?: React.FC<any>;
-    Content?: React.FC<any>;
-    Item?: React.FC<any>;
+    // No Content sub-component
   };
+  type DropdownItemComponent = React.FC<any>;
+
 
   // Store onOpen and onClose from props for the mock
   let currentOnOpen: (() => void) | null = null;
   let currentOnClose: (() => void) | null = null;
   let currentIsOpen: boolean = false;
 
-  const MockDropdownMenu: DropdownMenuComponent = jest.fn(({ children, open, onOpen, onClose }) => { // Changed back
+  const MockDropdown: DropdownComponent = jest.fn(({ children, open, onOpen, onClose }) => { // Updated
     currentIsOpen = open;
     currentOnOpen = onOpen;
     currentOnClose = onClose;
 
     let trigger: React.ReactNode = null;
     let content: React.ReactNode = null;
-    React.Children.forEach(children, (child) => {
-      if (React.isValidElement(child)) {
-        if (!trigger) trigger = child;
-        else if (!content) content = child;
+    // Simplified render for Layout test - MobileMenu is already mocked directly.
+    // This mock just needs to provide the named exports Dropdown and DropdownItem.
+    let triggerChild: React.ReactNode = null;
+    let otherChildren: React.ReactNode[] = [];
+     React.Children.forEach(children, (child) => {
+      if (React.isValidElement(child) && child.type && (child.type as any).displayName === 'Dropdown.Trigger') {
+        triggerChild = child;
+      } else {
+        otherChildren.push(child);
       }
     });
-    return <div>{trigger}{currentIsOpen && content}</div>;
+    return <div>{triggerChild}{otherChildren}</div>;
   });
 
-  MockDropdownMenu.Trigger = jest.fn(({ children, asChild }) => { // Changed back
+  MockDropdown.Trigger = jest.fn(({ children, asChild }) => { // Updated
     const newOnClick = () => {
-      // Simulate the toggle behavior based on the new props
       if (currentIsOpen && currentOnClose) {
         currentOnClose();
       } else if (!currentIsOpen && currentOnOpen) {
         currentOnOpen();
       }
     };
-
     if (asChild && React.isValidElement(children)) {
-      // Children is the actual <button> from MobileMenu.tsx (if MobileMenu was not mocked)
-      // or from any component using DropdownMenu.Trigger asChild.
-      // Clone it and override/set its onClick.
       return React.cloneElement(children, { ...children.props, onClick: newOnClick });
     }
-    // Fallback: if not asChild, render a new button.
     return <button onClick={newOnClick}>{children}</button>;
   });
-  MockDropdownMenu.Trigger.displayName = 'DropdownMenu.Trigger'; // Changed back
+  MockDropdown.Trigger.displayName = 'Dropdown.Trigger'; // Updated
 
-  MockDropdownMenu.Content = jest.fn(({ children, ...props }) => <div {...props} data-testid="mobile-menu-drawer">{children}</div>); // Changed back
-  MockDropdownMenu.Content.displayName = 'DropdownMenu.Content'; // Changed back
-
-  MockDropdownMenu.Item = jest.fn(({ children, asChild, ...props }) => { // Changed back
+  const MockDropdownItem: DropdownItemComponent = jest.fn(({ children, asChild, ...props }) => { // Updated
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children, { ...children.props, ...props });
     }
-    return <li {...props}>{children}</li>;
+    return <div {...props}>{children}</div>; // Or <li>
   });
-  MockDropdownMenu.Item.displayName = 'DropdownMenu.Item'; // Changed back
 
   return {
     ...originalModule,
-    DropdownMenu: MockDropdownMenu, // Export Changed back
+    Dropdown: MockDropdown, // Export Updated
+    DropdownItem: MockDropdownItem, // Export New
   };
 });
 

@@ -10,6 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@digdir/designsystemet-css": "^1.0.8",
+    "@digdir/designsystemet-react": "^1.0.8",
+    "@digdir/designsystemet-theme": "^1.0.8",
     "applicationinsights": "^3.7.0",
     "next": "15.3.3",
     "react": "^19.0.0",

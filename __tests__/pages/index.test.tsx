@@ -69,7 +69,7 @@ describe('HomePage Integration', () => {
         props: {
           hero: mockHeroData, // This should conform to HeroContent
           categories: mockCategoriesData,
-          error: undefined, // Explicitly check error is undefined on success
+          error: null, // Explicitly check error is null on success
         },
         revalidate: 60,
       }));
@@ -86,7 +86,7 @@ describe('HomePage Integration', () => {
       // Check that the hero prop matches the structure of HeroContent
       expect(result.props.hero.title).toEqual('Welcome to Our Store!');
       expect(result.props.hero.imageUrl).toBeDefined(); // Check a few properties to be sure
-      expect(result.props.error).toBe('Failed to load hero banner data.');
+      expect(result.props.error).toBe('API Error'); // Error message comes from the actual error
       expect(result.props.categories).toEqual(mockCategoriesData);
       expect(result.revalidate).toBe(60);
     });

@@ -14,8 +14,8 @@ const customJestConfig = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     // Handle image imports
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/__mocks__/fileMock.js',
-    // Handle module aliases (this will be automatically configured by Next.js)
-    // '^@/components/(.*)$': '<rootDir>/components/$1', // Example, Next.js handles this
+    // Handle module aliases
+    '^@/(.*)$': '<rootDir>/$1', // Added to explicitly handle @/ paths
     // Mock specific Next.js modules
     '^next/router$': '<rootDir>/__mocks__/next/router.js',
     '^next/link$': '<rootDir>/__mocks__/next/link.js',

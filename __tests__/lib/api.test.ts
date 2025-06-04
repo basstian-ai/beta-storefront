@@ -6,24 +6,32 @@ import {
   Category as ApiCategory,  // Renaming to avoid conflict with Category from ../types if used by fetchCategories
   Facets
 } from '@/lib/api'; // Using @ alias assuming it's configured for __tests__
-import { Category as ImportedCategoryType } from '../../types'; // Original import for fetchCategories test
+// import { Category as ImportedCategoryType } from '../../types'; // This seems unused if ApiCategory handles the alias for fetchCategories tests or if fetchCategories is updated.
+// For now, assuming fetchCategories tests will align with types from @/lib/api or its direct ../types import.
+// If fetchCategories strictly returns the type from ../../types, then ImportedCategoryType is needed.
+// Based on lib/api.ts, fetchCategories returns ImportedCategory[] which IS from ../types. So, this import is needed.
+import { Category as ImportedCategoryType } from '../../types';
 import { ActiveFilters } from '@/components/FacetFilters';
-import MOCK_CATEGORIES_DATA_JSON from '../../../bff/data/mock-category-data.json';
+import importedMockData from '../../../bff/data/mock-category-data.json';
+const MOCK_CATEGORIES_DATA_JSON = importedMockData as CategoryPageData[];
 
-// Mock fetch for fetchCategories if those tests are kept
+// Mock fetch for fetchCategories
 global.fetch = jest.fn();
 
 // Existing tests for fetchCategories (assuming they are to be kept)
 describe('fetchCategories', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+  let consoleWarnSpy: jest.SpyInstance;
+
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    (console.error as jest.Mock).mockRestore();
-    (console.warn as jest.Mock).mockRestore();
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it('should fetch and transform categories correctly', async () => {
@@ -71,27 +79,22 @@ describe('fetchCategories', () => {
 });
 
 
-// Updated tests for fetchCategoryWithProducts (BFF Filtering Logic)
-const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
 const electronicsCategorySlug = 'electronics';
-const electronicsMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === electronicsCategorySlug)! as unknown as CategoryPageData; // Cast for test purposes
+const electronicsMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === electronicsCategorySlug)!;
 
 const apparelCategorySlug = 'apparel';
-const apparelMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === apparelCategorySlug)! as unknown as CategoryPageData; // Cast for test purposes
+const apparelMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === apparelCategorySlug)!;
 
 describe('fetchCategoryWithProducts - BFF Filtering Logic (Updated Tests)', () => {
+  let consoleLogSpy: jest.SpyInstance;
+  let consoleWarnSpy: jest.SpyInstance;
+
   beforeEach(() => {
-    // Clear only the spies relevant to this describe block if console is shared
-    // However, the new spies are global, so clearing them is fine.
-    consoleLogSpy.mockClear();
-    consoleWarnSpy.mockClear();
-     // If fetch is used by other tests ensure it's reset or specifically mocked for fetchCategoryWithProducts if it were to use fetch
+    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-  afterAll(() => {
-    // Restore global spies
+  afterEach(() => {
     consoleLogSpy.mockRestore();
     consoleWarnSpy.mockRestore();
   });

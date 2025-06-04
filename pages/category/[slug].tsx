@@ -152,7 +152,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
   if (!displayedCategoryData || !displayedCategoryData.category) {
     if (isLoading) return <div>Loading initial category data...</div>; // Or a more specific loading state
     return (
-      <Layout categories={[]}>
+      <Layout categories={[]}> {/* TODO: Fetch and pass actual main navigation categories */}
         <div className={styles.pageContainer}><h1>Category not found</h1><p>Could not find category data for slug: {initialSlug}</p></div>
       </Layout>
     );
@@ -161,7 +161,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
   const { category, products, facets } = displayedCategoryData;
 
   return (
-    <Layout categories={[]}>
+    <Layout categories={[]}> {/* TODO: Fetch and pass actual main navigation categories */}
       <div className={styles.pageContainer}>
         <h1>Category: {category.name}</h1>
         {isLoading && <p /*className={styles.loadingIndicator}*/>Loading products...</p>}
@@ -203,6 +203,12 @@ export async function getStaticProps(
     },
     revalidate: 60, // Optional: revalidate every 60 seconds
   };
+}
+
+export async function getStaticPaths() {
+   const knownSlugs = ['electronics', 'apparel']; // Mock slugs based on current data
+   const paths = knownSlugs.map(s => ({ params: { slug: s } }));
+  return { paths, fallback: 'blocking' };
 }
 
 export default CategoryPage;

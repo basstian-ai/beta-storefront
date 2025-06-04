@@ -12,51 +12,66 @@ const Navbar = ({ categories }: NavbarProps) => { // Destructure categories from
 
   return (
     <nav className={styles.navbar}>
-      <ul>
-        <li>
+      <div className={styles.topNav}>
+        <div className={styles.logo}>
           <Link href="/" legacyBehavior>
+            <a>Logo</a>
+          </Link>
+        </div>
+        <div className={styles.searchContainer}>
+          <input type="text" placeholder="Search..." className={styles.searchInput} />
+        </div>
+        <div className={styles.userActions}>
+          <Link href="#" legacyBehavior>
+            <a className={styles.userActionLink}>[UserIcon] My Account</a>
+          </Link>
+          <Link href="/cart" legacyBehavior>
             <a
-              className={router.pathname === '/' ? styles.active : ''}
-              aria-current={router.pathname === '/' ? 'page' : undefined}
+              className={`${styles.userActionLink} ${router.pathname === '/cart' ? styles.active : ''}`}
+              aria-current={router.pathname === '/cart' ? 'page' : undefined}
             >
-              Home
+              [CartIcon] Cart
             </a>
           </Link>
-        </li>
-        {/* Dynamically render category links */}
-        {categories.map(cat => (
-          <li key={cat.id}>
-            <Link href={`/category/${cat.slug}`} legacyBehavior>
+        </div>
+      </div>
+      <div className={styles.categoryNav}>
+        <ul>
+          <li>
+            <Link href="/" legacyBehavior>
               <a
-                className={router.asPath === `/category/${cat.slug}` ? styles.active : ''}
-                aria-current={router.asPath === `/category/${cat.slug}` ? 'page' : undefined}
+                className={router.pathname === '/' ? styles.active : ''}
+                aria-current={router.pathname === '/' ? 'page' : undefined}
               >
-                {cat.name}
+                Home
               </a>
             </Link>
           </li>
-        ))}
-        <li>
-          <Link href="/products" legacyBehavior>
-            <a
-              className={router.pathname === '/products' ? styles.active : ''}
-              aria-current={router.pathname === '/products' ? 'page' : undefined}
-            >
-              Products
-            </a>
-          </Link>
-        </li>
-        <li>
-          <Link href="/cart" legacyBehavior>
-            <a
-              className={router.pathname === '/cart' ? styles.active : ''}
-              aria-current={router.pathname === '/cart' ? 'page' : undefined}
-            >
-              Cart
-            </a>
-          </Link>
-        </li>
-      </ul>
+          {/* Dynamically render category links */}
+          {categories.map(cat => (
+            <li key={cat.id}>
+              <Link href={`/category/${cat.slug}`} legacyBehavior>
+                <a
+                  className={router.asPath === `/category/${cat.slug}` ? styles.active : ''}
+                  aria-current={router.asPath === `/category/${cat.slug}` ? 'page' : undefined}
+                >
+                  {cat.name}
+                </a>
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link href="/products" legacyBehavior>
+              <a
+                className={router.pathname === '/products' ? styles.active : ''}
+                aria-current={router.pathname === '/products' ? 'page' : undefined}
+              >
+                Products
+              </a>
+            </Link>
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 };

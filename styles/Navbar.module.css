@@ -1,43 +1,154 @@
 .navbar {
-  background-color: #333;
-  padding: 1rem;
+  background-color: #f8f9fa; /* Light grey background, similar to example */
+  padding: 0; /* Remove padding, will add to inner elements */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
 }
 
-.navbar ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex; /* Arrange items horizontally */
-  justify-content: center; /* Center items */
+.topNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem; /* Padding for top section */
+  border-bottom: 1px solid #e0e0e0; /* Separator line */
 }
 
-.navbar li {
-  margin: 0 1rem; /* Spacing between items */
-}
-
-.navbar a {
-  color: white;
+.logo a {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
   text-decoration: none;
-  font-size: 1.1rem;
 }
 
-.navbar a:hover {
+.searchContainer {
+  flex-grow: 1; /* Allows search to take available space */
+  margin: 0 2rem; /* Spacing around search */
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.userActions {
+  display: flex;
+  align-items: center;
+}
+
+.userActionLink {
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  margin-left: 1.5rem; /* Spacing between user actions */
+  display: flex;
+  align-items: center;
+}
+
+.userActionLink:hover {
+  color: #007bff; /* Highlight color on hover */
   text-decoration: underline;
 }
 
-.navbar a.active {
-  font-weight: bold;
-  color: #61dafb; /* A distinct color for active links */
+.categoryNav {
+  background-color: #fff; /* White background for category nav */
+  padding: 0.75rem 2rem; /* Padding for category section */
 }
 
-/* Basic responsive design: stack links vertically on small screens */
-@media (max-width: 600px) {
-  .navbar ul {
+.categoryNav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: flex-start; /* Align categories to the left */
+}
+
+.categoryNav li {
+  margin-right: 1.5rem; /* Spacing between category items */
+}
+
+.categoryNav li:last-child {
+  margin-right: 0;
+}
+
+.categoryNav a {
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.5rem 0; /* Padding for better clickability */
+}
+
+.categoryNav a:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.navbar a.active { /* General active link style */
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) { /* Tablet and smaller */
+  .topNav {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    padding: 1rem;
   }
 
-  .navbar li {
-    margin: 0.5rem 0; /* Adjust spacing for vertical layout */
+  .searchContainer {
+    margin: 1rem 0; /* Adjust margin for vertical layout */
+    width: 100%;
+  }
+
+  .userActions {
+    width: 100%;
+    justify-content: space-between; /* Space out user actions on mobile */
+    margin-top: 1rem;
+  }
+
+  .userActionLink {
+    margin-left: 0; /* Remove left margin for the first item */
+    margin-right: 1rem; /* Add some right margin */
+  }
+
+  .userActionLink:last-child {
+    margin-right: 0;
+  }
+
+  .categoryNav ul {
+    flex-direction: column; /* Stack categories vertically */
+    align-items: flex-start;
+  }
+
+  .categoryNav li {
+    margin-right: 0;
+    margin-bottom: 0.5rem; /* Spacing for vertical category links */
+  }
+}
+
+@media (max-width: 480px) { /* Mobile specific adjustments */
+  .logo a {
+    font-size: 1.5rem; /* Slightly smaller logo for mobile */
+  }
+
+  .searchInput {
+    padding: 0.6rem 0.8rem; /* Smaller padding for search input */
+  }
+
+  .userActionLink {
+    font-size: 0.9rem; /* Smaller font for user actions */
+  }
+
+  .categoryNav a {
+    font-size: 0.9rem; /* Smaller font for category links */
+  }
+
+  .topNav {
+    padding: 0.75rem;
+  }
+  .categoryNav {
+    padding: 0.5rem 1rem;
   }
 }

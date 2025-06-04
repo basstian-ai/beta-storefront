@@ -57,8 +57,9 @@ const FacetFilters: React.FC<FacetFiltersProps> = ({ facets, onFilterChange, ini
         if (!facetValues || facetValues.length === 0) return null;
 
         return (
-          <div key={facetKey} className={styles.facetGroup}>
-            <h5>{facetKey.charAt(0).toUpperCase() + facetKey.slice(1)}</h5>
+          <div key={key} className={styles.facetGroup}> {/* Use key for React key */}
+            {/* Use key (string) for string manipulation */}
+            <h5>{key.charAt(0).toUpperCase() + key.slice(1)}</h5>
             <ul className={styles.filterList}>
               {facetValues.map(value => (
                 <li key={value} className={styles.filterItem}>

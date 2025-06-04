@@ -19,22 +19,20 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
       >
-        <Dropdown.Trigger asChild>
-          <button
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isOpen}
-            className="mobile-menu-button"
-          >
-            {isOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            )}
-          </button>
+        <Dropdown.Trigger
+          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isOpen}
+          className="mobile-hamburger-trigger"
+        >
+          {isOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          )}
         </Dropdown.Trigger>
 
         {/* This div acts as the Dropdown content panel */}
@@ -57,7 +55,7 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
           /* Styles will be added/refined in a later step for visibility based on screen size */
           position: relative; /* Needed for absolute positioning of the drawer */
         }
-        .mobile-menu-button {
+        .mobile-hamburger-trigger {
           background: none;
           border: none;
           cursor: pointer;

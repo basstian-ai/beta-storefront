@@ -14,3 +14,11 @@ export interface HeroContent {
   imageUrl: string;
   imageAlt?: string; // Keep optional as it has a default in the component
 }
+
+export type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  imageUrl: string;
+};

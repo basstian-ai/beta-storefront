@@ -39,6 +39,21 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
+export async function fetchFeaturedProducts(): Promise<Product[]> {
+  const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
+  const res = await fetch(`${CMS_BASE_URL}/products?limit=6`); // DummyCMS format
+  if (!res.ok) throw new Error('Failed to fetch featured products');
+
+  const json = await res.json();
+  return (json.products || []).map((p: any) => ({
+    id: p.id.toString(), // Ensure id is string
+    name: p.title,
+    slug: p.id.toString(), // Use id as slug for simplicity with dummyjson
+    price: p.price,
+    imageUrl: p.thumbnail,
+  }));
+}
+
 // Placeholder for CMS_BASE_URL, should be set in environment variables
 const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com'; // Using NEXT_PUBLIC_ prefix for client-side access if needed, or just process.env for server-side. For getStaticProps, process.env is fine.
 

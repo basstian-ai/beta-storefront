@@ -1,0 +1,19 @@
+/* styles/FeaturedProductsCarousel.module.css */
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+}
+
+.product-card {
+  min-width: 200px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  background: white;
+  text-align: center;
+  border-radius: 6px;
+}

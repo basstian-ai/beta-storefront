@@ -4,6 +4,8 @@ import Layout from '@/components/Layout';
 import ProductList from '@/components/ProductList'; // Corrected import: default export
 import FacetFilters, { ActiveFilters } // Import ActiveFilters and FacetFilters
     from '@/components/FacetFilters';
+import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
+import { ParsedUrlQuery } from 'querystring';
 import {
   fetchCategoryWithProducts,
   CategoryPageData,
@@ -15,10 +17,15 @@ import { filterProducts } from '@/lib/filterUtils'; // Import the new utility
 import { useState, useEffect, useMemo } from 'react'; // Added useMemo, useEffect might not be needed now
 
 // Props type for the page (ensure it aligns with getStaticProps)
+// This interface should match the props returned by getStaticProps
 interface CategoryPageProps {
-  // categoryData will hold all data from fetchCategoryWithProducts
   categoryData: CategoryPageData | null;
-  slug: string; // slug might be part of categoryData.category but passed for clarity
+  slug: string;
+}
+
+// Define the expected params structure for getStaticProps
+interface CategoryPageParams extends ParsedUrlQuery {
+  slug: string;
 }
 
 const CategoryPage = ({ categoryData, slug }: CategoryPageProps) => {
@@ -97,10 +104,14 @@ export async function getStaticPaths() {
   return { paths, fallback: 'blocking' }; // fallback: 'blocking' or true
 }
 
-export async function getStaticProps({ params }) {
-  const slug = params?.slug as string;
+export async function getStaticProps(
+  context: GetStaticPropsContext<CategoryPageParams>
+): Promise<GetStaticPropsResult<CategoryPageProps>> {
+  const slug = context.params?.slug; // slug is now typed as string | undefined
 
   if (!slug) {
+    // This case should ideally not be hit if paths are defined correctly and fallback is not true,
+    // but good for robustness.
     return { notFound: true };
   }
 
@@ -115,7 +126,7 @@ export async function getStaticProps({ params }) {
   return {
     props: {
       categoryData,
-      slug,
+      slug, // slug is confirmed to be a string here
     },
     revalidate: 60, // Optional: revalidate every 60 seconds
   };

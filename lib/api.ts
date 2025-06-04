@@ -1,6 +1,66 @@
-import type { Category, HeroContent, Product } from '../types'; // Adjust path if necessary
+import type { Category as ImportedCategory, HeroContent, Product as ImportedProduct } from '../types'; // Adjust path if necessary
 
-export async function fetchCategories(): Promise<Category[]> {
+// Define Product data structure
+export interface Product {
+  id: string;
+  name: string;
+  price: number; // Changed to number for easier manipulation
+  brand: string;
+  size: string; // Assuming size is a string, e.g., "S", "M", "L", "XL"
+  imageUrl: string;
+}
+
+// Define Category data structure
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  // Potentially add description or other fields later
+}
+
+// Define Facets data structure
+export interface Facets {
+  brand: string[];
+  size: string[];
+  // Add other facet types as needed, e.g., color, priceRange
+}
+
+// Placeholder for the main function we'll build in the next steps
+// export const fetchCategoryWithProducts = async (slug: string) => {
+//   // ... implementation later
+// };
+
+// Define the return type for fetchCategoryWithProducts
+export interface CategoryPageData {
+  category: Category;
+  products: Product[];
+  facets: Facets;
+}
+
+// Import the mock data from the JSON file
+// Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
+import MOCK_CATEGORIES_DATA_JSON from '../../bff/data/mock-category-data.json';
+
+export const fetchCategoryWithProducts = async (slug: string): Promise<CategoryPageData | null> => {
+  console.log(`BFF: Fetching category with products for slug: ${slug}`);
+
+  // Ensure MOCK_CATEGORIES_DATA_JSON is treated as CategoryPageData[]
+  // TypeScript might infer it as a generic JSON type, so casting or type assertion might be needed
+  // if direct assignment doesn't work due to type mismatch.
+  // However, with resolveJsonModule, it often correctly infers the structure.
+  const allCategoryData: CategoryPageData[] = MOCK_CATEGORIES_DATA_JSON;
+  const data = allCategoryData.find(item => item.category.slug === slug);
+
+  if (!data) {
+    console.warn(`BFF: Category with slug "${slug}" not found.`);
+    return null; // Or throw an error, to be decided in error handling step
+  }
+
+  console.log(`BFF: Found data for slug "${slug}":`, data); // SYS-7: Logging outcome
+  return data;
+};
+
+export async function fetchCategories(): Promise<ImportedCategory[]> {
   // TODO: Replace with actual BFF endpoint later
   const res = await fetch('https://dummyjson.com/products/categories');
   if (!res.ok) {
@@ -39,7 +99,7 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
-export async function fetchFeaturedProducts(): Promise<Product[]> {
+export async function fetchFeaturedProducts(): Promise<ImportedProduct[]> {
   const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
   const res = await fetch(`${CMS_BASE_URL}/products?limit=6`); // DummyCMS format
   if (!res.ok) throw new Error('Failed to fetch featured products');
@@ -90,7 +150,7 @@ export async function fetchHeroBanner(): Promise<HeroContent> {
 // To ensure the file can be read and check its current content (if any):
 // console.log("Current content of lib/api.ts will be preserved and fetchHeroBanner added/updated.");
 
-export async function fetchFeaturedCategories(): Promise<Category[]> {
+export async function fetchFeaturedCategories(): Promise<ImportedCategory[]> {
   const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
 
   // The issue mentions /categories or /featured-categories.
@@ -119,7 +179,7 @@ export async function fetchFeaturedCategories(): Promise<Category[]> {
   }
 
   // Extract unique categories from the products
-  const categoriesMap = new Map<string, Category>();
+  const categoriesMap = new Map<string, ImportedCategory>();
   data.products.forEach((product: any) => {
     if (product.category) {
       const slug = product.category.toLowerCase().replace(/\s+/g, '-');
@@ -170,7 +230,7 @@ export async function fetchFeaturedCategories(): Promise<Category[]> {
     });
   } else if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.length > 0 && typeof cmsCategoriesData[0] === 'object' && 'name' in cmsCategoriesData[0]) {
     // This branch assumes the /categories endpoint returns objects like [{id, name, slug, image}]
-    return cmsCategoriesData.map((cat: any) => ({
+    return cmsCategoriesData.map((cat: any): ImportedCategory => ({ // Explicitly return ImportedCategory
       id: cat.id || cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'), // Prioritize given ID, then slug, then generate from name
       name: cat.name,
       slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),

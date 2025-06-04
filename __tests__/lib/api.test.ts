@@ -91,3 +91,92 @@ describe('fetchCategories', () => {
     expect(console.warn).toHaveBeenCalledWith('Unexpected category format:', 123);
   });
 });
+
+// New tests for fetchCategoryWithProducts
+import { fetchCategoryWithProducts, CategoryPageData } from '../../lib/api'; // Path confirmed
+import MOCK_DATA from '../../../bff/data/mock-category-data.json'; // Path confirmed
+
+// Mock console methods to verify logging for the new suite
+const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+const consoleWarnSpyFetchCategory = jest.spyOn(console, 'warn').mockImplementation(() => {}); // Use a different name to avoid conflict if needed, though Jest handles scope
+
+describe('fetchCategoryWithProducts', () => {
+  beforeEach(() => {
+    // Clear mock counters before each test
+    consoleLogSpy.mockClear();
+    consoleWarnSpyFetchCategory.mockClear();
+  });
+
+  afterAll(() => {
+    // Restore original console functions
+    consoleLogSpy.mockRestore();
+    consoleWarnSpyFetchCategory.mockRestore();
+  });
+
+  it('should return category data for a valid slug', async () => {
+    const slug = 'electronics'; // A valid slug from mock-category-data.json
+    const expectedData = MOCK_DATA.find(item => item.category.slug === slug);
+
+    const result = await fetchCategoryWithProducts(slug);
+
+    expect(result).toEqual(expectedData);
+    expect(result?.category.name).toBe('Electronics');
+    expect(result?.products.length).toBeGreaterThan(0);
+    expect(result?.facets.brand.length).toBeGreaterThan(0);
+
+    // Verify logging
+    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
+    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Found data for slug "${slug}":`, expectedData);
+    expect(consoleWarnSpyFetchCategory).not.toHaveBeenCalled();
+  });
+
+  it('should return null for an invalid or non-existent slug', async () => {
+    const slug = 'non-existent-slug';
+    const result = await fetchCategoryWithProducts(slug);
+
+    expect(result).toBeNull();
+
+    // Verify logging
+    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
+    expect(consoleWarnSpyFetchCategory).toHaveBeenCalledWith(`BFF: Category with slug "${slug}" not found.`);
+  });
+
+  it('should return correct data structure for a valid slug', async () => {
+    const slug = 'apparel'; // Another valid slug
+    const result = await fetchCategoryWithProducts(slug);
+
+    expect(result).not.toBeNull();
+    // Type guard for TypeScript
+    if (result) {
+      expect(result.category).toBeDefined();
+      expect(result.category.id).toBeDefined();
+      expect(result.category.name).toBeDefined();
+      expect(result.category.slug).toBe(slug);
+
+      expect(result.products).toBeInstanceOf(Array);
+      result.products.forEach(product => {
+        expect(product.id).toBeDefined();
+        expect(product.name).toBeDefined();
+        expect(product.price).toBeDefined();
+        expect(product.brand).toBeDefined();
+        expect(product.size).toBeDefined();
+        expect(product.imageUrl).toBeDefined();
+      });
+
+      expect(result.facets).toBeDefined();
+      expect(result.facets.brand).toBeInstanceOf(Array);
+      expect(result.facets.size).toBeInstanceOf(Array);
+    }
+  });
+
+  // Example test for another category if needed
+  it('should correctly fetch data for the "apparel" category', async () => {
+    const slug = 'apparel';
+    const expectedData = MOCK_DATA.find(item => item.category.slug === slug);
+    const result = await fetchCategoryWithProducts(slug);
+
+    expect(result).toEqual(expectedData);
+    expect(result?.category.name).toBe('Apparel');
+    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
+  });
+});

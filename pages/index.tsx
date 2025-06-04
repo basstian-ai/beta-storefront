@@ -2,7 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
-import { Button } from "@digdir/designsystemet-react";
+// import { Button } from "@digdir/designsystemet-react"; // Removed
 import Layout from '../components/Layout'; // Import Layout
 import { fetchCategories } from '../lib/api'; // Import fetchCategories
 import { Category } from '../types'; // Import Category
@@ -62,7 +62,7 @@ export default function Home({ categories }: HomeProps) { // Use HomeProps
             <li>Save and see your changes instantly.</li>
           </ol>
 
-          <Button variant="secondary">Click Me</Button>
+          <button className="simple-demo-button">Click Me</button>
 
           <div className={styles.ctas}>
             <a

@@ -1,88 +1,105 @@
 // components/MobileMenu.tsx
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Dropdown, DropdownItem } from '@digdir/designsystemet-react'; // Updated import
+import { useRouter } from 'next/router';
+// Link import is not strictly needed if we use router.push() for all navigation and divs for clickable items.
+// However, if some items were to remain actual <Link>s, it would be kept.
+// For this implementation, focusing on div onClick, it's not used.
+// import Link from 'next/link';
+import { Category } from '../types';
 
-const MobileMenu = () => {
+interface MobileMenuProps {
+  categories: Category[];
+}
+
+const MobileMenu = ({ categories }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    setIsOpen(false); // Close menu on navigation
+  };
 
   return (
     <div className="mobile-menu-container">
-      <Dropdown
-        open={isOpen}
-        onOpen={() => setIsOpen(true)}
-        onClose={() => setIsOpen(false)}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+        aria-expanded={isOpen}
+        className="mobile-menu-button"
       >
-        <Dropdown.Trigger asChild>
-          <button
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isOpen}
-            className="mobile-menu-button"
-          >
-            {isOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            )}
-          </button>
-        </Dropdown.Trigger>
-
-        {/* This div acts as the Dropdown content panel */}
-        {isOpen && (
-          <div className="mobile-menu-drawer-ds" data-testid="mobile-menu-drawer">
-            <DropdownItem>
-              <Link href="/">Home</Link>
-            </DropdownItem>
-            <DropdownItem>
-              <Link href="/products">Products</Link>
-            </DropdownItem>
-            <DropdownItem>
-              <Link href="/cart">Cart</Link>
-            </DropdownItem>
-            {/* Add other DropdownItem as needed */}
-          </div>
+        {isOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="24" height="24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
         )}
-      </Dropdown>
+      </button>
+
+      {isOpen && (
+        <div className="mobile-menu-drawer" data-testid="mobile-menu-drawer">
+          <div onClick={() => handleNavigation('/')} className="menu-item">
+            Home
+          </div>
+          {categories.map(cat => (
+            <div key={cat.id} onClick={() => handleNavigation(`/category/${cat.slug}`)} className="menu-item">
+              {cat.name}
+            </div>
+          ))}
+          <div onClick={() => handleNavigation('/products')} className="menu-item">
+            Products
+          </div>
+          <div onClick={() => handleNavigation('/cart')} className="menu-item">
+            Cart
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .mobile-menu-container {
-          /* Styles will be added/refined in a later step for visibility based on screen size */
-          position: relative; /* Needed for absolute positioning of the drawer */
+          position: relative;
+          /* Ensure it has a defined stacking context if z-index is used heavily elsewhere */
         }
         .mobile-menu-button {
           background: none;
           border: none;
-          cursor: pointer;
           padding: 0.5rem;
+          cursor: pointer;
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          color: #333; /* SVG inherits this via stroke="currentColor" */
+          /* Consider adding a z-index if it might be overlapped by other positioned elements when closed */
         }
-        /* Styles for the Dropdown content div */
-        .mobile-menu-drawer-ds {
-          position: absolute; /* Ensure it can overlay */
+        .mobile-menu-drawer {
+          position: absolute;
           top: 100%; /* Position below the trigger */
           right: 0; /* Align to the right of the container */
           background-color: white;
           border: 1px solid #ccc;
           padding: 0.5rem;
-          z-index: 1000;
+          z-index: 1000; /* Ensure it's above other content */
           min-width: 150px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem; /* Consistent with the example, smaller gap */
         }
-        /* Styling for Link components within DropdownItem */
-        :global(.mobile-menu-drawer-ds a) {
+        .menu-item { /* Renamed from .menu-item-like for clarity */
           display: block;
-          padding: 0.5rem 1rem; /* Ensure links are easily clickable */
+          padding: 0.5rem 1rem; /* Ensure items are easily clickable */
           text-decoration: none;
           color: #333;
+          cursor: pointer;
+          border-radius: 4px; /* Optional: slightly rounded corners for items */
         }
-        :global(.mobile-menu-drawer-ds a:hover) {
+        .menu-item:hover {
           background-color: #f0f0f0;
         }
+        /* Styling for SVGs if not directly handled by props, though width/height are on SVG elements */
+        /* .mobile-menu-button svg {} */
       `}</style>
     </div>
   );

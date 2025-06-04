@@ -56,14 +56,23 @@ const MobileMenu = ({ categories }: MobileMenuProps) => { // Use props
           position: relative; /* Needed for absolute positioning of the drawer */
         }
         .mobile-hamburger-trigger {
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 0.5rem;
-          color: #333; /* Dark color for SVG icon */
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          background: yellow !important;
+          border: 1px solid red !important;
+          color: black !important; /* For SVG currentColor */
+          opacity: 1 !important;
+          visibility: visible !important;
+          z-index: 9999 !important;
+          padding: 0.5rem !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          cursor: pointer !important;
+        }
+        :global(.mobile-hamburger-trigger > svg) {
+          stroke: black !important;
+          width: 24px !important;
+          height: 24px !important;
+          display: block !important;
         }
         /* Styles for the Dropdown content div */
         .mobile-menu-drawer-ds {

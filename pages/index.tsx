@@ -1,29 +1,39 @@
 import Head from 'next/head';
 import Layout from '@/components/Layout';
 import HeroBanner from '@/components/HeroBanner';
-import { fetchHeroBanner, fetchCategories } from '@/lib/api';
+import FeaturedCategories from '@/components/FeaturedCategories'; // Import FeaturedCategories
+import { fetchHeroBanner, fetchCategories, fetchFeaturedCategories } from '@/lib/api'; // Added fetchFeaturedCategories
 import type { HeroContent, Category } from '@/types';
 import styles from '../styles/Home.module.css';
 
 type HomePageProps = {
   hero: HeroContent;
   categories: Category[];
-  error?: string | null; // Allow error to be string or null
+  featuredCategories: Category[]; // Added featuredCategories
+  error?: string | null;
 };
 
 export async function getStaticProps(): Promise<{ props: HomePageProps, revalidate?: number }> {
   let heroData: HeroContent;
-  let categories: Category[] = []; // Initialize categories
-  let error: string | null = null; // Initialize error to null
+  let categories: Category[] = [];
+  let featuredCategories: Category[] = []; // Initialize featuredCategories
+  let error: string | null = null;
 
   try {
-    // Fetch categories first or in parallel if independent
-    // Making category fetch non-critical for page load, but logging error.
+    // Fetch categories and featured categories
+    // Making these fetches non-critical for page load, but logging errors.
     try {
       categories = await fetchCategories();
     } catch (catError: any) {
       console.error("Error fetching categories:", catError.message || catError);
-      // categories remains [], page can still render with empty categories or Layout handles it.
+      // categories remains [], page can still render
+    }
+
+    try {
+      featuredCategories = await fetchFeaturedCategories();
+    } catch (featCatError: any) {
+      console.error("Error fetching featured categories:", featCatError.message || featCatError);
+      // featuredCategories remains [], page can still render
     }
 
     // Hero data is critical, if this fails, we use fallback.
@@ -33,7 +43,8 @@ export async function getStaticProps(): Promise<{ props: HomePageProps, revalida
       props: {
         hero: heroData,
         categories,
-        error: null, // Explicitly set error to null on success
+        featuredCategories, // Add to props
+        error: null,
       },
       revalidate: 60,
     };
@@ -51,23 +62,22 @@ export async function getStaticProps(): Promise<{ props: HomePageProps, revalida
       imageAlt: 'Default hero image'
     };
 
-    // If categories array is still empty (e.g., initial fetch failed or was skipped due to hero error path),
-    // we might attempt to fetch them again, or ensure it's passed as potentially empty.
-    // The current logic already fetches categories outside this main catch block for hero,
-    // so categories should have its data or be an empty array from its own try/catch.
+    // Categories and featuredCategories should have their data or be empty arrays
+    // from their own try/catch blocks, even if hero fetching fails.
 
     return {
       props: {
         hero: heroData, // Use fallback hero data
-        categories, // Pass categories fetched (or empty from its own try/catch)
-        error, // Pass the error message string
+        categories,
+        featuredCategories, // Add to props even in error case (will be [] if fetch failed)
+        error,
       },
       revalidate: 60,
     };
   }
 }
 
-export default function HomePage({ hero, categories, error }: HomePageProps) {
+export default function HomePage({ hero, categories, featuredCategories, error }: HomePageProps) { // Added featuredCategories
   return (
     <Layout categories={categories}>
       <Head>
@@ -82,6 +92,10 @@ export default function HomePage({ hero, categories, error }: HomePageProps) {
       <HeroBanner {...hero} />
 
       <main className={styles.main}>
+        {/* Render FeaturedCategories if there are any */}
+        {featuredCategories && featuredCategories.length > 0 && (
+          <FeaturedCategories categories={featuredCategories} />
+        )}
         {/* Other homepage content */}
       </main>
     </Layout>

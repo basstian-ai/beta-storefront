@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  imageUrl?: string; // Added this line
 }
 
 // Add HeroContent interface

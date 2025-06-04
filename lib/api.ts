@@ -74,3 +74,96 @@ export async function fetchHeroBanner(): Promise<HeroContent> {
 
 // To ensure the file can be read and check its current content (if any):
 // console.log("Current content of lib/api.ts will be preserved and fetchHeroBanner added/updated.");
+
+export async function fetchFeaturedCategories(): Promise<Category[]> {
+  const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
+
+  // The issue mentions /categories or /featured-categories.
+  // Checking common patterns for dummyjson, products are under /products, users under /users.
+  // It's likely categories are under /products/categories or just /products/category/some-category-name
+  // or /categories if it's a dedicated endpoint.
+  // dummyjson.com provides a /products/categories endpoint which returns a list of category names (strings).
+  // And a /products/category/{slug} which returns products for a category.
+  // For the purpose of this task, we need a list of category *objects*.
+  // Let's try /products/categories first and see the structure. If it's just strings, we'll need to adapt.
+  // The issue implies the endpoint returns objects with id, name, slug, image.
+  // dummyjson.com /products returns products which have a category field (string).
+  // It seems dummyjson.com doesn't have a direct equivalent of a "featured categories" endpoint that provides image URLs for categories.
+  // Let's use /products as a source and derive categories from them, simulating a richer category object.
+  // This is a common workaround when a direct endpoint isn't available.
+
+  const response = await fetch(`${CMS_BASE_URL}/products?limit=5`); // Fetch a few products to get diverse categories
+  if (!response.ok) throw new Error('Failed to fetch products for categories');
+
+  const data = await response.json();
+
+  // Assuming data.products is an array of product objects
+  if (!data.products || !Array.isArray(data.products)) {
+    console.error('Unexpected data structure from /products endpoint:', data);
+    throw new Error('Failed to parse products for categories');
+  }
+
+  // Extract unique categories from the products
+  const categoriesMap = new Map<string, Category>();
+  data.products.forEach((product: any) => {
+    if (product.category) {
+      const slug = product.category.toLowerCase().replace(/\s+/g, '-');
+      if (!categoriesMap.has(slug)) {
+        categoriesMap.set(slug, {
+          id: slug, // Use slug as ID if no specific ID is provided
+          name: product.category,
+          slug: slug,
+          // dummyjson products have a 'thumbnail' and 'images' array. Let's use thumbnail for category image.
+          imageUrl: product.thumbnail || `https://via.placeholder.com/150?text=${encodeURIComponent(product.category)}`,
+        });
+      }
+    }
+  });
+
+  const uniqueCategories = Array.from(categoriesMap.values());
+
+  // If the CMS_BASE_URL is dummyjson, it has a /products/categories endpoint which returns string array.
+  // Let's refine this: if the direct /categories endpoint exists and returns the expected structure, use that.
+  // The original plan was: const response = await fetch(`${CMS_BASE_URL}/categories`);
+  // Let's assume for now that a /categories endpoint exists and returns something like:
+  // [{ "id": "1", "name": "Electronics", "slug": "electronics", "image": "url..." }]
+  // If not, the product derivation logic above is a fallback.
+  // The issue statement's `fetchFeaturedCategories` uses `/categories`. We should stick to that first.
+
+  const categoriesResponse = await fetch(`${CMS_BASE_URL}/categories`);
+  if (!categoriesResponse.ok) {
+    // Fallback to deriving from products if /categories fails or isn't as expected
+    console.warn('Failed to fetch from /categories, attempting to derive from /products');
+    return uniqueCategories.length > 0 ? uniqueCategories : []; // Return derived if available, else empty
+  }
+
+  const cmsCategoriesData = await categoriesResponse.json();
+
+  // Check if cmsCategoriesData is an array and has the expected structure
+  // dummyjson.com/categories returns ["smartphones","laptops","fragrances","skincare","groceries","home-decoration"]
+  // This is an array of strings, not objects.
+  // So we must map these strings to the Category type.
+  if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.every(item => typeof item === 'string')) {
+    return cmsCategoriesData.map((categoryName: string, index: number) => {
+      const slug = categoryName.toLowerCase().replace(/\s+/g, '-');
+      return {
+        id: `${index + 1}`, // Assign a simple ID
+        name: categoryName,
+        slug: slug,
+        imageUrl: `https://via.placeholder.com/150?text=${encodeURIComponent(categoryName)}`, // Placeholder image
+      };
+    });
+  } else if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.length > 0 && typeof cmsCategoriesData[0] === 'object' && 'name' in cmsCategoriesData[0]) {
+    // This branch assumes the /categories endpoint returns objects like [{id, name, slug, image}]
+    return cmsCategoriesData.map((cat: any) => ({
+      id: cat.id || cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'), // Prioritize given ID, then slug, then generate from name
+      name: cat.name,
+      slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
+      imageUrl: cat.image || cat.imageUrl || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`,
+    }));
+  } else {
+    // If the structure is unexpected, fall back to deriving from products or return empty
+    console.warn('Unexpected data structure from /categories. Falling back to product-derived categories or empty array.');
+    return uniqueCategories.length > 0 ? uniqueCategories : [];
+  }
+}

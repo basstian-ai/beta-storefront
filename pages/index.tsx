@@ -2,84 +2,65 @@ import Head from 'next/head';
 import Layout from '@/components/Layout';
 import HeroBanner from '@/components/HeroBanner';
 import FeaturedCategories from '@/components/FeaturedCategories'; // Import FeaturedCategories
-import { fetchHeroBanner, fetchCategories, fetchFeaturedCategories } from '@/lib/api'; // Added fetchFeaturedCategories
-import type { HeroContent, Category } from '@/types';
+import FeaturedProductsCarousel from '@/components/FeaturedProductsCarousel'; // Added this import
+import { fetchHeroBanner, fetchCategories, fetchFeaturedCategories, fetchFeaturedProducts } from '@/lib/api'; // Added fetchFeaturedProducts
+import type { HeroContent, Category, Product } from '@/types'; // Added Product
 import styles from '../styles/Home.module.css';
 
 type HomePageProps = {
-  hero: HeroContent;
-  categories: Category[];
-  featuredCategories: Category[]; // Added featuredCategories
+  hero?: HeroContent; // Optional due to potential fetch error
+  categories?: Category[]; // Optional
+  featuredCategories?: Category[]; // Optional
+  featuredProducts?: Product[]; // Added featuredProducts, optional
   error?: string | null;
 };
 
 export async function getStaticProps(): Promise<{ props: HomePageProps, revalidate?: number }> {
-  let heroData: HeroContent;
+  let hero: HeroContent | undefined;
   let categories: Category[] = [];
-  let featuredCategories: Category[] = []; // Initialize featuredCategories
+  let featuredCategories: Category[] = [];
+  let featuredProducts: Product[] = [];
   let error: string | null = null;
 
   try {
-    // Fetch categories and featured categories
-    // Making these fetches non-critical for page load, but logging errors.
-    try {
-      categories = await fetchCategories();
-    } catch (catError: any) {
-      console.error("Error fetching categories:", catError.message || catError);
-      // categories remains [], page can still render
+    // Parallel fetching might be an option here if API calls are independent
+    hero = await fetchHeroBanner();
+    categories = await fetchCategories();
+    featuredCategories = await fetchFeaturedCategories();
+    featuredProducts = await fetchFeaturedProducts(); // Added this line
+  } catch (err: any) {
+    console.error("Error fetching page data for HomePage:", err.message || err);
+    error = 'Some content failed to load. Please try again later.';
+    // Initialize all data to safe defaults or empty arrays if an error occurs
+    // Hero might use a fallback if critical, others can be empty.
+    if (!hero) { // If hero failed specifically or due to general error
+        hero = {
+            title: 'Welcome to Our Store!',
+            description: 'We are currently unable to load the latest offers. Please check back soon.',
+            ctaText: 'Explore Products',
+            ctaLink: '/products',
+            imageUrl: 'https://via.placeholder.com/1200x400.png?text=Our+Store',
+            imageAlt: 'Default hero image'
+        };
     }
-
-    try {
-      featuredCategories = await fetchFeaturedCategories();
-    } catch (featCatError: any) {
-      console.error("Error fetching featured categories:", featCatError.message || featCatError);
-      // featuredCategories remains [], page can still render
-    }
-
-    // Hero data is critical, if this fails, we use fallback.
-    heroData = await fetchHeroBanner();
-
-    return {
-      props: {
-        hero: heroData,
-        categories,
-        featuredCategories, // Add to props
-        error: null,
-      },
-      revalidate: 60,
-    };
-  } catch (fetchError: any) { // This primarily catches errors from fetchHeroBanner
-    console.error("Error fetching hero data for HomePage:", fetchError.message || fetchError);
-    error = fetchError.message || 'Failed to load hero banner data.';
-
-    // Fallback hero data is assigned here
-    heroData = {
-      title: 'Welcome to Our Store!',
-      description: 'We are currently unable to load the latest offers. Please check back soon.',
-      ctaText: 'Explore Products',
-      ctaLink: '/products',
-      imageUrl: 'https://via.placeholder.com/1200x400.png?text=Our+Store',
-      imageAlt: 'Default hero image'
-    };
-
-    // Categories and featuredCategories should have their data or be empty arrays
-    // from their own try/catch blocks, even if hero fetching fails.
-
-    return {
-      props: {
-        hero: heroData, // Use fallback hero data
-        categories,
-        featuredCategories, // Add to props even in error case (will be [] if fetch failed)
-        error,
-      },
-      revalidate: 60,
-    };
+    // categories, featuredCategories, featuredProducts will be [] if their fetch failed or due to general error
   }
+
+  return {
+    props: {
+      hero,
+      categories,
+      featuredCategories,
+      featuredProducts, // Added this prop
+      error,
+    },
+    revalidate: 60, // Revalidate at most once per minute
+  };
 }
 
-export default function HomePage({ hero, categories, featuredCategories, error }: HomePageProps) { // Added featuredCategories
+export default function HomePage({ hero, categories, featuredCategories, featuredProducts, error }: HomePageProps) { // Added featuredProducts
   return (
-    <Layout categories={categories}>
+    <Layout categories={categories || []}>
       <Head>
         <title>Home Page</title>
         <meta name="description" content="Welcome to our e-commerce store." />
@@ -89,12 +70,16 @@ export default function HomePage({ hero, categories, featuredCategories, error }
 
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
-      <HeroBanner {...hero} />
+      {hero && <HeroBanner {...hero} />}
 
       <main className={styles.main}>
         {/* Render FeaturedCategories if there are any */}
         {featuredCategories && featuredCategories.length > 0 && (
           <FeaturedCategories categories={featuredCategories} />
+        )}
+        {/* Render FeaturedProductsCarousel if there are products */}
+        {featuredProducts && featuredProducts.length > 0 && (
+          <FeaturedProductsCarousel products={featuredProducts} />
         )}
         {/* Other homepage content */}
       </main>

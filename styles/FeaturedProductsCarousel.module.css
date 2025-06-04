@@ -1,0 +1,36 @@
+/* styles/FeaturedProductsCarousel.module.css */
+.featuredProductsCarousel {
+  margin-bottom: 2rem;
+}
+
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+}
+
+.productCard { /* Renamed from .product-card */
+  min-width: 200px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  background: white;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.productCard h3 {
+  color: #333; /* Darker color for product name */
+  margin-top: 0.5rem; /* Add some space above name */
+  margin-bottom: 0.25rem; /* Add some space below name */
+  font-size: 1.1rem; /* Slightly larger font for name */
+}
+
+.productCard p {
+  color: #555; /* Darker color for price */
+  margin-bottom: 0; /* Remove default bottom margin for paragraph if any */
+  font-weight: bold; /* Make price bold */
+}

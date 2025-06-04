@@ -77,7 +77,7 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
         .mobile-menu-drawer {
           position: absolute;
           top: 100%; /* Position below the trigger */
-          right: 0; /* Align to the right of the container */
+          left: 0; /* Align to the left of the container */
           background-color: white;
           border: 1px solid #ccc;
           padding: 0.5rem;

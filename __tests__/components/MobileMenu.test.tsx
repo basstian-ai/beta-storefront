@@ -11,10 +11,27 @@ jest.mock('next/link', () => {
   };
 });
 
+// Mock next/router
+jest.mock('next/router', () => ({
+  useRouter() {
+    return ({
+      route: '/',
+      pathname: '',
+      query: '',
+      asPath: '',
+      push: jest.fn(), // Mock the push function
+    });
+  },
+}));
+
+const mockCategories = [
+  { id: '1', name: 'Electronics', slug: 'electronics' },
+  { id: '2', name: 'Clothing', slug: 'clothing' },
+];
 
 describe('MobileMenu', () => {
   it('renders and is initially closed', () => {
-    render(<MobileMenu />);
+    render(<MobileMenu categories={mockCategories} />);
     const openButton = screen.getByRole('button', { name: /open menu/i });
     expect(openButton).toBeInTheDocument();
     expect(openButton).toHaveAttribute('aria-expanded', 'false');
@@ -23,7 +40,7 @@ describe('MobileMenu', () => {
   });
 
   it('opens and closes the menu on button click', () => {
-    render(<MobileMenu />);
+    render(<MobileMenu categories={mockCategories} />);
     const button = screen.getByRole('button', { name: /open menu/i });
 
     // Open menu
@@ -41,7 +58,7 @@ describe('MobileMenu', () => {
   });
 
   it('shows navigation links when open', () => {
-    render(<MobileMenu />);
+    render(<MobileMenu categories={mockCategories} />);
     const button = screen.getByRole('button', { name: /open menu/i });
 
     // Open menu
@@ -50,16 +67,12 @@ describe('MobileMenu', () => {
     const drawer = screen.getByTestId('mobile-menu-drawer');
     expect(drawer).toBeVisible();
 
-    const homeLink = screen.getByRole('link', { name: /home/i });
-    expect(homeLink).toBeInTheDocument();
-    expect(homeLink).toHaveAttribute('href', '/');
-
-    const productsLink = screen.getByRole('link', { name: /products/i });
-    expect(productsLink).toBeInTheDocument();
-    expect(productsLink).toHaveAttribute('href', '/products');
-
-    const cartLink = screen.getByRole('link', { name: /cart/i });
-    expect(cartLink).toBeInTheDocument();
-    expect(cartLink).toHaveAttribute('href', '/cart');
+    // Check for items by their text content as they are divs, not <a> tags with href
+    expect(screen.getByText('Home')).toBeInTheDocument();
+    mockCategories.forEach(cat => {
+      expect(screen.getByText(cat.name)).toBeInTheDocument();
+    });
+    expect(screen.getByText('Products')).toBeInTheDocument();
+    expect(screen.getByText('Cart')).toBeInTheDocument();
   });
 });

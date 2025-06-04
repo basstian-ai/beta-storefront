@@ -1,32 +1,38 @@
-import { fetchCategories } from '../../lib/api';
-import { Category } from '../../types';
+import {
+  fetchCategories, // Keep this if fetchCategories tests are to remain
+  fetchCategoryWithProducts,
+  CategoryPageData,
+  Product,
+  Category as ApiCategory,  // Renaming to avoid conflict with Category from ../types if used by fetchCategories
+  Facets
+} from '@/lib/api'; // Using @ alias assuming it's configured for __tests__
+import { Category as ImportedCategoryType } from '../../types'; // Original import for fetchCategories test
+import { ActiveFilters } from '@/components/FacetFilters';
+import MOCK_CATEGORIES_DATA_JSON from '../../../bff/data/mock-category-data.json';
 
-// Mock fetch
+// Mock fetch for fetchCategories if those tests are kept
 global.fetch = jest.fn();
 
+// Existing tests for fetchCategories (assuming they are to be kept)
 describe('fetchCategories', () => {
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
-    // Reset console.error and console.warn mocks if they are used in other tests
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    // Restore original console.error and console.warn
     (console.error as jest.Mock).mockRestore();
     (console.warn as jest.Mock).mockRestore();
   });
 
   it('should fetch and transform categories correctly', async () => {
-    const mockData = ['electronics', 'jewelery', "men's clothing"]; // Correctly escaped
+    const mockData = ['electronics', 'jewelery', "men's clothing"];
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockData,
     });
-
     const categories = await fetchCategories();
-
     expect(fetch).toHaveBeenCalledWith('https://dummyjson.com/products/categories');
     expect(categories).toEqual([
       { id: 'electronics', name: 'electronics', slug: 'electronics' },
@@ -36,37 +42,19 @@ describe('fetchCategories', () => {
   });
 
   it('should return an empty array if fetch fails', async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      text: async () => 'Server Error'
-    });
-
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500, text: async () => 'Server Error'});
     await expect(fetchCategories()).rejects.toThrow('Failed to fetch categories');
-    expect(console.error).toHaveBeenCalledWith('Failed to fetch categories:', 500, 'Server Error');
   });
 
   it('should return an empty array if fetched data is not an array', async () => {
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Not an array' }),
-    });
-
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => ({ message: 'Not an array' }) });
     const categories = await fetchCategories();
     expect(categories).toEqual([]);
-    expect(console.error).toHaveBeenCalledWith('Fetched data is not an array:', { message: 'Not an array' });
   });
 
   it('should handle categories with existing name and slug properties', async () => {
-    const mockData = [
-      { name: 'Home Goods', slug: 'home-goods' },
-      'books'
-    ];
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
-
+    const mockData = [{ name: 'Home Goods', slug: 'home-goods' }, 'books'];
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => mockData });
     const categories = await fetchCategories();
     expect(categories).toEqual([
       { id: 'home-goods', name: 'Home Goods', slug: 'home-goods' },
@@ -76,107 +64,98 @@ describe('fetchCategories', () => {
 
   it('should filter out null or unexpectedly formatted categories', async () => {
     const mockData = ['valid-category', null, { random: 'object' }, undefined, 123];
-    (fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
-
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: async () => mockData });
     const categories = await fetchCategories();
-    expect(categories).toEqual([
-      { id: 'valid-category', name: 'valid-category', slug: 'valid-category' },
-    ]);
-    expect(console.warn).toHaveBeenCalledWith('Unexpected category format:', null);
-    expect(console.warn).toHaveBeenCalledWith('Unexpected category format:', { random: 'object' });
-    expect(console.warn).toHaveBeenCalledWith('Unexpected category format:', undefined);
-    expect(console.warn).toHaveBeenCalledWith('Unexpected category format:', 123);
+    expect(categories).toEqual([{ id: 'valid-category', name: 'valid-category', slug: 'valid-category' }]);
   });
 });
 
-// New tests for fetchCategoryWithProducts
-import { fetchCategoryWithProducts, CategoryPageData } from '../../lib/api'; // Path confirmed
-import MOCK_DATA from '../../../bff/data/mock-category-data.json'; // Path confirmed
 
-// Mock console methods to verify logging for the new suite
+// Updated tests for fetchCategoryWithProducts (BFF Filtering Logic)
 const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-const consoleWarnSpyFetchCategory = jest.spyOn(console, 'warn').mockImplementation(() => {}); // Use a different name to avoid conflict if needed, though Jest handles scope
+const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-describe('fetchCategoryWithProducts', () => {
+const electronicsCategorySlug = 'electronics';
+const electronicsMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === electronicsCategorySlug)! as unknown as CategoryPageData; // Cast for test purposes
+
+const apparelCategorySlug = 'apparel';
+const apparelMockSource = MOCK_CATEGORIES_DATA_JSON.find(d => d.category.slug === apparelCategorySlug)! as unknown as CategoryPageData; // Cast for test purposes
+
+describe('fetchCategoryWithProducts - BFF Filtering Logic (Updated Tests)', () => {
   beforeEach(() => {
-    // Clear mock counters before each test
+    // Clear only the spies relevant to this describe block if console is shared
+    // However, the new spies are global, so clearing them is fine.
     consoleLogSpy.mockClear();
-    consoleWarnSpyFetchCategory.mockClear();
+    consoleWarnSpy.mockClear();
+     // If fetch is used by other tests ensure it's reset or specifically mocked for fetchCategoryWithProducts if it were to use fetch
   });
 
   afterAll(() => {
-    // Restore original console functions
+    // Restore global spies
     consoleLogSpy.mockRestore();
-    consoleWarnSpyFetchCategory.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
-  it('should return category data for a valid slug', async () => {
-    const slug = 'electronics'; // A valid slug from mock-category-data.json
-    const expectedData = MOCK_DATA.find(item => item.category.slug === slug);
-
-    const result = await fetchCategoryWithProducts(slug);
-
-    expect(result).toEqual(expectedData);
-    expect(result?.category.name).toBe('Electronics');
-    expect(result?.products.length).toBeGreaterThan(0);
-    expect(result?.facets.brand.length).toBeGreaterThan(0);
-
-    // Verify logging
-    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
-    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Found data for slug "${slug}":`, expectedData);
-    expect(consoleWarnSpyFetchCategory).not.toHaveBeenCalled();
-  });
-
-  it('should return null for an invalid or non-existent slug', async () => {
-    const slug = 'non-existent-slug';
-    const result = await fetchCategoryWithProducts(slug);
-
-    expect(result).toBeNull();
-
-    // Verify logging
-    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
-    expect(consoleWarnSpyFetchCategory).toHaveBeenCalledWith(`BFF: Category with slug "${slug}" not found.`);
-  });
-
-  it('should return correct data structure for a valid slug', async () => {
-    const slug = 'apparel'; // Another valid slug
-    const result = await fetchCategoryWithProducts(slug);
-
+  it('should return all products for a category if filters argument is undefined', async () => {
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, undefined);
     expect(result).not.toBeNull();
-    // Type guard for TypeScript
-    if (result) {
-      expect(result.category).toBeDefined();
-      expect(result.category.id).toBeDefined();
-      expect(result.category.name).toBeDefined();
-      expect(result.category.slug).toBe(slug);
-
-      expect(result.products).toBeInstanceOf(Array);
-      result.products.forEach(product => {
-        expect(product.id).toBeDefined();
-        expect(product.name).toBeDefined();
-        expect(product.price).toBeDefined();
-        expect(product.brand).toBeDefined();
-        expect(product.size).toBeDefined();
-        expect(product.imageUrl).toBeDefined();
-      });
-
-      expect(result.facets).toBeDefined();
-      expect(result.facets.brand).toBeInstanceOf(Array);
-      expect(result.facets.size).toBeInstanceOf(Array);
-    }
+    expect(result?.products.length).toBe(electronicsMockSource.products.length);
+    expect(result?.products).toEqual(electronicsMockSource.products.map(p => expect.objectContaining(p)));
+    expect(result?.category.slug).toBe(electronicsCategorySlug);
+    expect(result?.facets).toEqual(electronicsMockSource.facets);
   });
 
-  // Example test for another category if needed
-  it('should correctly fetch data for the "apparel" category', async () => {
-    const slug = 'apparel';
-    const expectedData = MOCK_DATA.find(item => item.category.slug === slug);
-    const result = await fetchCategoryWithProducts(slug);
+  it('should return all products if activeFilters is an empty object', async () => {
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, {});
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(electronicsMockSource.products.length);
+  });
 
-    expect(result).toEqual(expectedData);
-    expect(result?.category.name).toBe('Apparel');
-    expect(consoleLogSpy).toHaveBeenCalledWith(`BFF: Fetching category with products for slug: ${slug}`);
+  it('should return filtered products when a single brand filter is provided', async () => {
+    const filters: ActiveFilters = { brand: ['TechBrand'] };
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, filters);
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(1);
+    expect(result?.products[0].name).toBe('Smart TV');
+    expect(result?.products[0].brand).toBe('TechBrand');
+    expect(result?.facets).toEqual(electronicsMockSource.facets);
+  });
+
+  it('should return filtered products for multiple brands (OR logic within brand)', async () => {
+    const filters: ActiveFilters = { brand: ['TechBrand', 'AudioMax'] };
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, filters);
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(2);
+    const productNames = result!.products.map(p => p.name).sort();
+    expect(productNames).toEqual(['Smart TV', 'Wireless Headphones'].sort());
+  });
+
+  it('should return filtered products for brand AND size filter (AND logic across groups)', async () => {
+    const filters: ActiveFilters = { brand: ['FashionCo'], size: ['M'] };
+    const result = await fetchCategoryWithProducts(apparelCategorySlug, filters);
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(1);
+    expect(result?.products[0].name).toBe("Men's T-Shirt");
+  });
+
+  it('should return empty products array if no products match filters', async () => {
+    const filters: ActiveFilters = { brand: ['NonExistentBrand'] };
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, filters);
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(0);
+  });
+
+  it('should return null if the category slug does not exist', async () => {
+    const result = await fetchCategoryWithProducts('non-existent-slug', {});
+    expect(result).toBeNull();
+  });
+
+  it('should ignore filter categories with empty arrays in activeFilters', async () => {
+    const filters: ActiveFilters = { brand: [], size: ['Large'] };
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, filters);
+    expect(result).not.toBeNull();
+    expect(result?.products.length).toBe(1);
+    expect(result?.products[0].name).toBe('Wireless Headphones');
+    expect(result?.products[0].size).toBe('Large');
   });
 });

@@ -9,81 +9,175 @@ import { ParsedUrlQuery } from 'querystring';
 import {
   fetchCategoryWithProducts,
   CategoryPageData,
-  Product,
-  Category,
   Facets
 } from '@/lib/api';
-import { filterProducts } from '@/lib/filterUtils'; // Import the new utility
-import { useState, useEffect, useMemo } from 'react'; // Added useMemo, useEffect might not be needed now
+// Removed filterProducts import
+import { useState, useEffect } from 'react';
+import styles from '@/styles/CategoryPage.module.css';
 
-// Props type for the page (ensure it aligns with getStaticProps)
-// This interface should match the props returned by getStaticProps
-interface CategoryPageProps {
-  categoryData: CategoryPageData | null;
-  slug: string;
-}
-
-// Define the expected params structure for getStaticProps
 interface CategoryPageParams extends ParsedUrlQuery {
   slug: string;
 }
 
-const CategoryPage = ({ categoryData, slug }: CategoryPageProps) => {
+interface CategoryPageProps {
+  initialCategoryData: CategoryPageData | null;
+  initialSlug: string;
+}
+
+const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) => {
   const router = useRouter();
+
+  const [displayedCategoryData, setDisplayedCategoryData] = useState<CategoryPageData | null>(initialCategoryData);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-  // The full list of products for the category, fetched once.
-  const allProducts = categoryData?.products || [];
-  // Provide default empty facets if not present in categoryData
-  const facetsData = categoryData?.facets || { brand: [], size: [] } as Facets;
+  // Effect for URL to State synchronization
+  useEffect(() => {
+    if (router.isReady) { // Ensure router.query is populated
+      const currentQuery = router.query;
+      const newActiveFilters: ActiveFilters = {};
+      let hasFiltersFromQuery = false;
+
+      for (const key in currentQuery) {
+        if (key !== 'slug') { // Exclude non-filter params like 'slug'
+          const value = currentQuery[key];
+          if (typeof value === 'string') {
+            // Assuming keys in query are valid Facet keys
+            newActiveFilters[key as keyof Facets] = value.split(',');
+            hasFiltersFromQuery = true;
+          }
+          // Add handling for string[] if not using comma-separated, but we are.
+        }
+      }
+
+      // Only set if there are actual filters from query and they differ from current state
+      // This prevents an extra render cycle if filters are already empty or match
+      if (hasFiltersFromQuery || Object.keys(activeFilters).length > 0) {
+         // Simple comparison for now, can be deep comparison if needed
+        if (JSON.stringify(activeFilters) !== JSON.stringify(newActiveFilters)) {
+            setActiveFilters(newActiveFilters);
+        }
+      }
+    }
+  }, [router.isReady, router.query, activeFilters]); // Added activeFilters to dep array for the stringify comparison
 
 
-  // Memoize the filtered products list to avoid re-filtering on every render
-  // unless allProducts or activeFilters change.
-  const filteredProducts = useMemo(() => {
-    return filterProducts(allProducts, activeFilters);
-  }, [allProducts, activeFilters]);
+  // Effect for State to URL synchronization
+  useEffect(() => {
+    if (!router.isReady) return;
+    const queryParams = new URLSearchParams();
+    let hasFilters = false;
+    for (const key in activeFilters) {
+      const filterKey = key as keyof ActiveFilters;
+      const values = activeFilters[filterKey];
+      if (values && values.length > 0) {
+        queryParams.set(filterKey, values.join(','));
+        hasFilters = true;
+      }
+    }
+    const currentSlugFromRouter = Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug;
+    const currentSlug = currentSlugFromRouter || initialSlug;
 
-  const handleFilterChange = (newFilters: ActiveFilters) => {
+    const newPath = `/category/${currentSlug}${hasFilters ? `?${queryParams.toString()}` : ''}`;
+    if (router.asPath !== newPath) {
+      router.replace(newPath, undefined, { shallow: true });
+    }
+  }, [activeFilters, router.isReady, router.asPath, router.query.slug, initialSlug]);
+
+
+  // Effect for fetching data when activeFilters or slug changes
+  useEffect(() => {
+    const currentSlugFromRouter = Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug;
+    const slugToFetch = currentSlugFromRouter || initialSlug;
+
+    if (!slugToFetch || !router.isReady) { // Ensure router is ready before fetching based on its query params
+        // If not ready, and we have initial data, we can rely on that, or wait.
+        // If initialSlug is present, it might be an initial server render without client router being ready.
+        // For client-side fetches triggered by filter changes, router.isReady should be true.
+        if(!initialSlug && !slugToFetch) return; // Avoid fetching if no slug is determined
+    }
+
+    // Only fetch if activeFilters is populated or if it's the initial load with initialSlug
+    // This condition is tricky: we want to fetch on initial load (handled by getStaticProps)
+    // and then on subsequent filter changes.
+    // The main trigger should be activeFilters changing *after* initial URL parse.
+    // Or slug changing.
+
+    // Let's simplify: if slugToFetch is valid, proceed.
+    // The initial data is already in displayedCategoryData.
+    // This effect should primarily run for CHANGES in activeFilters or slug derived from router.
+
+    // Avoid fetching if it's the very first render and activeFilters is still empty
+    // and we are using initialCategoryData. Let URL-to-State populate activeFilters first.
+    if (Object.keys(activeFilters).length === 0 && displayedCategoryData === initialCategoryData && !router.query.brand && !router.query.size) {
+        // This condition attempts to prevent an immediate re-fetch if initial data is already set
+        // and no filters are in the URL initially.
+        // It might need refinement based on exact timing and router.isReady behavior.
+    } else {
+        setIsLoading(true);
+        fetchCategoryWithProducts(slugToFetch, activeFilters)
+          .then(data => {
+            setDisplayedCategoryData(data);
+          })
+          .catch(error => {
+            console.error("Error fetching category data client-side:", error);
+            setDisplayedCategoryData(null);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+    }
+
+  }, [activeFilters, initialSlug, router.query.slug, router.isReady]); // router.isReady added
+
+
+  const handleFilterChangeCallback = (newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
   };
 
-  if (router.isFallback) {
-    return <div>Loading...</div>;
+  const toggleMobileFilters = () => setIsMobileFiltersOpen(!isMobileFiltersOpen);
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isMobileFiltersOpen) setIsMobileFiltersOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobileFiltersOpen]);
+
+  if (router.isFallback && !displayedCategoryData) {
+    return <div>Loading page structure...</div>;
   }
 
-  if (!categoryData || !categoryData.category) {
-    // This case should ideally be handled by getStaticProps returning notFound: true
-    // and Next.js rendering the 404 page.
-    // If it reaches here, it's an unexpected state or getStaticProps needs adjustment.
+  if (!displayedCategoryData || !displayedCategoryData.category) {
+    if (isLoading) return <div>Loading initial category data...</div>; // Or a more specific loading state
     return (
       <Layout categories={[]}>
-        <div>
-          <h1>Category not found</h1>
-          <p>Could not find category data for slug: {slug}</p>
-        </div>
+        <div className={styles.pageContainer}><h1>Category not found</h1><p>Could not find category data for slug: {initialSlug}</p></div>
       </Layout>
     );
   }
 
-  const { category } = categoryData;
+  const { category, products, facets } = displayedCategoryData;
 
   return (
     <Layout categories={[]}>
-      <div>
+      <div className={styles.pageContainer}>
         <h1>Category: {category.name}</h1>
-        {/* Optional: <p>{category.description}</p> if description is part of Category type */}
-
-        <div style={{ display: 'flex', gap: '20px' }}> {/* Basic layout for filters and products */}
-          <aside style={{ width: '250px' }}> {/* Placeholder style for filter sidebar */}
+        {isLoading && <p /*className={styles.loadingIndicator}*/>Loading products...</p>}
+        <button className={styles.mobileFilterButton} onClick={toggleMobileFilters}>
+          {isMobileFiltersOpen ? 'Hide' : 'Show'} Filters
+        </button>
+        <div className={styles.mainContentArea}>
+          <aside className={`${styles.filterSidebar} ${!isMobileFiltersOpen ? styles.mobileHidden : ''}`}>
             <FacetFilters
-              facets={facetsData}
-              onFilterChange={handleFilterChange}
+              facets={facets}
+              onFilterChange={handleFilterChangeCallback}
+              initialActiveFilters={activeFilters}
             />
           </aside>
-          <main style={{ flex: 1 }}>
-            {/* Pass the filtered list of products to ProductList */}
-            <ProductList products={filteredProducts} />
+          <main className={styles.productListArea}>
+            {!isLoading && <ProductList products={products} />}
           </main>
         </div>
       </div>
@@ -91,42 +185,21 @@ const CategoryPage = ({ categoryData, slug }: CategoryPageProps) => {
   );
 };
 
-export async function getStaticPaths() {
-  // For mock data, let's assume lib/api.ts or a data source can provide slugs
-  // This part might need adjustment if MOCK_CATEGORIES_DATA is not directly accessible here
-  // For now, keeping it simple, assuming a way to get slugs or dynamic fallback.
-  // const paths = (await someFunctionToGetAllCategorySlugs()).map(slug => ({ params: { slug } }));
-  // For this example, we'll use the slugs from the previous mock data in [slug].tsx itself.
-  // This should ideally come from a BFF call or a shared data source.
-  // Let's simulate with a few known slugs if direct data access is complex here.
-   const knownSlugs = ['electronics', 'apparel']; // From our mock data
-   const paths = knownSlugs.map(slug => ({ params: { slug } }));
-  return { paths, fallback: 'blocking' }; // fallback: 'blocking' or true
-}
-
 export async function getStaticProps(
   context: GetStaticPropsContext<CategoryPageParams>
 ): Promise<GetStaticPropsResult<CategoryPageProps>> {
-  const slug = context.params?.slug; // slug is now typed as string | undefined
+  const slug = context.params?.slug;
+  if (!slug) return { notFound: true };
 
-  if (!slug) {
-    // This case should ideally not be hit if paths are defined correctly and fallback is not true,
-    // but good for robustness.
-    return { notFound: true };
-  }
-
+  // Fetch initial data without filters for getStaticProps
   const categoryData = await fetchCategoryWithProducts(slug);
 
-  if (!categoryData) {
-    return {
-      notFound: true,
-    };
-  }
+  if (!categoryData) return { notFound: true };
 
   return {
     props: {
-      categoryData,
-      slug, // slug is confirmed to be a string here
+      initialCategoryData: categoryData, // Changed from categoryData
+      initialSlug: slug, // Changed from slug
     },
     revalidate: 60, // Optional: revalidate every 60 seconds
   };

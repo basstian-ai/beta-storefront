@@ -23,6 +23,8 @@ export interface Facets {
   brand: string[];
   size: string[];
   // Add other facet types as needed, e.g., color, priceRange
+  // Adding index signature for robust key access, though ActiveFilters is typed from Facets
+  [key: string]: string[];
 }
 
 // Placeholder for the main function we'll build in the next steps
@@ -40,24 +42,80 @@ export interface CategoryPageData {
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
 import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
-export const fetchCategoryWithProducts = async (slug: string): Promise<CategoryPageData | null> => {
-  console.log(`BFF: Fetching category with products for slug: ${slug}`);
+const applyFiltersToProducts = (
+  products: Product[],
+  activeFilters: ActiveFilters
+): Product[] => {
+  if (Object.keys(activeFilters).length === 0) {
+    return products;
+  }
+  return products.filter(product => {
+    for (const key in activeFilters) {
+      const filterKey = key as keyof Facets; // Assumes keys in ActiveFilters are valid Facet keys
+      const selectedValues = activeFilters[filterKey];
 
-  // Ensure MOCK_CATEGORIES_DATA_JSON is treated as CategoryPageData[]
-  // TypeScript might infer it as a generic JSON type, so casting or type assertion might be needed
-  // if direct assignment doesn't work due to type mismatch.
-  // However, with resolveJsonModule, it often correctly infers the structure.
-  const allCategoryData: CategoryPageData[] = MOCK_CATEGORIES_DATA_JSON;
-  const data = allCategoryData.find(item => item.category.slug === slug);
+      if (!selectedValues || selectedValues.length === 0) {
+        continue;
+      }
 
-  if (!data) {
+      // Ensure product actually has the property to avoid runtime errors
+      if (!product.hasOwnProperty(filterKey)) {
+        return false;
+      }
+
+      const productValue = product[filterKey as keyof Product]; // Accessing product property
+
+      // Current Product type only has string values for brand & size.
+      // If productValue could be array (e.g. tags), this logic would need extension.
+      if (typeof productValue !== 'string') {
+        // This case should ideally not be hit if Product types and Facet keys are aligned
+        // (e.g. product.brand is always string, product.size is always string)
+        return false;
+      }
+
+      if (!selectedValues.includes(productValue)) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
+
+export const fetchCategoryWithProducts = async (
+  slug: string,
+  activeFilters?: ActiveFilters
+): Promise<CategoryPageData | null> => {
+  console.log(`BFF: Fetching category with products for slug: ${slug}. Filters:`, activeFilters || {});
+
+  const allCategoryDataSources: CategoryPageData[] = MOCK_CATEGORIES_DATA_JSON;
+  const categoryPageItem = allCategoryDataSources.find(item => item.category.slug === slug);
+
+  if (!categoryPageItem) {
     console.warn(`BFF: Category with slug "${slug}" not found.`);
-    return null; // Or throw an error, to be decided in error handling step
+    return null;
   }
 
-  console.log(`BFF: Found data for slug "${slug}":`, data); // SYS-7: Logging outcome
-  return data;
+  // Clone data to prevent unintentional modification of the mock data source
+  const clonedCategory = { ...categoryPageItem.category };
+  let productsToReturn = categoryPageItem.products.map(p => ({ ...p }));
+  // Ensure facets are also cloned, especially if they could be modified (though not in this func)
+  const clonedFacets = JSON.parse(JSON.stringify(categoryPageItem.facets));
+
+  if (activeFilters && Object.keys(activeFilters).length > 0) {
+    console.log(`BFF: Applying filters: `, activeFilters);
+    productsToReturn = applyFiltersToProducts(productsToReturn, activeFilters);
+    console.log(`BFF: Found ${productsToReturn.length} products after filtering for slug "${slug}".`);
+  } else {
+    console.log(`BFF: No filters applied, returning all ${productsToReturn.length} products for slug "${slug}".`);
+  }
+
+  return {
+    category: clonedCategory,
+    products: productsToReturn,
+    facets: clonedFacets, // Return cloned facets
+  };
 };
 
 export async function fetchCategories(): Promise<ImportedCategory[]> {

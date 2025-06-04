@@ -1,6 +1,124 @@
-import type { Category, HeroContent, Product } from '../types'; // Adjust path if necessary
+import type { Category as ImportedCategory, HeroContent, Product as ImportedProduct } from '../types'; // Adjust path if necessary
 
-export async function fetchCategories(): Promise<Category[]> {
+// Define Product data structure
+export interface Product {
+  id: string;
+  name: string;
+  price: number; // Changed to number for easier manipulation
+  brand: string;
+  size: string; // Assuming size is a string, e.g., "S", "M", "L", "XL"
+  imageUrl: string;
+}
+
+// Define Category data structure
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  // Potentially add description or other fields later
+}
+
+// Define Facets data structure
+export interface Facets {
+  brand: string[];
+  size: string[];
+  // Add other facet types as needed, e.g., color, priceRange
+  // Adding index signature for robust key access, though ActiveFilters is typed from Facets
+  [key: string]: string[];
+}
+
+// Placeholder for the main function we'll build in the next steps
+// export const fetchCategoryWithProducts = async (slug: string) => {
+//   // ... implementation later
+// };
+
+// Define the return type for fetchCategoryWithProducts
+export interface CategoryPageData {
+  category: Category;
+  products: Product[];
+  facets: Facets;
+}
+
+// Import the mock data from the JSON file
+// Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
+import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
+
+const applyFiltersToProducts = (
+  products: Product[],
+  activeFilters: ActiveFilters
+): Product[] => {
+  if (Object.keys(activeFilters).length === 0) {
+    return products;
+  }
+  return products.filter(product => {
+    for (const key in activeFilters) {
+      const filterKey = key as keyof Facets; // Assumes keys in ActiveFilters are valid Facet keys
+      const selectedValues = activeFilters[filterKey];
+
+      if (!selectedValues || selectedValues.length === 0) {
+        continue;
+      }
+
+      // Ensure product actually has the property to avoid runtime errors
+      if (!product.hasOwnProperty(filterKey)) {
+        return false;
+      }
+
+      const productValue = product[filterKey as keyof Product]; // Accessing product property
+
+      // Current Product type only has string values for brand & size.
+      // If productValue could be array (e.g. tags), this logic would need extension.
+      if (typeof productValue !== 'string') {
+        // This case should ideally not be hit if Product types and Facet keys are aligned
+        // (e.g. product.brand is always string, product.size is always string)
+        return false;
+      }
+
+      if (!selectedValues.includes(productValue)) {
+        return false;
+      }
+    }
+    return true;
+  });
+};
+
+export const fetchCategoryWithProducts = async (
+  slug: string,
+  activeFilters?: ActiveFilters
+): Promise<CategoryPageData | null> => {
+  console.log(`BFF: Fetching category with products for slug: ${slug}. Filters:`, activeFilters || {});
+
+  const allCategoryDataSources: CategoryPageData[] = MOCK_CATEGORIES_DATA_JSON;
+  const categoryPageItem = allCategoryDataSources.find(item => item.category.slug === slug);
+
+  if (!categoryPageItem) {
+    console.warn(`BFF: Category with slug "${slug}" not found.`);
+    return null;
+  }
+
+  // Clone data to prevent unintentional modification of the mock data source
+  const clonedCategory = { ...categoryPageItem.category };
+  let productsToReturn = categoryPageItem.products.map(p => ({ ...p }));
+  // Ensure facets are also cloned, especially if they could be modified (though not in this func)
+  const clonedFacets = JSON.parse(JSON.stringify(categoryPageItem.facets));
+
+  if (activeFilters && Object.keys(activeFilters).length > 0) {
+    console.log(`BFF: Applying filters: `, activeFilters);
+    productsToReturn = applyFiltersToProducts(productsToReturn, activeFilters);
+    console.log(`BFF: Found ${productsToReturn.length} products after filtering for slug "${slug}".`);
+  } else {
+    console.log(`BFF: No filters applied, returning all ${productsToReturn.length} products for slug "${slug}".`);
+  }
+
+  return {
+    category: clonedCategory,
+    products: productsToReturn,
+    facets: clonedFacets, // Return cloned facets
+  };
+};
+
+export async function fetchCategories(): Promise<ImportedCategory[]> {
   // TODO: Replace with actual BFF endpoint later
   const res = await fetch('https://dummyjson.com/products/categories');
   if (!res.ok) {
@@ -39,7 +157,7 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
-export async function fetchFeaturedProducts(): Promise<Product[]> {
+export async function fetchFeaturedProducts(): Promise<ImportedProduct[]> {
   const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
   const res = await fetch(`${CMS_BASE_URL}/products?limit=6`); // DummyCMS format
   if (!res.ok) throw new Error('Failed to fetch featured products');
@@ -90,7 +208,7 @@ export async function fetchHeroBanner(): Promise<HeroContent> {
 // To ensure the file can be read and check its current content (if any):
 // console.log("Current content of lib/api.ts will be preserved and fetchHeroBanner added/updated.");
 
-export async function fetchFeaturedCategories(): Promise<Category[]> {
+export async function fetchFeaturedCategories(): Promise<ImportedCategory[]> {
   const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
 
   // The issue mentions /categories or /featured-categories.
@@ -119,7 +237,7 @@ export async function fetchFeaturedCategories(): Promise<Category[]> {
   }
 
   // Extract unique categories from the products
-  const categoriesMap = new Map<string, Category>();
+  const categoriesMap = new Map<string, ImportedCategory>();
   data.products.forEach((product: any) => {
     if (product.category) {
       const slug = product.category.toLowerCase().replace(/\s+/g, '-');
@@ -170,7 +288,7 @@ export async function fetchFeaturedCategories(): Promise<Category[]> {
     });
   } else if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.length > 0 && typeof cmsCategoriesData[0] === 'object' && 'name' in cmsCategoriesData[0]) {
     // This branch assumes the /categories endpoint returns objects like [{id, name, slug, image}]
-    return cmsCategoriesData.map((cat: any) => ({
+    return cmsCategoriesData.map((cat: any): ImportedCategory => ({ // Explicitly return ImportedCategory
       id: cat.id || cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'), // Prioritize given ID, then slug, then generate from name
       name: cat.name,
       slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),

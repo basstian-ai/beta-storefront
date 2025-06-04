@@ -1,0 +1,26 @@
+[
+  {
+    "category": { "id": "cat1", "name": "Electronics", "slug": "electronics" },
+    "products": [
+      { "id": "prod1", "name": "Smart TV", "price": 499.99, "brand": "TechBrand", "size": "55-inch", "imageUrl": "/images/tv.jpg" },
+      { "id": "prod2", "name": "Wireless Headphones", "price": 199.00, "brand": "AudioMax", "size": "Large", "imageUrl": "/images/headphones.jpg" },
+      { "id": "prod3", "name": "Smartphone X1", "price": 799.50, "brand": "MobileCorp", "size": "6-inch", "imageUrl": "/images/smartphone.jpg" }
+    ],
+    "facets": {
+      "brand": ["TechBrand", "AudioMax", "MobileCorp"],
+      "size": ["55-inch", "Large", "6-inch"]
+    }
+  },
+  {
+    "category": { "id": "cat2", "name": "Apparel", "slug": "apparel" },
+    "products": [
+      { "id": "prod4", "name": "Men's T-Shirt", "price": 25.00, "brand": "FashionCo", "size": "M", "imageUrl": "/images/tshirt.jpg" },
+      { "id": "prod5", "name": "Women's Jeans", "price": 75.00, "brand": "StyleStitch", "size": "S", "imageUrl": "/images/jeans.jpg" },
+      { "id": "prod6", "name": "Running Shoes", "price": 120.00, "brand": "FashionCo", "size": "10", "imageUrl": "/images/shoes.jpg" }
+    ],
+    "facets": {
+      "brand": ["FashionCo", "StyleStitch"],
+      "size": ["S", "M", "10"]
+    }
+  }
+]

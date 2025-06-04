@@ -1,0 +1,58 @@
+/* components/FacetFilters.module.css */
+.facetFiltersContainer {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.facetFiltersContainer h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.facetGroup {
+  margin-bottom: 1.5rem;
+}
+
+.facetGroup h5 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600; /* Semi-bold for facet titles like Brand, Size */
+  color: #444;
+}
+
+.filterList {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.filterItem {
+  margin-bottom: 0.5rem;
+}
+
+.filterItem label {
+  display: flex; /* Align checkbox and text nicely */
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.filterItem input[type="checkbox"] {
+  margin-right: 0.5rem;
+  cursor: pointer;
+  /* Optional: custom checkbox styling can be added here or using a library */
+  width: 16px;
+  height: 16px;
+}
+
+.filterItem label:hover {
+  color: #0070f3; /* Highlight on hover */
+}

@@ -1,0 +1,90 @@
+/* components/ProductList.module.css */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Responsive grid */
+  gap: 1.5rem; /* Spacing between cards */
+  padding: 1rem 0;
+}
+
+.productCard {
+  border: 1px solid #e0e0e0; /* Slightly lighter border */
+  padding: 1rem;
+  background: #ffffff;
+  text-align: center;
+  border-radius: 8px; /* Slightly more rounded corners */
+  transition: box-shadow 0.3s ease-in-out;
+  text-decoration: none; /* Remove underline from link */
+  color: inherit; /* Inherit text color from parent */
+}
+
+.productCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Add hover effect */
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 200px; /* Fixed height for image container */
+  position: relative; /* For Next/Image layout='fill' or to constrain fixed size images */
+  margin-bottom: 0.75rem;
+  overflow: hidden; /* Ensure image doesn't break out of rounded corners if not using Next/Image's own radius */
+  border-radius: 4px; /* Optional: rounded corners for the image container itself */
+}
+
+/* Ensure Next/Image component itself fills the wrapper if using layout='fill' or is responsive */
+.imageWrapper img {
+  object-fit: cover; /* This should be on the Image component's style or as a prop */
+  width: 100%;
+  height: 100%;
+}
+
+.productCard h3 {
+  color: #333;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem; /* Increased bottom margin slightly */
+  font-size: 1.15rem; /* Slightly larger */
+  font-weight: 600; /* Semi-bold */
+}
+
+.productCard .price { /* Targeting specific class for price */
+  color: #0070f3; /* Example: blue price, or use theme color */
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.productCard .brand,
+.productCard .size {
+  color: #555;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .productCard h3 {
+    font-size: 1.05rem;
+  }
+  .productCard .price {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Even smaller cards for mobile */
+  }
+   .productCard {
+    padding: 0.75rem;
+  }
+}
+
+.emptyProductList {
+  text-align: center;
+  padding: 2rem;
+  color: #777; /* Muted text color */
+  font-size: 1.1rem;
+}

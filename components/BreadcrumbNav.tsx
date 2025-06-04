@@ -1,23 +1,18 @@
 // components/BreadcrumbNav.tsx
-import { Breadcrumbs } from '@digdir/designsystemet-react';
-import Link from 'next/link';
-import { generateBreadcrumbs } from '../utils/generateBreadcrumbs';
+// import { Breadcrumbs } from '@digdir/designsystemet-react'; // Removed
+import Link from 'next/link'; // Keep for now, might be used in a future custom breadcrumb
+import { generateBreadcrumbs } from '../utils/generateBreadcrumbs'; // Keep for now
 
 const BreadcrumbNav = () => {
-  const breadcrumbs = generateBreadcrumbs();
+  const breadcrumbs = generateBreadcrumbs(); // This can stay, data is generated
 
+  // Original Breadcrumbs rendering commented out / replaced
   return (
-    <Breadcrumbs>
-      {breadcrumbs.map((crumb, index) => (
-        <Breadcrumbs.Item key={crumb.href}>
-          {index === breadcrumbs.length - 1 ? (
-            crumb.label // Last item is not a link
-          ) : (
-            <Link href={crumb.href}>{crumb.label}</Link>
-          )}
-        </Breadcrumbs.Item>
-      ))}
-    </Breadcrumbs>
+    <div data-testid="breadcrumb-placeholder">
+      {/* Breadcrumbs temporarily unavailable. Data: {JSON.stringify(breadcrumbs)} */}
+      {/* Alternatively, render a simple list for debugging if needed, but placeholder is safer for now */}
+      Breadcrumbs temporarily unavailable
+    </div>
   );
 };
 

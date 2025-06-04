@@ -1,11 +1,5 @@
 // components/FeaturedProductsCarousel.tsx
-type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  price: number;
-  imageUrl: string;
-};
+import type { Product } from '@/types'; // Import the shared Product type
 
 type Props = {
   products: Product[];

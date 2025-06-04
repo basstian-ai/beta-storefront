@@ -1,4 +1,4 @@
-import type { Category, HeroContent } from '../types'; // Adjust path if necessary
+import type { Category, HeroContent, Product } from '../types'; // Adjust path if necessary
 
 export async function fetchCategories(): Promise<Category[]> {
   // TODO: Replace with actual BFF endpoint later

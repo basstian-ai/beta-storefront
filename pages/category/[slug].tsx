@@ -50,7 +50,7 @@ const CategoryPage = ({ categoryData, slug }: CategoryPageProps) => {
     // and Next.js rendering the 404 page.
     // If it reaches here, it's an unexpected state or getStaticProps needs adjustment.
     return (
-      <Layout>
+      <Layout categories={[]}>
         <div>
           <h1>Category not found</h1>
           <p>Could not find category data for slug: {slug}</p>
@@ -62,7 +62,7 @@ const CategoryPage = ({ categoryData, slug }: CategoryPageProps) => {
   const { category } = categoryData;
 
   return (
-    <Layout>
+    <Layout categories={[]}>
       <div>
         <h1>Category: {category.name}</h1>
         {/* Optional: <p>{category.description}</p> if description is part of Category type */}

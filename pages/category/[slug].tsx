@@ -69,10 +69,10 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
     const queryParams = new URLSearchParams();
     let hasFilters = false;
     for (const key in activeFilters) {
-      const filterKey = key as keyof ActiveFilters;
+      const filterKey = key as keyof ActiveFilters; // 'filterKey' is for typed access to activeFilters
       const values = activeFilters[filterKey];
       if (values && values.length > 0) {
-        queryParams.set(filterKey, values.join(','));
+        queryParams.set(key, values.join(',')); // Use 'key' (string) here
         hasFilters = true;
       }
     }

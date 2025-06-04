@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import HeroBanner from '@/components/HeroBanner'; // Adjust path as necessary
+import HeroBanner from '@/components/HeroBanner';
+import type { HeroContent } from '@/types'; // Adjust path
 import '@testing-library/jest-dom';
 
 // Mock the CSS module to prevent errors during testing
@@ -13,7 +14,7 @@ jest.mock('@/styles/HeroBanner.module.css', () => ({
 }));
 
 describe('HeroBanner Component', () => {
-  const defaultProps = {
+  const defaultProps: HeroContent = { // Use HeroContent type
     title: 'Test Title',
     description: 'Test Description',
     ctaText: 'Click Me',
@@ -37,9 +38,8 @@ describe('HeroBanner Component', () => {
     expect(ctaButton).toHaveAttribute('href', defaultProps.ctaLink);
 
     // Check for image
-    const image = screen.getByAltText(defaultProps.imageAlt);
-    expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', defaultProps.imageUrl);
+    expect(screen.getByAltText(defaultProps.imageAlt as string)).toBeInTheDocument(); // Added 'as string' for type safety
+    expect(screen.getByAltText(defaultProps.imageAlt as string)).toHaveAttribute('src', defaultProps.imageUrl);
   });
 
   it('applies correct CSS module classes (mocked)', () => {
@@ -56,7 +56,15 @@ describe('HeroBanner Component', () => {
   });
 
   it('uses default alt text if imageAlt is not provided', () => {
-    const { imageAlt, ...propsWithoutAlt } = defaultProps;
+    // Create props without imageAlt by omitting it
+    const propsWithoutAlt: HeroContent = {
+      title: 'Test Title No Alt',
+      description: 'Test Description No Alt',
+      ctaText: 'Click Me No Alt',
+      ctaLink: '/test-link-no-alt',
+      imageUrl: 'test-image-no-alt.jpg',
+      // imageAlt is omitted
+    };
     render(<HeroBanner {...propsWithoutAlt} />);
 
     // The component provides a default "Hero image" alt text
@@ -64,7 +72,7 @@ describe('HeroBanner Component', () => {
   });
 
   it('renders different content when props change', () => {
-    const newProps = {
+    const newProps: HeroContent = { // Use HeroContent type
       title: 'Another Title',
       description: 'Another Description',
       ctaText: 'Go Somewhere Else',
@@ -79,7 +87,7 @@ describe('HeroBanner Component', () => {
     const ctaButton = screen.getByRole('link', { name: newProps.ctaText });
     expect(ctaButton).toBeInTheDocument();
     expect(ctaButton).toHaveAttribute('href', newProps.ctaLink);
-    const image = screen.getByAltText(newProps.imageAlt);
+    const image = screen.getByAltText(newProps.imageAlt as string); // Added 'as string'
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', newProps.imageUrl);
   });

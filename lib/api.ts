@@ -1,4 +1,4 @@
-import { Category } from '../types';
+import type { Category, HeroContent } from '../types'; // Adjust path if necessary
 
 export async function fetchCategories(): Promise<Category[]> {
   // TODO: Replace with actual BFF endpoint later
@@ -42,19 +42,8 @@ export async function fetchCategories(): Promise<Category[]> {
 // Placeholder for CMS_BASE_URL, should be set in environment variables
 const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com'; // Using NEXT_PUBLIC_ prefix for client-side access if needed, or just process.env for server-side. For getStaticProps, process.env is fine.
 
-export async function fetchHeroBanner(): Promise<any> { // Define a proper type for the return value later if possible
+export async function fetchHeroBanner(): Promise<HeroContent> {
   // Simulate fetching hero banner data from a CMS
-  // In a real scenario, this would fetch from `${CMS_BASE_URL}/hero` or a similar endpoint.
-  // For now, let's use a dummy endpoint from dummyjson.com that provides some product data
-  // and we'll adapt it to fit the HeroBannerProps structure.
-
-  // IMPORTANT: The issue specified `${process.env.CMS_BASE_URL}/hero`
-  // We will use a placeholder for now, as the actual CMS structure is unknown.
-  // This will allow us to proceed with UI development.
-  // When the CMS endpoint is ready, this function should be updated.
-
-  // Example: Fetching a product and using its data for the banner
-  // This is a temporary adaptation.
   const response = await fetch(`${CMS_BASE_URL}/products/1`); // Using a product endpoint for dummy data
 
   if (!response.ok) {
@@ -66,16 +55,16 @@ export async function fetchHeroBanner(): Promise<any> { // Define a proper type 
 
   const product = await response.json();
 
-  // Adapt the product data to HeroBannerProps
-  // This is a placeholder mapping
-  return {
+  // Adapt the product data to HeroContent
+  const heroData: HeroContent = { // Explicitly type the return
     title: product.title || 'Amazing Product!',
     description: product.description || 'Check out this incredible offer.',
     ctaText: 'Learn More',
     ctaLink: `/products/${product.id}`, // Example CTA link
     imageUrl: product.thumbnail || 'https://via.placeholder.com/600x400.png?text=Hero+Image', // Fallback placeholder
-    imageAlt: product.title ? `Image for ${product.title}` : 'Hero image'
+    imageAlt: product.title ? `Image for ${product.title}` : undefined // Ensure it aligns with optional imageAlt
   };
+  return heroData;
 }
 
 // Add other existing API functions if any, or keep the file clean if it's new.

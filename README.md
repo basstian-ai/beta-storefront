@@ -28,26 +28,22 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Application Insights Setup
+## Environment Variables
 
-This project uses Application Insights for logging and telemetry. To enable Application Insights, you need to set the `APPINSIGHTS_INSTRUMENTATIONKEY` environment variable.
+To run this project effectively and enable all features, you will need to set up the following environment variables. You can create a `.env.local` file in the root of the project to store these variables locally for development.
 
-### Local Development
+### Application Insights
+-   `APPINSIGHTS_INSTRUMENTATIONKEY`: Your Application Insights Instrumentation Key. This is used for logging and telemetry.
+    -   **Local Development**: Add this key to your `.env.local` file:
+        ```
+        APPINSIGHTS_INSTRUMENTATIONKEY=<your-application-insights-instrumentation-key>
+        ```
+    -   **Vercel Deployment**: In your Vercel project settings, go to **Settings > Environment Variables** and add `APPINSIGHTS_INSTRUMENTATIONKEY` with your key.
 
-Add the following line to your `.env` file:
-
-```
-APPINSIGHTS_INSTRUMENTATIONKEY=<your-application-insights-instrumentation-key>
-```
-
-Replace `<your-application-insights-instrumentation-key>` with your actual Application Insights Instrumentation Key.
-
-### Vercel Deployment
-
-In your Vercel project settings, go to **Settings > Environment Variables** and add a new variable:
-
--   **Name:** `APPINSIGHTS_INSTRUMENTATIONKEY`
--   **Value:** (copy from your Azure Application Insights resource)
+### CMS Configuration
+-   `NEXT_PUBLIC_CMS_BASE_URL`: The base URL for your headless CMS. This is used to fetch dynamic content, such as the hero banner for the home page.
+    -   **Example**: `NEXT_PUBLIC_CMS_BASE_URL=https://your-cms-instance.com/api`
+    -   If not set, the application will default to using `https://dummyjson.com` for placeholder content for some features like the Hero Banner.
 
 ## Learn More
 

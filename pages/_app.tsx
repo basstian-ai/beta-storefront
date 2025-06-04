@@ -1,6 +1,4 @@
 import "@/styles/globals.css";
-import "@digdir/designsystemet-css/index.css";
-import "@digdir/designsystemet-theme";
 import type { AppProps } from "next/app";
 
 // Remove Navbar import as it's now handled by Layout in each page

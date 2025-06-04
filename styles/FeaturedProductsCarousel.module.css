@@ -1,4 +1,8 @@
 /* styles/FeaturedProductsCarousel.module.css */
+.featuredProductsCarousel {
+  margin-bottom: 2rem;
+}
+
 .carousel {
   display: flex;
   overflow-x: auto;
@@ -7,7 +11,7 @@
   scroll-snap-type: x mandatory;
 }
 
-.product-card {
+.productCard { /* Renamed from .product-card */
   min-width: 200px;
   flex-shrink: 0;
   scroll-snap-align: start;

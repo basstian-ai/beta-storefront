@@ -2,6 +2,7 @@
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ProductList from '@/components/ProductList'; // Corrected import: default export
+import SortMenu from '@/components/SortMenu';
 import FacetFilters, { ActiveFilters } // Import ActiveFilters and FacetFilters
     from '@/components/FacetFilters';
 import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
@@ -31,6 +32,9 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const sortParam = Array.isArray(router.query.sort)
+    ? router.query.sort[0]
+    : (router.query.sort as string | undefined);
 
   // Effect for URL to State synchronization
   useEffect(() => {
@@ -116,7 +120,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
         // It might need refinement based on exact timing and router.isReady behavior.
     } else {
         setIsLoading(true);
-        fetchCategoryWithProducts(slugToFetch, activeFilters)
+        fetchCategoryWithProducts(slugToFetch, activeFilters, sortParam)
           .then(data => {
             setDisplayedCategoryData(data);
           })
@@ -129,7 +133,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
           });
     }
 
-  }, [activeFilters, initialSlug, router.query.slug, router.isReady]); // router.isReady added
+  }, [activeFilters, initialSlug, router.query.slug, router.isReady, sortParam]); // include sortParam
 
 
   const handleFilterChangeCallback = (newFilters: ActiveFilters) => {
@@ -177,6 +181,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
             />
           </aside>
           <main className={styles.productListArea}>
+            <SortMenu />
             {!isLoading && <ProductList products={products} />}
           </main>
         </div>

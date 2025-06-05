@@ -21,4 +21,5 @@ export type Product = {
   slug: string;
   price: number;
   imageUrl: string;
+  createdAt: string;
 };

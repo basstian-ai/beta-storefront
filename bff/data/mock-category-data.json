@@ -2,9 +2,9 @@
   {
     "category": { "id": "cat1", "name": "Electronics", "slug": "electronics" },
     "products": [
-      { "id": "prod1", "name": "Smart TV", "price": 499.99, "brand": "TechBrand", "size": "55-inch", "imageUrl": "/images/tv.jpg" },
-      { "id": "prod2", "name": "Wireless Headphones", "price": 199.00, "brand": "AudioMax", "size": "Large", "imageUrl": "/images/headphones.jpg" },
-      { "id": "prod3", "name": "Smartphone X1", "price": 799.50, "brand": "MobileCorp", "size": "6-inch", "imageUrl": "/images/smartphone.jpg" }
+      { "id": "prod1", "name": "Smart TV", "price": 499.99, "brand": "TechBrand", "size": "55-inch", "imageUrl": "/images/tv.jpg", "createdAt": "2023-08-01T10:00:00Z" },
+      { "id": "prod2", "name": "Wireless Headphones", "price": 199.00, "brand": "AudioMax", "size": "Large", "imageUrl": "/images/headphones.jpg", "createdAt": "2023-08-05T12:00:00Z" },
+      { "id": "prod3", "name": "Smartphone X1", "price": 799.50, "brand": "MobileCorp", "size": "6-inch", "imageUrl": "/images/smartphone.jpg", "createdAt": "2023-08-10T15:30:00Z" }
     ],
     "facets": {
       "brand": ["TechBrand", "AudioMax", "MobileCorp"],
@@ -14,9 +14,9 @@
   {
     "category": { "id": "cat2", "name": "Apparel", "slug": "apparel" },
     "products": [
-      { "id": "prod4", "name": "Men's T-Shirt", "price": 25.00, "brand": "FashionCo", "size": "M", "imageUrl": "/images/tshirt.jpg" },
-      { "id": "prod5", "name": "Women's Jeans", "price": 75.00, "brand": "StyleStitch", "size": "S", "imageUrl": "/images/jeans.jpg" },
-      { "id": "prod6", "name": "Running Shoes", "price": 120.00, "brand": "FashionCo", "size": "10", "imageUrl": "/images/shoes.jpg" }
+      { "id": "prod4", "name": "Men's T-Shirt", "price": 25.00, "brand": "FashionCo", "size": "M", "imageUrl": "/images/tshirt.jpg", "createdAt": "2023-07-20T08:45:00Z" },
+      { "id": "prod5", "name": "Women's Jeans", "price": 75.00, "brand": "StyleStitch", "size": "S", "imageUrl": "/images/jeans.jpg", "createdAt": "2023-07-25T11:15:00Z" },
+      { "id": "prod6", "name": "Running Shoes", "price": 120.00, "brand": "FashionCo", "size": "10", "imageUrl": "/images/shoes.jpg", "createdAt": "2023-08-02T09:30:00Z" }
     ],
     "facets": {
       "brand": ["FashionCo", "StyleStitch"],

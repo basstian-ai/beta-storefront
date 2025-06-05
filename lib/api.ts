@@ -8,6 +8,7 @@ export interface Product {
   brand: string;
   size: string; // Assuming size is a string, e.g., "S", "M", "L", "XL"
   imageUrl: string;
+  createdAt: string;
 }
 
 // Define Category data structure
@@ -85,9 +86,15 @@ const applyFiltersToProducts = (
 
 export const fetchCategoryWithProducts = async (
   slug: string,
-  activeFilters?: ActiveFilters
+  activeFilters?: ActiveFilters,
+  sort?: string
 ): Promise<CategoryPageData | null> => {
-  console.log(`BFF: Fetching category with products for slug: ${slug}. Filters:`, activeFilters || {});
+  console.log(
+    `BFF: Fetching category with products for slug: ${slug}. Filters:`,
+    activeFilters || {},
+    'Sort:',
+    sort
+  );
 
   const allCategoryDataSources: CategoryPageData[] = MOCK_CATEGORIES_DATA_JSON;
   const categoryPageItem = allCategoryDataSources.find(item => item.category.slug === slug);
@@ -109,6 +116,16 @@ export const fetchCategoryWithProducts = async (
     console.log(`BFF: Found ${productsToReturn.length} products after filtering for slug "${slug}".`);
   } else {
     console.log(`BFF: No filters applied, returning all ${productsToReturn.length} products for slug "${slug}".`);
+  }
+
+  if (sort === 'price-asc') {
+    productsToReturn.sort((a, b) => a.price - b.price);
+  } else if (sort === 'price-desc') {
+    productsToReturn.sort((a, b) => b.price - a.price);
+  } else if (sort === 'newest') {
+    productsToReturn.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   return {

@@ -1,9 +1,8 @@
 // pages/category/[slug].tsx
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import ProductList from '@/components/ProductList'; // Corrected import: default export
-import FacetFilters, { ActiveFilters } // Import ActiveFilters and FacetFilters
-    from '@/components/FacetFilters';
+import ProductList from '@/components/ProductList';
+import FacetFilters, { ActiveFilters } from '@/components/FacetFilters';
 import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import {

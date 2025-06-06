@@ -118,24 +118,18 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
 
     // Avoid fetching if it's the very first render and activeFilters is still empty
     // and we are using initialCategoryData. Let URL-to-State populate activeFilters first.
-    if (Object.keys(activeFilters).length === 0 && displayedCategoryData === initialCategoryData && !router.query.brand && !router.query.size) {
-        // This condition attempts to prevent an immediate re-fetch if initial data is already set
-        // and no filters are in the URL initially.
-        // It might need refinement based on exact timing and router.isReady behavior.
-    } else {
-        setIsLoading(true);
-        fetchCategoryWithProducts(slugToFetch, activeFilters, sortParam)
-          .then(data => {
-            setDisplayedCategoryData(data);
-          })
-          .catch(error => {
-            console.error("Error fetching category data client-side:", error);
-            setDisplayedCategoryData(null);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
-    }
+    setIsLoading(true);
+    fetchCategoryWithProducts(slugToFetch, activeFilters, sortParam)
+      .then(data => {
+        setDisplayedCategoryData(data);
+      })
+      .catch(error => {
+        console.error("Error fetching category data client-side:", error);
+        setDisplayedCategoryData(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
   }, [activeFilters, initialSlug, router.query.slug, router.isReady, sortParam]); // include sortParam
 

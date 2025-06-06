@@ -1,10 +1,9 @@
 // pages/category/[slug].tsx
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import ProductList from '@/components/ProductList'; // Corrected import: default export
+import ProductList from '@/components/ProductList';
 import SortMenu from '@/components/SortMenu';
-import FacetFilters, { ActiveFilters } // Import ActiveFilters and FacetFilters
-    from '@/components/FacetFilters';
+import FacetFilters, { ActiveFilters } from '@/components/FacetFilters';
 import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import {
@@ -91,7 +90,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
     if (router.asPath !== newPath) {
       router.replace(newPath, undefined, { shallow: true });
     }
-  }, [activeFilters, router.isReady, router.asPath, router.query.slug, initialSlug]);
+  }, [activeFilters, router.isReady, router.asPath, router.query.slug, initialSlug, sortParam]);
 
 
   // Effect for fetching data when activeFilters or slug changes

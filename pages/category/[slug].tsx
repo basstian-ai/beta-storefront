@@ -44,7 +44,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
       let hasFiltersFromQuery = false;
 
       for (const key in currentQuery) {
-        if (key !== 'slug') { // Exclude non-filter params like 'slug'
+        if (key !== 'slug' && key !== 'sort') { // Exclude non-filter params like 'slug' and 'sort'
           const value = currentQuery[key];
           if (typeof value === 'string') {
             // Assuming keys in query are valid Facet keys
@@ -83,7 +83,11 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
     const currentSlugFromRouter = Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug;
     const currentSlug = currentSlugFromRouter || initialSlug;
 
-    const newPath = `/category/${currentSlug}${hasFilters ? `?${queryParams.toString()}` : ''}`;
+    if (sortParam) {
+      queryParams.set('sort', sortParam);
+    }
+    const queryString = queryParams.toString();
+    const newPath = `/category/${currentSlug}${queryString ? `?${queryString}` : ''}`;
     if (router.asPath !== newPath) {
       router.replace(newPath, undefined, { shallow: true });
     }

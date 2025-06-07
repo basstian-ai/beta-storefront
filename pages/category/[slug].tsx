@@ -2,6 +2,7 @@
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import ProductList from '@/components/ProductList';
+import SortMenu from '@/components/SortMenu';
 import FacetFilters, { ActiveFilters } from '@/components/FacetFilters';
 import { GetStaticPropsContext, GetStaticPropsResult } from 'next';
 import { ParsedUrlQuery } from 'querystring';
@@ -30,6 +31,9 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const sortParam = Array.isArray(router.query.sort)
+    ? router.query.sort[0]
+    : (router.query.sort as string | undefined);
 
   // Effect for URL to State synchronization
   useEffect(() => {
@@ -39,7 +43,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
       let hasFiltersFromQuery = false;
 
       for (const key in currentQuery) {
-        if (key !== 'slug') { // Exclude non-filter params like 'slug'
+        if (key !== 'slug' && key !== 'sort') { // Exclude non-filter params like 'slug' and 'sort'
           const value = currentQuery[key];
           if (typeof value === 'string') {
             // Assuming keys in query are valid Facet keys
@@ -78,11 +82,15 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
     const currentSlugFromRouter = Array.isArray(router.query.slug) ? router.query.slug[0] : router.query.slug;
     const currentSlug = currentSlugFromRouter || initialSlug;
 
-    const newPath = `/category/${currentSlug}${hasFilters ? `?${queryParams.toString()}` : ''}`;
+    if (sortParam) {
+      queryParams.set('sort', sortParam);
+    }
+    const queryString = queryParams.toString();
+    const newPath = `/category/${currentSlug}${queryString ? `?${queryString}` : ''}`;
     if (router.asPath !== newPath) {
       router.replace(newPath, undefined, { shallow: true });
     }
-  }, [activeFilters, router.isReady, router.asPath, router.query.slug, initialSlug]);
+  }, [activeFilters, router.isReady, router.asPath, router.query.slug, initialSlug, sortParam]);
 
 
   // Effect for fetching data when activeFilters or slug changes
@@ -109,26 +117,20 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
 
     // Avoid fetching if it's the very first render and activeFilters is still empty
     // and we are using initialCategoryData. Let URL-to-State populate activeFilters first.
-    if (Object.keys(activeFilters).length === 0 && displayedCategoryData === initialCategoryData && !router.query.brand && !router.query.size) {
-        // This condition attempts to prevent an immediate re-fetch if initial data is already set
-        // and no filters are in the URL initially.
-        // It might need refinement based on exact timing and router.isReady behavior.
-    } else {
-        setIsLoading(true);
-        fetchCategoryWithProducts(slugToFetch, activeFilters)
-          .then(data => {
-            setDisplayedCategoryData(data);
-          })
-          .catch(error => {
-            console.error("Error fetching category data client-side:", error);
-            setDisplayedCategoryData(null);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
-    }
+    setIsLoading(true);
+    fetchCategoryWithProducts(slugToFetch, activeFilters, sortParam)
+      .then(data => {
+        setDisplayedCategoryData(data);
+      })
+      .catch(error => {
+        console.error("Error fetching category data client-side:", error);
+        setDisplayedCategoryData(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
-  }, [activeFilters, initialSlug, router.query.slug, router.isReady]); // router.isReady added
+  }, [activeFilters, initialSlug, router.query.slug, router.isReady, sortParam]); // include sortParam
 
 
   const handleFilterChangeCallback = (newFilters: ActiveFilters) => {
@@ -176,6 +178,7 @@ const CategoryPage = ({ initialCategoryData, initialSlug }: CategoryPageProps) =
             />
           </aside>
           <main className={styles.productListArea}>
+            <SortMenu />
             {!isLoading && <ProductList products={products} />}
           </main>
         </div>

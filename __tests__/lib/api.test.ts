@@ -161,4 +161,16 @@ describe('fetchCategoryWithProducts - BFF Filtering Logic (Updated Tests)', () =
     expect(result?.products[0].name).toBe('Wireless Headphones');
     expect(result?.products[0].size).toBe('Large');
   });
+
+  it('should sort products by price ascending', async () => {
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, {}, 'price-asc');
+    const prices = result!.products.map(p => p.price);
+    expect(prices).toEqual([199, 499.99, 799.5]);
+  });
+
+  it('should sort products by newest first', async () => {
+    const result = await fetchCategoryWithProducts(electronicsCategorySlug, {}, 'newest');
+    const ids = result!.products.map(p => p.id);
+    expect(ids).toEqual(['prod3', 'prod2', 'prod1']);
+  });
 });

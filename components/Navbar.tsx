@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
 import styles from '../styles/Navbar.module.css';
 import { Category } from '../types'; // Import Category type
 
@@ -9,6 +10,16 @@ interface NavbarProps {
 
 const Navbar = ({ categories }: NavbarProps) => { // Destructure categories from props
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const query = searchTerm.trim();
+    if (query) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+      setSearchTerm('');
+    }
+  };
 
   return (
     <nav className={styles.navbar}>
@@ -18,9 +29,15 @@ const Navbar = ({ categories }: NavbarProps) => { // Destructure categories from
             <a>Logo</a>
           </Link>
         </div>
-        <div className={styles.searchContainer}>
-          <input type="text" placeholder="Search..." className={styles.searchInput} />
-        </div>
+        <form className={styles.searchContainer} onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Search..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </form>
         <div className={styles.userActions}>
           <Link href="#" legacyBehavior>
             <a className={styles.userActionLink}>[UserIcon] My Account</a>

@@ -3,14 +3,36 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CategoryPage from '@/pages/category/[slug]';
-import * as api from '@/lib/api';
+import * as api from '@/lib/api'; // We still need to import to access the mocked function
 import { CategoryPageData } from '@/lib/api';
 import { ActiveFilters } from '@/components/FacetFilters'; // Corrected import
 
 // Mock next/router
-const mockRouterReplace = jest.fn();
+let currentMockRouterQuery: Record<string, string | string[]> = { slug: 'electronics' }; // Used to initialize mockRouterObject
+
+const mockRouterReplace = jest.fn((newPath: string) => {
+  const url = new URL(newPath, 'http://localhost'); // Use URL constructor
+  mockRouterObject.asPath = newPath;
+
+  const newQuery: Record<string, string | string[]> = {};
+  const pathnameParts = url.pathname.split('/');
+  // Assuming path is /category/[slug]
+  if (pathnameParts.length > 2 && pathnameParts[1] === 'category') {
+    newQuery.slug = pathnameParts[2];
+  } else if (mockRouterObject.query.slug) { // Fallback to existing slug from query if path is unusual
+    newQuery.slug = mockRouterObject.query.slug;
+  }
+  // else slug might be undefined if path is truly weird, which might be intended for some tests
+
+  url.searchParams.forEach((value, key) => {
+    if (key !== 'slug') { // Ensure query param 'slug' doesn't override path slug
+      newQuery[key] = value.includes(',') ? value.split(',') : value;
+    }
+  });
+  mockRouterObject.query = newQuery;
+});
+
 const mockRouterPush = jest.fn();
-let currentMockRouterQuery: Record<string, string | string[]> = { slug: 'electronics' };
 
 // Helper to build query string for asPath simulation
 function buildQueryString(query: Record<string, string | string[]>) {
@@ -37,6 +59,12 @@ const mockRouterObject = {
 };
 jest.mock('next/router', () => ({
   useRouter: jest.fn(() => mockRouterObject),
+}));
+
+// Mock the specific API function
+jest.mock('@/lib/api', () => ({
+  ...jest.requireActual('@/lib/api'), // Import and retain default behavior for other functions
+  fetchCategoryWithProducts: jest.fn(),
 }));
 
 // Simplified mocks for next/image and next/link
@@ -70,23 +98,37 @@ const filteredByBrandAndSizeMockData: CategoryPageData = {
   facets: { brand: ['BrandA', 'BrandB'], size: ['55-inch', '15-inch', 'Large'] },
 };
 
-let fetchCategoryWithProductsSpy: jest.SpyInstance;
+// No longer need a global spy variable: let fetchCategoryWithProductsSpy: jest.SpyInstance;
 
 describe('CategoryPage Integration - BFF Filtering', () => {
   beforeEach(() => {
     currentMockRouterQuery = { slug: 'electronics' };
     mockRouterObject.query = currentMockRouterQuery;
-    // Update asPath based on the reset currentMockRouterQuery
     mockRouterObject.asPath = `/category/${currentMockRouterQuery.slug}${buildQueryString(currentMockRouterQuery)}`;
     mockRouterReplace.mockClear();
 
-    fetchCategoryWithProductsSpy = jest.spyOn(api, 'fetchCategoryWithProducts');
-    // Default mock for initial load / when no specific filter mock is set yet in a test
-    fetchCategoryWithProductsSpy.mockResolvedValue(initialMockData);
+    const fetchMock = api.fetchCategoryWithProducts as jest.Mock;
+    fetchMock.mockClear();
+    let callCount = 0;
+    fetchMock.mockImplementation(async (slug: string, filters?: ActiveFilters, sort?: string) => {
+      callCount++;
+      if (callCount > 5) { // Allow a few calls, then error out to stop potential loops
+        throw new Error('fetchCategoryWithProducts called too many times');
+      }
+      // Default behavior or specific mocks will be set by mockResolvedValue / mockResolvedValueOnce in tests
+      if (fetchMock.mock.results[callCount -1] && fetchMock.mock.results[callCount-1].type === 'return') {
+         return fetchMock.mock.results[callCount-1].value;
+      }
+      return initialMockData; // Fallback if no specific mockResolvedValueOnce is hit
+    });
+    // Set a default for tests that don't immediately override with mockResolvedValueOnce
+    fetchMock.mockResolvedValue(initialMockData);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    // jest.restoreAllMocks(); // Not strictly needed for jest.mock, but can be kept for other spies if any
+    // Let's clear the specific mock to be safe for other test files, though jest.resetModules might be better if state leaks across files
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear();
   });
 
   it('should render initial products and then re-fetch and render filtered products when a brand filter is applied', async () => {
@@ -94,12 +136,13 @@ describe('CategoryPage Integration - BFF Filtering', () => {
     expect(await screen.findByText('Smart TV')).toBeInTheDocument();
     expect(screen.getAllByRole('img').length).toBe(3);
 
-    // Set up the mock for the specific fetch call that will be triggered by the filter change
-    fetchCategoryWithProductsSpy.mockResolvedValueOnce(filteredByBrandAMockData);
+    // Clear calls from initial render, then set up mock for specific filter change
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear();
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValueOnce(filteredByBrandAMockData);
     fireEvent.click(screen.getByLabelText('BrandA'));
 
     await waitFor(() => {
-      expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] });
+      expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] });
     });
 
     await waitFor(() => {
@@ -114,22 +157,22 @@ describe('CategoryPage Integration - BFF Filtering', () => {
     render(<CategoryPage initialCategoryData={initialMockData} initialSlug="electronics" />);
     expect(await screen.findByText('Smart TV')).toBeInTheDocument();
 
-    fetchCategoryWithProductsSpy.mockResolvedValueOnce(filteredByBrandAMockData);
+    // First filter interaction
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear(); // Clear before this interaction sequence
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValueOnce(filteredByBrandAMockData);
     fireEvent.click(screen.getByLabelText('BrandA'));
-    await waitFor(() => expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] }));
+    await waitFor(() => expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] }));
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(2)); // UI updated for BrandA
 
-    // Prepare for the next filter action
-    fetchCategoryWithProductsSpy.mockResolvedValueOnce(filteredByBrandAndSizeMockData);
-    // Simulate URL update from the previous action before the next click
-    currentMockRouterQuery = { slug: 'electronics', brand: 'BrandA' };
-    mockRouterObject.query = currentMockRouterQuery; // Update the query the router mock will return
-    mockRouterObject.asPath = `/category/electronics?brand=BrandA`; // Update asPath
-
+    // Second filter interaction (combined)
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear(); // Clear before this interaction sequence
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValueOnce(filteredByBrandAndSizeMockData);
+    // DO NOT manually update currentMockRouterQuery or asPath here;
+    // The component's router.replace call, via our mock, should update mockRouterObject.
     fireEvent.click(screen.getByLabelText('Large'));
 
     await waitFor(() => {
-      expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', { brand: ['BrandA'], size: ['Large'] });
+      expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', { brand: ['BrandA'], size: ['Large'] });
     });
 
     await waitFor(() => {
@@ -143,23 +186,24 @@ describe('CategoryPage Integration - BFF Filtering', () => {
     render(<CategoryPage initialCategoryData={initialMockData} initialSlug="electronics" />);
     expect(await screen.findByText('Smart TV')).toBeInTheDocument();
 
-    fetchCategoryWithProductsSpy.mockResolvedValueOnce(filteredByBrandAMockData);
+    // Apply filter
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear();
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValueOnce(filteredByBrandAMockData);
     const brandACheckbox = screen.getByLabelText('BrandA');
-    fireEvent.click(brandACheckbox); // Apply filter
-    await waitFor(() => expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] }));
+    fireEvent.click(brandACheckbox);
+    await waitFor(() => expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] }));
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(2)); // UI updated for BrandA
 
-    // Prepare for the deselection
-    fetchCategoryWithProductsSpy.mockResolvedValueOnce(initialMockData);
-    currentMockRouterQuery = { slug: 'electronics', brand: 'BrandA' };
-    mockRouterObject.query = currentMockRouterQuery;
-    mockRouterObject.asPath = `/category/electronics?brand=BrandA`;
-
+    // Deselect filter
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear();
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValueOnce(initialMockData);
+    // DO NOT manually update currentMockRouterQuery or asPath here for deselection.
+    // The component's effects should trigger router.replace, updating mockRouterObject.
     fireEvent.click(brandACheckbox); // Deselect filter
 
     await waitFor(() => {
       // Expect call with empty object for filters, or specific logic for deselection if different
-      expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', {});
+      expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', {});
     });
 
     await waitFor(() => {
@@ -175,17 +219,18 @@ describe('CategoryPage Integration - BFF Filtering', () => {
     mockRouterObject.query = currentMockRouterQuery; // Set query before initial render for this test
     mockRouterObject.asPath = `/category/electronics?brand=BrandA`;
 
-    // This spy will be for the fetch triggered by URL parsing on load
-    fetchCategoryWithProductsSpy.mockResolvedValue(filteredByBrandAMockData);
+    // The component should pick up 'brand=BrandA' from the router.query set at the start of this test.
+    // The initial fetchCategoryWithProducts in beforeEach is already set to initialMockData.
+    // We need to ensure the fetch triggered by URL params uses the filtered data.
+    (api.fetchCategoryWithProducts as jest.Mock).mockClear(); // Clear any setup from beforeEach
+    (api.fetchCategoryWithProducts as jest.Mock).mockResolvedValue(filteredByBrandAMockData); // All calls in this test get this
 
     render(<CategoryPage initialCategoryData={initialMockData} initialSlug="electronics" />);
 
-    // The first fetch is from getStaticProps (not spied on here).
-    // The second fetch is from useEffect triggered by URL query params.
+    // This fetch is triggered by useEffect based on router.query.
     await waitFor(() => {
-      // The number of calls can be tricky due to initial render + potential updates.
-      // We care that *a* call was made with these filters due to URL parsing.
-      expect(fetchCategoryWithProductsSpy).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] });
+      // Ensure it was called with the filters derived from the URL.
+      expect(api.fetchCategoryWithProducts).toHaveBeenCalledWith('electronics', { brand: ['BrandA'] });
     });
 
     await waitFor(() => {

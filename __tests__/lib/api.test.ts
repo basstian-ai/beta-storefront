@@ -1,6 +1,7 @@
 import {
   fetchCategories, // Keep this if fetchCategories tests are to remain
   fetchCategoryWithProducts,
+  fetchSearchResults,
   CategoryPageData,
   Product,
   Category as ApiCategory,  // Renaming to avoid conflict with Category from ../types if used by fetchCategories
@@ -12,7 +13,7 @@ import {
 // Based on lib/api.ts, fetchCategories returns ImportedCategory[] which IS from ../types. So, this import is needed.
 import { Category as ImportedCategoryType } from '../../types';
 import { ActiveFilters } from '@/components/FacetFilters';
-import importedMockData from '../../../bff/data/mock-category-data.json';
+import importedMockData from '../../bff/data/mock-category-data.json';
 const MOCK_CATEGORIES_DATA_JSON = importedMockData as CategoryPageData[];
 
 // Mock fetch for fetchCategories
@@ -172,5 +173,40 @@ describe('fetchCategoryWithProducts - BFF Filtering Logic (Updated Tests)', () =
     const result = await fetchCategoryWithProducts(electronicsCategorySlug, {}, 'newest');
     const ids = result!.products.map(p => p.id);
     expect(ids).toEqual(['prod3', 'prod2', 'prod1']);
+  });
+});
+
+describe('fetchSearchResults', () => {
+  beforeEach(() => {
+    (fetch as jest.Mock).mockClear();
+  });
+
+  it('fetches search results and returns normalized products', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        products: [
+          { id: 1, title: 'Laptop', price: 999, brand: 'ACME', thumbnail: 'l.jpg' },
+        ],
+      }),
+    });
+    const results = await fetchSearchResults('laptop');
+    expect(fetch).toHaveBeenCalledWith('https://dummyjson.com/products/search?q=laptop');
+    expect(results).toEqual([
+      {
+        id: '1',
+        name: 'Laptop',
+        price: 999,
+        brand: 'ACME',
+        size: '',
+        imageUrl: 'l.jpg',
+        createdAt: '',
+      },
+    ]);
+  });
+
+  it('throws an error when the network response is not ok', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 500 });
+    await expect(fetchSearchResults('oops')).rejects.toThrow('Failed to fetch search results');
   });
 });

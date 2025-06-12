@@ -32,8 +32,11 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
     expect(screen.getByText('Products')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Products' })).toHaveAttribute('href', '/products');
-    expect(screen.getByText('Cart')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Cart' })).toHaveAttribute('href', '/cart');
+    expect(screen.getByText('[CartIcon] Cart')).toBeInTheDocument();
+    // To find by role 'link' with specific text that includes an icon-like prefix,
+    // we might need a more flexible matcher if `name` doesn't work directly with the prefixed text.
+    // Let's try with the full text first. If it fails, a custom function for text matching might be needed.
+    expect(screen.getByRole('link', { name: '[CartIcon] Cart' })).toHaveAttribute('href', '/cart');
   });
 
   it('renders dynamic category links correctly', () => {

@@ -74,8 +74,8 @@ describe('HomePage Integration', () => {
   ];
 
   const mockFeaturedProductsData: Product[] = [
-    { id: 'p1', name: 'Product Alpha', slug: 'product-alpha', price: 19.99, imageUrl: 'prodA.jpg' },
-    { id: 'p2', name: 'Product Beta', slug: 'product-beta', price: 29.99, imageUrl: 'prodB.jpg' },
+    { id: 'p1', name: 'Product Alpha', slug: 'product-alpha', price: 19.99, imageUrl: 'prodA.jpg', createdAt: '2023-10-01T00:00:00Z' },
+    { id: 'p2', name: 'Product Beta', slug: 'product-beta', price: 29.99, imageUrl: 'prodB.jpg', createdAt: '2023-10-02T00:00:00Z' },
   ];
 
   beforeEach(() => {

@@ -25,6 +25,7 @@ const mockProducts: Product[] = [
   {
     id: '1',
     name: 'Laptop Pro',
+    createdAt: '2023-09-01T00:00:00Z',
     price: 1299.99,
     brand: 'TechCorp',
     size: '15-inch',
@@ -33,6 +34,7 @@ const mockProducts: Product[] = [
   {
     id: '2',
     name: 'Wireless Mouse',
+    createdAt: '2023-09-02T00:00:00Z',
     price: 49.50,
     brand: 'ClickMaster',
     size: 'Standard',
@@ -87,6 +89,7 @@ describe('ProductList Component', () => {
       {
         id: '3',
         name: 'Keyboard Basic',
+        createdAt: '2023-09-03T00:00:00Z',
         price: 29.99,
         brand: 'TypeEasy',
         size: 'Full',

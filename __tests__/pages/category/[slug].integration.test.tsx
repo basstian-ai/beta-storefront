@@ -74,9 +74,9 @@ jest.mock('next/link', () => ({ __esModule: true, default: ({ children, href }: 
 const initialMockData: CategoryPageData = {
   category: { id: 'cat1', name: 'Electronics', slug: 'electronics' },
   products: [
-    { id: 'p1', name: 'Smart TV', price: 500, brand: 'BrandA', size: '55-inch', imageUrl: 'tv.jpg' },
-    { id: 'p2', name: 'Laptop X', price: 1200, brand: 'BrandB', size: '15-inch', imageUrl: 'laptop.jpg' },
-    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg' },
+    { id: 'p1', name: 'Smart TV', price: 500, brand: 'BrandA', size: '55-inch', imageUrl: 'tv.jpg', createdAt: '2023-08-01T00:00:00Z' },
+    { id: 'p2', name: 'Laptop X', price: 1200, brand: 'BrandB', size: '15-inch', imageUrl: 'laptop.jpg', createdAt: '2023-08-02T00:00:00Z' },
+    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg', createdAt: '2023-08-03T00:00:00Z' },
   ],
   facets: { brand: ['BrandA', 'BrandB'], size: ['55-inch', '15-inch', 'Large'] },
 };
@@ -84,8 +84,8 @@ const initialMockData: CategoryPageData = {
 const filteredByBrandAMockData: CategoryPageData = {
   category: { id: 'cat1', name: 'Electronics', slug: 'electronics' },
   products: [
-    { id: 'p1', name: 'Smart TV', price: 500, brand: 'BrandA', size: '55-inch', imageUrl: 'tv.jpg' },
-    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg' },
+    { id: 'p1', name: 'Smart TV', price: 500, brand: 'BrandA', size: '55-inch', imageUrl: 'tv.jpg', createdAt: '2023-08-01T00:00:00Z' },
+    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg', createdAt: '2023-08-03T00:00:00Z' },
   ],
   facets: { brand: ['BrandA', 'BrandB'], size: ['55-inch', '15-inch', 'Large'] },
 };
@@ -93,7 +93,7 @@ const filteredByBrandAMockData: CategoryPageData = {
 const filteredByBrandAndSizeMockData: CategoryPageData = {
   category: { id: 'cat1', name: 'Electronics', slug: 'electronics' },
   products: [
-    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg' },
+    { id: 'p3', name: 'Headphones Y', price: 150, brand: 'BrandA', size: 'Large', imageUrl: 'headphones.jpg', createdAt: '2023-08-03T00:00:00Z' },
   ],
   facets: { brand: ['BrandA', 'BrandB'], size: ['55-inch', '15-inch', 'Large'] },
 };

@@ -12,7 +12,7 @@ import {
 // Based on lib/api.ts, fetchCategories returns ImportedCategory[] which IS from ../types. So, this import is needed.
 import { Category as ImportedCategoryType } from '../../types';
 import { ActiveFilters } from '@/components/FacetFilters';
-import importedMockData from '../../../bff/data/mock-category-data.json';
+import importedMockData from '../../bff/data/mock-category-data.json';
 const MOCK_CATEGORIES_DATA_JSON = importedMockData as CategoryPageData[];
 
 // Mock fetch for fetchCategories

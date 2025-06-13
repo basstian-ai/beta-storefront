@@ -18,7 +18,7 @@ export async function getProducts() {
       });
     }
 
-    const rawData = await fetchData('https://dummyjson.com/products');
+    const rawData = await fetchData('https://dummyjson.com/products?limit=100');
 
     if (typeof rawData !== 'object' || rawData === null || !Array.isArray(rawData.products)) {
       const errorMsg = 'Invalid data structure received from product API: products array not found or not an array.';

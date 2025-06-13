@@ -54,6 +54,19 @@
 .categoryNav {
   background-color: #fff; /* White background for category nav */
   padding: 0.75rem 2rem; /* Padding for category section */
+  position: relative; /* For scroll hint positioning */
+}
+
+.categoryNav::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 30px; /* Width of the fade effect */
+  background: linear-gradient(to left, #fff, rgba(255, 255, 255, 0)); /* Gradient from nav background to transparent */
+  pointer-events: none; /* Allows clicks to pass through */
+  z-index: 1; /* Ensure it's above the scrolling content */
 }
 
 .categoryNav ul {
@@ -62,10 +75,18 @@
   padding: 0;
   display: flex;
   justify-content: flex-start; /* Align categories to the left */
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.categoryNav ul::-webkit-scrollbar {
+  display: none;
 }
 
 .categoryNav li {
   margin-right: 1.5rem; /* Spacing between category items */
+  flex: 0 0 auto;
 }
 
 .categoryNav li:last-child {
@@ -125,6 +146,10 @@
   .categoryNav li {
     margin-right: 0;
     margin-bottom: 0.5rem; /* Spacing for vertical category links */
+  }
+
+  .categoryNav::after {
+    display: none; /* Hide scroll hint when categories are stacked */
   }
 }
 

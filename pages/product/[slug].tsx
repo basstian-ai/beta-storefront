@@ -296,7 +296,7 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
             }
 
             if (actualRawProduct) {
-               product = processProduct(actualRawProduct, -1);
+                               product = processProduct(actualRawProduct as Record<string, any>, -1);
             } else if (product === null) {
                 console.warn(`Product ID ${productId} resulted in null actualRawProduct after checking structure (direct fetch).`);
                 // We don't set notFound:true here, let it fall through to slug search or final notFound.

@@ -6,30 +6,34 @@ import appInsights from 'applicationinsights';
  * @returns {Promise<import('../../types').ProductApiResponse>} A promise that resolves to the product data.
  */
 export async function getProducts() {
-  const client = appInsights.defaultClient;
+  // Safely get the client
+  const client = appInsights && appInsights.defaultClient ? appInsights.defaultClient : null;
+
   try {
-    client.trackTrace({
-      message: 'Calling dummyjson for products',
-      severity: 1, // Info
-      properties: { origin: 'bff/products', method: 'getProducts' },
-    });
+    if (client) {
+      client.trackTrace({
+        message: 'Calling dummyjson for products',
+        severity: 1, // Info
+        properties: { origin: 'bff/products', method: 'getProducts' },
+      });
+    }
 
     const rawData = await fetchData('https://dummyjson.com/products');
 
-    // Validate the structure of rawData before trying to access rawData.products
     if (typeof rawData !== 'object' || rawData === null || !Array.isArray(rawData.products)) {
       const errorMsg = 'Invalid data structure received from product API: products array not found or not an array.';
-      console.error(errorMsg, 'Raw data:', rawData); // Log the problematic data
-      // Track this specific error type if desired
-      client.trackException({
-        exception: new Error(errorMsg),
-        properties: { origin: 'bff/products', method: 'getProducts', rawDataReceived: JSON.stringify(rawData, null, 2).substring(0, 1000) }
-      });
+      console.error(errorMsg, 'Raw data:', rawData);
+      if (client) {
+        client.trackException({
+          exception: new Error(errorMsg),
+          properties: { origin: 'bff/products', method: 'getProducts', rawDataReceived: JSON.stringify(rawData, null, 2).substring(0, 1000) }
+        });
+      }
       throw new Error(errorMsg);
     }
 
-    // If validation passes, proceed with processing
     const processedProducts = rawData.products.map((product, index) => {
+      // ... (mapping logic remains the same)
       const baseProduct = {
         ...product,
         images: product.images || [product.thumbnail], // Use thumbnail if images array is not available
@@ -94,34 +98,40 @@ export async function getProducts() {
           },
         ];
       }
-
       return baseProduct;
     });
 
     const data = { ...rawData, products: processedProducts };
 
-    client.trackEvent({
-      name: 'ProductsFetchSuccess',
-      properties: {
-        source: 'dummyjson',
-        userType: 'anonymous', // Assuming anonymous for now, can be enhanced with actual user context
-        resultCount: data?.products?.length ?? 0,
-      },
-    });
-
-    if (data?.products?.length) {
-      client.trackMetric({
-        name: 'ProductsReturned',
-        value: data.products.length,
+    if (client) {
+      client.trackEvent({
+        name: 'ProductsFetchSuccess',
+        properties: {
+          source: 'dummyjson',
+          userType: 'anonymous',
+          resultCount: data?.products?.length ?? 0,
+        },
       });
+
+      if (data?.products?.length) {
+        client.trackMetric({
+          name: 'ProductsReturned',
+          value: data.products.length,
+        });
+      }
     }
 
     return data;
   } catch (error) {
-    client.trackException({
-      exception: error,
-      properties: { origin: 'bff/products', method: 'getProducts' },
-    });
-    throw error; // Re-throw the error so the caller can handle it
+    console.error(`Error in getProducts: ${error.message}`, error.stack); // Log the actual error
+    if (client) {
+      client.trackException({
+        exception: error, // The original error
+        properties: { origin: 'bff/products', method: 'getProducts', message: error.message },
+      });
+    }
+    // Re-throw the original error or a new generic error if preferred
+    throw error;
+    // Or: throw new Error('Failed to get products due to an internal error.');
   }
 }

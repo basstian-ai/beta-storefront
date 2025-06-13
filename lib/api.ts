@@ -25,7 +25,7 @@ export interface Facets {
   size: string[];
   // Add other facet types as needed, e.g., color, priceRange
   // Adding index signature for robust key access, though ActiveFilters is typed from Facets
-  [key: string]: string[];
+  [key: string]: string[] | undefined; // <-- This line is modified
 }
 
 // Placeholder for the main function we'll build in the next steps

@@ -256,11 +256,35 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
       const productId = parseInt(slugFromParams, 10);
       if (productId > 0) { // Basic validation for plausible ID
         try {
-          const rawSingleProduct: any = await fetchData(`https://dummyjson.com/products/${productId}`);
-          if (rawSingleProduct) {
-            // Process the single raw product.
-            // Pass -1 to skip index-based specific mocks for direct ID fetches.
-            product = processProduct(rawSingleProduct, -1);
+          const fetchedDataForSingleProduct: any = await fetchData(`https://dummyjson.com/products/${productId}`);
+          if (fetchedDataForSingleProduct) {
+            let actualRawProduct = fetchedDataForSingleProduct;
+            // Check if fetchedDataForSingleProduct looks like ProductApiResponse (has a .products array)
+            // and contains a single product, which dummyjson.com/products/{id} might do (though typically it returns the object directly)
+            // OR if it's the direct product object. processProduct expects the direct object.
+            if (typeof fetchedDataForSingleProduct === 'object' &&
+                fetchedDataForSingleProduct !== null &&
+                Array.isArray(fetchedDataForSingleProduct.products) &&
+                fetchedDataForSingleProduct.products.length === 1) {
+              actualRawProduct = fetchedDataForSingleProduct.products[0];
+              console.log(`Extracted single product from .products[0] for ID ${productId}`);
+            } else if (typeof fetchedDataForSingleProduct === 'object' && fetchedDataForSingleProduct !== null && fetchedDataForSingleProduct.hasOwnProperty('id')) {
+              // It looks like a direct product object, use as is
+              actualRawProduct = fetchedDataForSingleProduct;
+               console.log(`Using fetched data directly as product for ID ${productId}`);
+            } else {
+              // Does not look like a single product object or a response wrapping one.
+              console.warn(`Unexpected data structure for single product ID ${productId}:`, fetchedDataForSingleProduct);
+              actualRawProduct = null; // Or handle as error / product not found
+            }
+
+            if (actualRawProduct) {
+               product = processProduct(actualRawProduct, -1); // Pass the potentially unwrapped product
+            } else if (product === null) { // only if product is still null (wasn't found by previous attempts)
+                // If actualRawProduct is null because of unexpected structure, this means product not found for this ID path.
+                console.warn(`Product ID ${productId} resulted in null actualRawProduct after checking structure.`);
+                // We don't set notFound:true here, let it fall through to slug search or final notFound.
+            }
           }
         } catch (e: any) {
           // Log error from fetching single product by ID, but don't necessarily fail the whole page yet.

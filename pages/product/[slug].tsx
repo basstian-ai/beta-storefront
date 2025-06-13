@@ -240,30 +240,39 @@ const ProductPage: React.FC<ProductPageProps> = ({ product: initialProduct, erro
 import { getProducts } from '@/bff/products';
 
 export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (context) => {
-  const { slug } = context.params || {};
-  // const { variant: variantIdFromQuery } = context.query; // Can also get variant here
+  const { slug: slugFromParams } = context.params || {};
 
-  if (typeof slug !== 'string') {
-    return { notFound: true }; // Or handle as an error
+  if (typeof slugFromParams !== 'string') {
+    return { notFound: true };
   }
 
   try {
-    // The getProducts call is now server-side only
     const allProductsData: ProductApiResponse = await getProducts();
-    const product = allProductsData.products.find((p: Product) => p.slug === slug);
+    let product: Product | undefined = undefined;
+
+    // Check if slugFromParams is numeric, suggesting it's an ID
+    // Ensure product.id is consistently number or string based on your data model.
+    // dummyjson.com IDs are numbers. Product.id is string.
+    if (!isNaN(Number(slugFromParams))) {
+      // const productId = parseInt(slugFromParams, 10); // Not needed if comparing strings
+      // Attempt to find by ID (as string) if slugFromParams is purely numeric
+      product = allProductsData.products.find((p: Product) => p.id === slugFromParams);
+    }
+
+    // If not found by ID, or if slugFromParams was not numeric, try finding by slug
+    if (!product) {
+      product = allProductsData.products.find((p: Product) => p.slug === slugFromParams);
+    }
 
     if (!product) {
+      console.warn(`Product not found with slug/ID: ${slugFromParams}`);
       return { notFound: true };
     }
 
-    // Optionally, resolve initial variant here if variantIdFromQuery is used
-    // For simplicity, current plan keeps variant resolution client-side for now
-
     return { props: { product } };
   } catch (e) {
-    const error = e as Error;
-    console.error('Failed to fetch product in getServerSideProps:', error.message);
-    // Pass an error message to the page component
+    const error = e as Error; // It's good practice to type the error if you inspect its properties
+    console.error(`Failed to fetch product in getServerSideProps (slug/ID: ${slugFromParams}):`, error.message);
     return { props: { product: null, error: 'Failed to load product details from server.' } };
   }
 };

@@ -319,14 +319,14 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
       // This part now uses getProducts which itself uses processProduct internally for each item
       const allProductsData: ProductApiResponse = await getProducts();
       // First, try to find by slug directly
-      product = allProductsData.products.find((p: Product) => p.slug === slugFromParams);
+      product = allProductsData.products.find((p: Product) => p.slug === slugFromParams) || null;
 
       // If still not found by slug, and slugFromParams was numeric, try finding by ID again from the list
       // This covers cases where the ID might exist in the bulk list but not as a direct fetchable ID,
       // or if the direct ID fetch failed for some reason but the data is in the main list.
       if (!product && !isNaN(Number(slugFromParams))) {
         const numericId = parseInt(slugFromParams, 10);
-        product = allProductsData.products.find((p: Product) => p.id === String(numericId)); // Compare string ID
+        product = allProductsData.products.find((p: Product) => p.id === String(numericId)) || null; // Compare string ID
       }
     }
 

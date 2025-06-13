@@ -237,31 +237,58 @@ const ProductPage: React.FC<ProductPageProps> = ({ product: initialProduct, erro
 
 // Import getProducts for getServerSideProps
 // This ensures it's tree-shaken from client bundle if only used here.
-import { getProducts } from '@/bff/products';
+import { getProducts, processProduct } from '@/bff/products'; // Add processProduct
+import { fetchData } from '@/bff/utils/fetchData'; // Will be needed for direct fetch by ID
 
 export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (context) => {
   const { slug: slugFromParams } = context.params || {};
+  // const { variant: variantIdFromQuery } = context.query; // Keep for potential future use
 
   if (typeof slugFromParams !== 'string') {
     return { notFound: true };
   }
 
-  try {
-    const allProductsData: ProductApiResponse = await getProducts();
-    let product: Product | undefined = undefined;
+  let product: Product | null = null; // Initialize product as null
 
+  try {
     // Check if slugFromParams is numeric, suggesting it's an ID
-    // Ensure product.id is consistently number or string based on your data model.
-    // dummyjson.com IDs are numbers. Product.id is string.
     if (!isNaN(Number(slugFromParams))) {
-      // const productId = parseInt(slugFromParams, 10); // Not needed if comparing strings
-      // Attempt to find by ID (as string) if slugFromParams is purely numeric
-      product = allProductsData.products.find((p: Product) => p.id === slugFromParams);
+      const productId = parseInt(slugFromParams, 10);
+      if (productId > 0) { // Basic validation for plausible ID
+        try {
+          const rawSingleProduct = await fetchData(`https://dummyjson.com/products/${productId}`);
+          if (rawSingleProduct) {
+            // Process the single raw product.
+            // Pass -1 to skip index-based specific mocks for direct ID fetches.
+            product = processProduct(rawSingleProduct, -1);
+          }
+        } catch (e: any) {
+          // Log error from fetching single product by ID, but don't necessarily fail the whole page yet.
+          console.warn(`Attempt to fetch product by ID ${productId} failed: ${e.message}`);
+          // If the error is NOT a 404, it might be a server/network issue.
+          if (e.message && !e.message.includes("status: 404")) {
+             // For non-404 errors, re-throw to be caught by outer try-catch
+             throw e;
+          }
+          // For 404s (or if rawSingleProduct was null/undefined), product remains null, and we proceed to slug search.
+        }
+      }
     }
 
-    // If not found by ID, or if slugFromParams was not numeric, try finding by slug
+    // If not found by ID (or if slugFromParams was not numeric or invalid ID), try finding by slug from the full list
     if (!product) {
+      // This part now uses getProducts which itself uses processProduct internally for each item
+      const allProductsData: ProductApiResponse = await getProducts();
+      // First, try to find by slug directly
       product = allProductsData.products.find((p: Product) => p.slug === slugFromParams);
+
+      // If still not found by slug, and slugFromParams was numeric, try finding by ID again from the list
+      // This covers cases where the ID might exist in the bulk list but not as a direct fetchable ID,
+      // or if the direct ID fetch failed for some reason but the data is in the main list.
+      if (!product && !isNaN(Number(slugFromParams))) {
+        const numericId = parseInt(slugFromParams, 10);
+        product = allProductsData.products.find((p: Product) => p.id === String(numericId)); // Compare string ID
+      }
     }
 
     if (!product) {
@@ -269,10 +296,10 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
       return { notFound: true };
     }
 
-    return { props: { product } };
-  } catch (e) {
-    const error = e as Error; // It's good practice to type the error if you inspect its properties
-    console.error(`Failed to fetch product in getServerSideProps (slug/ID: ${slugFromParams}):`, error.message);
+    return { props: { product } }; // error prop is implicitly undefined
+
+  } catch (e: any) { // Catch any error from the overall process
+    console.error(`Failed to fetch product in getServerSideProps (slug/ID: ${slugFromParams}):`, e.message, e.stack);
     return { props: { product: null, error: 'Failed to load product details from server.' } };
   }
 };

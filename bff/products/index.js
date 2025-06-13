@@ -5,6 +5,114 @@ import appInsights from 'applicationinsights';
  * Fetches product data from dummyjson.com.
  * @returns {Promise<import('../../types').ProductApiResponse>} A promise that resolves to the product data.
  */
+
+export function processProduct(product, index = -1) { // Added index default
+  if (!product || typeof product !== 'object') { // Basic guard
+    console.warn('processProduct received invalid product data:', product);
+    return null; // Or throw error
+  }
+
+  // Ensure product.price is a number, default to 0 if not (or handle as error)
+  // Product price from dummyjson is number, this is just a safeguard for general use.
+  const basePrice = typeof product.price === 'number' ? product.price : 0;
+
+  const baseProduct = {
+    ...product, // Spread first to include all original fields like id, title, description, etc.
+    // Ensure images are correctly processed: use existing images array, fallback to thumbnail, or empty array
+    images: product.images && Array.isArray(product.images) && product.images.length > 0
+            ? product.images
+            : (product.thumbnail ? [product.thumbnail] : []),
+    specifications: product.specifications || { general: "Basic " + (product.title || 'product') + " specifications." },
+    // Initialize priceTiers, will be populated or overridden by index-specific logic or API data
+    priceTiers: [],
+    // Ensure contractPrice is null if undefined from source, otherwise use provided value
+    // This was previously: index === 0 ? product.price * 0.8 : (product.contractPrice || null)
+    // We'll let index-specific logic override this default.
+    contractPrice: product.contractPrice !== undefined ? product.contractPrice : null,
+  };
+
+  // Handle priceTiers from product data if available (and not overridden by index-specific logic later)
+  if (product.priceTiers && Array.isArray(product.priceTiers)) {
+     baseProduct.priceTiers = product.priceTiers.map(pt => ({
+        quantity: typeof pt.quantity === 'number' ? pt.quantity : 0,
+        price: typeof pt.price === 'number' ? pt.price : 0,
+        label: typeof pt.label === 'string' ? pt.label : undefined
+      })).filter(pt => pt.quantity > 0 && pt.price > 0);
+  } else {
+      baseProduct.priceTiers = []; // Ensure it's an empty array if not provided
+  }
+
+
+  // Index-specific mocking (variants, specific contract prices/tiers)
+  if (index >= 0) { // Apply index-specific logic only if index is valid
+    if (index === 0) {
+      baseProduct.contractPrice = basePrice * 0.8; // 20% discount for product 0
+      // Overwrite or extend existing priceTiers for product 0
+      baseProduct.priceTiers = [
+        { quantity: 5, price: basePrice * 0.9, label: 'each' },
+        { quantity: 10, price: basePrice * 0.85, label: 'each' }
+      ];
+      baseProduct.variants = [
+        {
+          id: `${product.id}-variant1`,
+          name: "Red Color",
+          description: product.description, // Variants inherit base description unless specified
+          images: ["https://dummyjson.com/image/i/products/1/1.jpg", "https://dummyjson.com/image/i/products/1/2.jpg"],
+          price: basePrice + 10,
+          specifications: { ...baseProduct.specifications, color: "Red", material: "Premium" },
+          contractPrice: (basePrice + 10) * 0.75,
+          priceTiers: [ { quantity: 2, price: (basePrice + 10) * 0.95, label: 'unit' } ],
+        },
+        {
+          id: `${product.id}-variant2`,
+          name: "Blue Color",
+          description: product.description,
+          images: ["https://dummyjson.com/image/i/products/1/3.jpg", "https://dummyjson.com/image/i/products/1/4.jpg"],
+          price: basePrice + 15,
+          specifications: { ...baseProduct.specifications, color: "Blue", material: "Standard" },
+          // This variant inherits contract price from base product (which is (basePrice * 0.8) for index 0)
+        },
+      ];
+    } else if (index === 1) {
+      baseProduct.contractPrice = basePrice * 0.85; // 15% discount for product 1
+      baseProduct.variants = [
+        {
+          id: `${product.id}-variant-large`,
+          name: "Large Size",
+          description: product.description,
+          price: basePrice * 1.2,
+          specifications: { ...baseProduct.specifications, size: "Large" },
+          contractPrice: (basePrice * 1.2) * 0.8,
+        },
+      ];
+    }
+  }
+
+  // Fallback for variants if not mocked by index but present in product data
+  // This ensures that if API provides variants for products other than index 0 or 1, they are included
+  if (!baseProduct.variants && product.variants && Array.isArray(product.variants)) {
+    baseProduct.variants = product.variants.map(v => ({ // Ensure variants conform
+        id: String(v.id || product.id + '-variant-' + Math.random().toString(36).substr(2, 9)), // Ensure ID is string and unique
+        name: v.name || 'Variant',
+        description: v.description || baseProduct.description,
+        images: v.images && Array.isArray(v.images) && v.images.length > 0 ? v.images : baseProduct.images,
+        price: typeof v.price === 'number' ? v.price : basePrice, // Fallback to base product's price
+        specifications: v.specifications || baseProduct.specifications,
+        priceTiers: v.priceTiers && Array.isArray(v.priceTiers) ? v.priceTiers.map(pt => ({
+            quantity: typeof pt.quantity === 'number' ? pt.quantity : 0,
+            price: typeof pt.price === 'number' ? pt.price : 0,
+            label: typeof pt.label === 'string' ? pt.label : undefined
+          })).filter(pt => pt.quantity > 0 && pt.price > 0) : [],
+        contractPrice: typeof v.contractPrice === 'number' ? v.contractPrice : undefined, // Variant contract price
+    }));
+  } else if (!baseProduct.variants) {
+      baseProduct.variants = []; // Ensure variants array exists
+  }
+
+
+  return baseProduct;
+}
+
 export async function getProducts() {
   // Safely get the client
   const client = appInsights && appInsights.defaultClient ? appInsights.defaultClient : null;
@@ -32,74 +140,8 @@ export async function getProducts() {
       throw new Error(errorMsg);
     }
 
-    const processedProducts = rawData.products.map((product, index) => {
-      // ... (mapping logic remains the same)
-      const baseProduct = {
-        ...product,
-        images: product.images || [product.thumbnail], // Use thumbnail if images array is not available
-        specifications: product.specifications || { general: "Basic " + product.title + " specifications." },
-        // priceTiers will be handled below
-        // Mock contract price for the first product
-        contractPrice: index === 0 ? product.price * 0.8 : (product.contractPrice || null), // 20% discount for product 1
-      };
 
-      // Handle priceTiers for baseProduct
-      if (index === 0) {
-        baseProduct.priceTiers = [
-          { quantity: 5, price: product.price * 0.9, label: 'each' }, // 10% discount for 5
-          { quantity: 10, price: product.price * 0.85, label: 'each' } // 15% discount for 10
-        ];
-      } else {
-        // For other products, ensure priceTiers is at least an empty array
-        // or conforms if data is available from product.priceTiers
-        baseProduct.priceTiers = product.priceTiers && Array.isArray(product.priceTiers) ?
-          product.priceTiers.map(pt => ({
-            quantity: typeof pt.quantity === 'number' ? pt.quantity : 0,
-            price: typeof pt.price === 'number' ? pt.price : 0,
-            label: typeof pt.label === 'string' ? pt.label : undefined
-          })).filter(pt => pt.quantity > 0 && pt.price > 0) // Basic validation
-          : [];
-      }
-
-      // Add mock variants to the first two products for demonstration
-      if (index === 0) {
-        baseProduct.variants = [
-          {
-            id: `${product.id}-variant1`,
-            name: "Red Color",
-            images: ["https://dummyjson.com/image/i/products/1/1.jpg", "https://dummyjson.com/image/i/products/1/2.jpg"],
-            price: product.price + 10,
-            specifications: { ...baseProduct.specifications, color: "Red", material: "Premium" },
-            contractPrice: (product.price + 10) * 0.75, // 25% discount for this variant
-            priceTiers: [ // Variant specific price tiers
-              { quantity: 2, price: (product.price + 10) * 0.95, label: 'unit' }
-            ],
-          },
-          {
-            id: `${product.id}-variant2`,
-            name: "Blue Color",
-            images: ["https://dummyjson.com/image/i/products/1/3.jpg", "https://dummyjson.com/image/i/products/1/4.jpg"],
-            price: product.price + 15,
-            specifications: { ...baseProduct.specifications, color: "Blue", material: "Standard" },
-            // This variant inherits contract price from base product (if any, or null)
-          },
-        ];
-      } else if (index === 1) {
-        // Mock contract price for the second product's base
-        baseProduct.contractPrice = product.price * 0.85; // 15% discount
-
-        baseProduct.variants = [
-          {
-            id: `${product.id}-variant-large`,
-            name: "Large Size",
-            price: product.price * 1.2,
-            specifications: { ...baseProduct.specifications, size: "Large" },
-            contractPrice: (product.price * 1.2) * 0.8, // 20% discount for this variant specifically
-          },
-        ];
-      }
-      return baseProduct;
-    });
+    const processedProducts = rawData.products.map((p, idx) => processProduct(p, idx)).filter(p => p !== null);
 
     const data = { ...rawData, products: processedProducts };
 

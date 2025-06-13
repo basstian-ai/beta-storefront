@@ -16,7 +16,19 @@ export async function getProducts() {
 
     const rawData = await fetchData('https://dummyjson.com/products');
 
-    // Process products to include new fields with default values if not provided
+    // Validate the structure of rawData before trying to access rawData.products
+    if (typeof rawData !== 'object' || rawData === null || !Array.isArray(rawData.products)) {
+      const errorMsg = 'Invalid data structure received from product API: products array not found or not an array.';
+      console.error(errorMsg, 'Raw data:', rawData); // Log the problematic data
+      // Track this specific error type if desired
+      client.trackException({
+        exception: new Error(errorMsg),
+        properties: { origin: 'bff/products', method: 'getProducts', rawDataReceived: JSON.stringify(rawData, null, 2).substring(0, 1000) }
+      });
+      throw new Error(errorMsg);
+    }
+
+    // If validation passes, proceed with processing
     const processedProducts = rawData.products.map((product, index) => {
       const baseProduct = {
         ...product,

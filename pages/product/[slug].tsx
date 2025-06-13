@@ -52,7 +52,7 @@ const ProductPage = () => {
                 price: selectedVariant.price !== undefined ? selectedVariant.price : currentProduct.price,
                 specifications: selectedVariant.specifications || currentProduct.specifications,
                 priceTiers: selectedVariant.priceTiers || currentProduct.priceTiers, // Prioritize variant priceTiers
-                contractPrice: selectedVariant.contractPrice !== undefined ? selectedVariant.contractPrice : currentProduct.contractPrice, // Prioritize variant contractPrice
+                contractPrice: (selectedVariant.contractPrice !== undefined && selectedVariant.contractPrice !== null) ? selectedVariant.contractPrice : currentProduct.contractPrice, // Prioritize variant contractPrice
               });
             } else {
               // Variant ID in query but not found, display base product and maybe a message

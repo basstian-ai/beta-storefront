@@ -256,7 +256,24 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
       const productId = parseInt(slugFromParams, 10);
       if (productId > 0) { // Basic validation for plausible ID
         try {
-          const fetchedDataForSingleProduct: any = await fetchData(`https://dummyjson.com/products/${productId}`);
+          // const fetchedDataForSingleProduct: any = await fetchData(`https://dummyjson.com/products/${productId}`);
+          // Replace above with direct fetch:
+          let fetchedDataForSingleProduct: any = null;
+          const response = await fetch(`https://dummyjson.com/products/${productId}`);
+          if (response.ok) {
+            fetchedDataForSingleProduct = await response.json();
+          } else {
+            // Log or throw error based on response.status if needed
+            // For now, if not ok, fetchedDataForSingleProduct remains null or an error is thrown
+            // This matches fetchData's behavior of throwing on !response.ok
+            if (response.status === 404) {
+                console.warn(`Direct fetch: Product ID ${productId} not found (404).`);
+                // Let fetchedDataForSingleProduct remain null or handle as needed
+            } else {
+                throw new Error(`Direct fetch HTTP error! status: ${response.status} for ID ${productId}`);
+            }
+          }
+
           if (fetchedDataForSingleProduct) {
             let actualRawProduct = fetchedDataForSingleProduct;
             // Check if fetchedDataForSingleProduct looks like ProductApiResponse (has a .products array)
@@ -267,34 +284,32 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
                 Array.isArray(fetchedDataForSingleProduct.products) &&
                 fetchedDataForSingleProduct.products.length === 1) {
               actualRawProduct = fetchedDataForSingleProduct.products[0];
-              console.log(`Extracted single product from .products[0] for ID ${productId}`);
+              console.log(`Extracted single product from .products[0] for ID ${productId} (direct fetch)`);
             } else if (typeof fetchedDataForSingleProduct === 'object' && fetchedDataForSingleProduct !== null && fetchedDataForSingleProduct.hasOwnProperty('id')) {
               // It looks like a direct product object, use as is
               actualRawProduct = fetchedDataForSingleProduct;
-               console.log(`Using fetched data directly as product for ID ${productId}`);
+               console.log(`Using fetched data directly as product for ID ${productId} (direct fetch)`);
             } else {
               // Does not look like a single product object or a response wrapping one.
-              console.warn(`Unexpected data structure for single product ID ${productId}:`, fetchedDataForSingleProduct);
-              actualRawProduct = null; // Or handle as error / product not found
+              console.warn(`Unexpected data structure for single product ID ${productId} (direct fetch):`, fetchedDataForSingleProduct);
+              actualRawProduct = null;
             }
 
             if (actualRawProduct) {
-               product = processProduct(actualRawProduct, -1); // Pass the potentially unwrapped product
-            } else if (product === null) { // only if product is still null (wasn't found by previous attempts)
-                // If actualRawProduct is null because of unexpected structure, this means product not found for this ID path.
-                console.warn(`Product ID ${productId} resulted in null actualRawProduct after checking structure.`);
+               product = processProduct(actualRawProduct, -1);
+            } else if (product === null) {
+                console.warn(`Product ID ${productId} resulted in null actualRawProduct after checking structure (direct fetch).`);
                 // We don't set notFound:true here, let it fall through to slug search or final notFound.
             }
           }
         } catch (e: any) {
-          // Log error from fetching single product by ID, but don't necessarily fail the whole page yet.
-          console.warn(`Attempt to fetch product by ID ${productId} failed: ${e.message}`);
-          // If the error is NOT a 404, it might be a server/network issue.
-          if (e.message && !e.message.includes("status: 404")) {
-             // For non-404 errors, re-throw to be caught by outer try-catch
-             throw e;
+          // This catch is for the direct fetch attempt
+          console.warn(`Error during direct fetch or processing for product ID ${productId}: ${e.message}`);
+          if (e.message && !e.message.includes("status: 404") && !e.message.includes("Direct fetch HTTP error!")) {
+            // Re-throw if it's not a 404 from our direct fetch logic or the specific error we throw for non-404s
+            throw e;
           }
-          // For 404s (or if rawSingleProduct was null/undefined), product remains null, and we proceed to slug search.
+          // For 404s or other handled errors (like the one we throw for non-404 HTTP issues), product remains null, allowing fallback to slug search
         }
       }
     }

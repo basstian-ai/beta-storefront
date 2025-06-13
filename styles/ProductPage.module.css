@@ -1,0 +1,66 @@
+/* styles/ProductPage.module.css */
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.productName {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.imageGalleryPlaceholder,
+.pricePlaceholder,
+.specificationsPlaceholder {
+  border: 1px dashed #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  color: #777;
+}
+
+.addToCartButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.addToCartButton:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.b2bToggle {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f0f8ff; /* Light alice blue background */
+  border: 1px solid #cce7ff;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+.b2bToggle label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.b2bToggle input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.1); /* Slightly larger checkbox */
+}

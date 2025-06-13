@@ -1,0 +1,64 @@
+/* styles/ImageGallery.module.css */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.mainImageContainer {
+  position: relative; /* For positioning the zoom placeholder */
+  width: 100%;
+  max-width: 500px; /* Adjust as needed */
+  margin-bottom: 15px;
+  border: 1px solid #eee;
+  background-color: #f9f9f9; /* Light background for the image area */
+}
+
+.mainImage {
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  display: block; /* Remove extra space below image */
+}
+
+.zoomPlaceholder {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  cursor: help; /* Indicate it's a placeholder */
+}
+
+.thumbnailList {
+  display: flex;
+  flex-wrap: wrap; /* Allow thumbnails to wrap on smaller screens */
+  justify-content: center;
+  gap: 10px;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
+  overflow: hidden; /* Ensure images fit well */
+}
+
+.thumbnail:hover {
+  border-color: #007bff;
+}
+
+.selectedThumbnail {
+  border-color: #0056b3; /* Darker blue for selected */
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure the image covers the thumbnail area */
+}

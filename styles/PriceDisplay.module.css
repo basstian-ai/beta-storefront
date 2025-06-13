@@ -1,0 +1,46 @@
+/* styles/PriceDisplay.module.css */
+.priceContainer {
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  margin-bottom: 20px;
+}
+
+.contractPrice {
+  font-size: 1.4em;
+  color: #28a745; /* Green color for contract price */
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.regularPrice {
+  font-size: 1.4em;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.priceValue {
+  font-weight: bold;
+  color: #007bff; /* Primary color for emphasis */
+}
+
+.priceTiers {
+  margin-top: 15px;
+}
+
+.tiersTitle {
+  font-size: 1.1em;
+  color: #555;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.tierItem {
+  font-size: 1em;
+  color: #444;
+  margin-bottom: 5px;
+  list-style: disc; /* Use disc for list items */
+  margin-left: 20px; /* Indent list items */
+}

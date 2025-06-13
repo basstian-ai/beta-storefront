@@ -256,7 +256,7 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
       const productId = parseInt(slugFromParams, 10);
       if (productId > 0) { // Basic validation for plausible ID
         try {
-          const rawSingleProduct = await fetchData(`https://dummyjson.com/products/${productId}`);
+          const rawSingleProduct: any = await fetchData(`https://dummyjson.com/products/${productId}`);
           if (rawSingleProduct) {
             // Process the single raw product.
             // Pass -1 to skip index-based specific mocks for direct ID fetches.

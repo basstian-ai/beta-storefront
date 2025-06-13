@@ -6,18 +6,16 @@ import { Product } from '@/types'; // Assuming PriceTier is part of Product or a
 // For now, let's assume priceTiers is an array of objects with quantity and price properties.
 // e.g., { quantity: number, price: number, label?: string }
 
-interface PriceTier {
-  quantity: number;
-  price: number;
-  label?: string; // Optional label like "each" or "per unit"
-}
+// PriceTier interface will be imported from '@/types'
 
 interface PriceDisplayProps {
   price: number;
-  priceTiers: PriceTier[];
+  priceTiers: PriceTier[]; // This will use the imported PriceTier
   contractPrice?: number | null; // Can be number or null
   customerToken?: string | null; // Can be string or null
 }
+
+import { PriceTier } from '@/types'; // Import PriceTier
 
 const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, priceTiers, contractPrice, customerToken }) => {
   const showContractPrice = customerToken && typeof contractPrice === 'number';

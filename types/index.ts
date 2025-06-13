@@ -25,7 +25,7 @@ export type Product = {
   images: string[];
   description: string; // Added product description
   specifications: Record<string, any> | Array<Record<string, any>>;
-  priceTiers: Array<Record<string, any>>;
+  priceTiers: PriceTier[]; // Use the new PriceTier type
   contractPrice?: number;
   variants?: ProductVariant[]; // Optional array of variants
 };
@@ -37,7 +37,7 @@ export type ProductVariant = {
   images?: string[]; // Variant-specific images
   price?: number; // Variant-specific price
   specifications?: Record<string, any> | Array<Record<string, any>>; // Variant-specific specifications
-  priceTiers?: Array<Record<string, any>>; // Optional price tiers for the variant
+  priceTiers?: PriceTier[]; // Use the new PriceTier type, already optional
   contractPrice?: number | null; // Optional contract price for the variant (can be null if explicitly no contract price)
   // Add other variant-specific fields as needed, e.g., stock levels
 };
@@ -48,4 +48,10 @@ export interface ProductApiResponse {
   skip: number;
   limit: number;
   // Add any other fields that dummyjson.com/products might return at the top level
+}
+
+export interface PriceTier {
+  quantity: number;
+  price: number;
+  label?: string;
 }

@@ -22,10 +22,28 @@ export async function getProducts() {
         ...product,
         images: product.images || [product.thumbnail], // Use thumbnail if images array is not available
         specifications: product.specifications || { general: "Basic " + product.title + " specifications." },
-        priceTiers: product.priceTiers || [],
+        // priceTiers will be handled below
         // Mock contract price for the first product
         contractPrice: index === 0 ? product.price * 0.8 : (product.contractPrice || null), // 20% discount for product 1
       };
+
+      // Handle priceTiers for baseProduct
+      if (index === 0) {
+        baseProduct.priceTiers = [
+          { quantity: 5, price: product.price * 0.9, label: 'each' }, // 10% discount for 5
+          { quantity: 10, price: product.price * 0.85, label: 'each' } // 15% discount for 10
+        ];
+      } else {
+        // For other products, ensure priceTiers is at least an empty array
+        // or conforms if data is available from product.priceTiers
+        baseProduct.priceTiers = product.priceTiers && Array.isArray(product.priceTiers) ?
+          product.priceTiers.map(pt => ({
+            quantity: typeof pt.quantity === 'number' ? pt.quantity : 0,
+            price: typeof pt.price === 'number' ? pt.price : 0,
+            label: typeof pt.label === 'string' ? pt.label : undefined
+          })).filter(pt => pt.quantity > 0 && pt.price > 0) // Basic validation
+          : [];
+      }
 
       // Add mock variants to the first two products for demonstration
       if (index === 0) {
@@ -37,6 +55,9 @@ export async function getProducts() {
             price: product.price + 10,
             specifications: { ...baseProduct.specifications, color: "Red", material: "Premium" },
             contractPrice: (product.price + 10) * 0.75, // 25% discount for this variant
+            priceTiers: [ // Variant specific price tiers
+              { quantity: 2, price: (product.price + 10) * 0.95, label: 'unit' }
+            ],
           },
           {
             id: `${product.id}-variant2`,

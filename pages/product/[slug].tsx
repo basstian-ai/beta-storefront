@@ -2,134 +2,164 @@
 import Head from 'next/head'; // Import Head
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { Product, ProductVariant, ProductApiResponse } from '@/types'; // Add ProductApiResponse here
+import { Product, ProductVariant, ProductApiResponse, PriceTier } from '@/types'; // Add ProductApiResponse, PriceTier
 import { useEffect, useState } from 'react';
 import styles from '@/styles/ProductPage.module.css';
-// NOTE: We will need to implement a way to fetch a single product.
-// For now, we'll fetch all products and find the one that matches the slug.
-// This is not efficient and should be replaced with a proper API endpoint.
-import { getProducts } from '@/bff/products'; // Assuming this function can be called client-side
-import ImageGallery from '@/components/ImageGallery'; // Import the ImageGallery component
-import PriceDisplay from '@/components/PriceDisplay'; // Import the PriceDisplay component
-import ProductSpecifications from '@/components/ProductSpecifications'; // Import the ProductSpecifications component
+// getProducts will be used in getServerSideProps, so no longer imported directly for client-side use here.
+// import { getProducts } from '@/bff/products';
+import ImageGallery from '@/components/ImageGallery';
+import PriceDisplay from '@/components/PriceDisplay';
+import ProductSpecifications from '@/components/ProductSpecifications';
+import { GetServerSideProps } from 'next';
 
-const ProductPage = () => {
+// Define ProductPageProps
+interface ProductPageProps {
+  product: Product | null; // Product can be null if not found or error
+  error?: string; // Optional error message from server-side
+}
+
+const ProductPage: React.FC<ProductPageProps> = ({ product: initialProduct, error: serverError }) => {
   const router = useRouter();
-  const { slug, variant: variantIdFromQuery } = router.query; // Get variantId from query
+  // slug from router.query might be undefined initially on client if page is statically optimized or fallback.
+  // however, for getServerSideProps, slug is guaranteed via context.params
+  const { slug: querySlug, variant: variantIdFromQuery } = router.query;
 
-  const [baseProduct, setBaseProduct] = useState<Product | null>(null);
-  // This state will hold the actual data to display (base product or selected variant)
+  // Initialize baseProduct from props. This is the product fetched server-side.
+  const [baseProduct, setBaseProduct] = useState<Product | null>(initialProduct);
+  // displayData will hold the data for the currently displayed product/variant
   const [displayData, setDisplayData] = useState<Partial<Product> & { name: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProductAndProcessVariant = async () => {
-      if (!slug) return;
-      if (!router.isReady) return; // Wait for router to be ready to access query params reliably
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        const allProductsData: ProductApiResponse = await getProducts();
-        const currentProduct = allProductsData.products.find((p: Product) => p.slug === slug);
-
-        if (currentProduct) {
-          setBaseProduct(currentProduct); // Store the base product
-
-          const variantQuery = Array.isArray(variantIdFromQuery) ? variantIdFromQuery[0] : variantIdFromQuery;
-
-          if (variantQuery && currentProduct.variants && currentProduct.variants.length > 0) {
-            const selectedVariant = currentProduct.variants.find(v => v.id === variantQuery);
-            if (selectedVariant) {
-              // Merge variant data with base product data, variant fields take precedence
-              setDisplayData({
-                ...currentProduct, // Base product data as fallback
-                ...selectedVariant, // Variant-specific data
-                name: `${currentProduct.name} - ${selectedVariant.name}`, // Combine names
-                // Ensure essential fields are present, falling back to base product if not in variant
-                images: selectedVariant.images || currentProduct.images,
-                price: selectedVariant.price !== undefined ? selectedVariant.price : currentProduct.price,
-                specifications: selectedVariant.specifications || currentProduct.specifications,
-                priceTiers: selectedVariant.priceTiers || currentProduct.priceTiers, // Prioritize variant priceTiers
-                contractPrice: (selectedVariant.contractPrice !== undefined && selectedVariant.contractPrice !== null) ? selectedVariant.contractPrice : currentProduct.contractPrice, // Prioritize variant contractPrice
-              });
-            } else {
-              // Variant ID in query but not found, display base product and maybe a message
-              setDisplayData(currentProduct);
-              // Optionally, set an error/warning that the variant was not found
-              console.warn(`Variant with ID "${variantQuery}" not found for product "${currentProduct.name}". Displaying base product.`);
-            }
-          } else {
-            // No variant in query or product has no variants, display base product
-            setDisplayData(currentProduct);
-          }
-        } else {
-          setError('Product not found.');
-          setBaseProduct(null);
-          setDisplayData(null);
-        }
-      } catch (e) {
-        console.error('Failed to fetch product:', e);
-        setError('Failed to load product details.');
-        setBaseProduct(null);
-        setDisplayData(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProductAndProcessVariant();
-  }, [slug, variantIdFromQuery, router.isReady]); // Add variantIdFromQuery and router.isReady to dependencies
-
-  if (isLoading) {
-    return (
-      <Layout categories={[]}>
-        <div className={styles.container}>
-          <p>Loading product details...</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout categories={[]}>
-        <div className={styles.container}>
-          <p className={styles.error}>{error}</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  // Use displayData for rendering
-  if (!displayData) {
-    return (
-      <Layout categories={[]}>
-        <div className={styles.container}>
-          {/* This message covers both product not found or displayData not being set yet after loading */}
-          <p>Product details are unavailable.</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  // Ensure all necessary fields for components have fallbacks if displayData is partial
-  const images = displayData.images || baseProduct?.images || [];
-  const price = displayData.price !== undefined ? displayData.price : baseProduct?.price || 0;
-  const priceTiers = displayData.priceTiers || baseProduct?.priceTiers || [];
-  const contractPrice = displayData.contractPrice !== undefined ? displayData.contractPrice : baseProduct?.contractPrice; // Get contract price from displayData
-  const specifications = displayData.specifications || baseProduct?.specifications || {};
-  const productName = displayData.name; // Already combined or base name
-  const productDescription = displayData.description || baseProduct?.description || '';
-  const productSku = displayData.id || baseProduct?.id || ''; // Use displayData.id if available (variant id), else baseProduct.id
+  // Client-side error state for issues after initial load (e.g., variant not found)
+  const [clientError, setClientError] = useState<string | null>(serverError || null);
 
   // B2B User simulation
   const [isB2BUser, setIsB2BUser] = useState(false);
   const customerToken = isB2BUser ? "B2B_USER_TOKEN" : null;
 
+  useEffect(() => {
+    // This effect now primarily handles variant selection based on query params
+    // or setting initial displayData from baseProduct.
+    // It also handles the case where initialProduct itself might change (e.g. due to router.replace with new props)
+    if (!initialProduct && serverError) { // If initialProduct was null due to server error
+        setDisplayData(null);
+        setBaseProduct(null); // Ensure baseProduct is also null
+        setClientError(serverError); // clientError is already set from serverError initially
+        return;
+    }
+
+    if (!initialProduct && !serverError) { // Product genuinely not found by getServerSideProps without an error
+        setDisplayData(null);
+        setBaseProduct(null);
+        setClientError("Product not found."); // This case should be handled by notFound: true in getServerSideProps
+        return;
+    }
+
+    // If initialProduct has changed, update baseProduct state
+    if (initialProduct && initialProduct.id !== baseProduct?.id) {
+        setBaseProduct(initialProduct);
+    }
+
+
+    if (baseProduct) {
+      // router.isReady ensures that router.query is fully populated client-side
+      if (!router.isReady && querySlug) {
+        // If router not ready but we have a slug (from initial props), we can proceed
+        // or wait. For now, let's proceed if baseProduct is available.
+      }
+
+      const variantQuery = Array.isArray(variantIdFromQuery) ? variantIdFromQuery[0] : variantIdFromQuery;
+
+      if (variantQuery && baseProduct.variants && baseProduct.variants.length > 0) {
+        const selectedVariant = baseProduct.variants.find(v => v.id === variantQuery);
+        if (selectedVariant) {
+          setDisplayData({
+            ...baseProduct,
+            ...selectedVariant,
+            name: `${baseProduct.name} - ${selectedVariant.name}`,
+            images: selectedVariant.images || baseProduct.images,
+            price: selectedVariant.price !== undefined ? selectedVariant.price : baseProduct.price,
+            description: selectedVariant.description || baseProduct.description,
+            specifications: selectedVariant.specifications || baseProduct.specifications,
+            priceTiers: selectedVariant.priceTiers || baseProduct.priceTiers,
+            contractPrice: (selectedVariant.contractPrice !== undefined && selectedVariant.contractPrice !== null) ? selectedVariant.contractPrice : baseProduct.contractPrice,
+            id: selectedVariant.id, // Ensure variant ID is used for SKU etc.
+          });
+          setClientError(null); // Clear previous client errors if variant is found
+        } else {
+          // Variant ID in query but not found
+          setDisplayData(baseProduct); // Fallback to base product
+          console.warn(`Variant with ID "${variantQuery}" not found for product "${baseProduct.name}". Displaying base product.`);
+          // setClientError(`Variant "${variantQuery}" not found. Displaying base product.`); // Optional: inform user
+        }
+      } else {
+        // No variant in query, or product has no variants, display base product
+        setDisplayData(baseProduct);
+        setClientError(null); // Clear previous client errors
+      }
+    }
+  }, [baseProduct, variantIdFromQuery, router.isReady, serverError, initialProduct, querySlug]);
+
+
+  // Handle global loading/error states based on props from getServerSideProps first
+  if (serverError && !initialProduct) { // If getServerSideProps returned an error
+    return (
+      <Layout categories={[]}>
+        <div className={styles.container}>
+          <p className={styles.error}>{serverError}</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // This case should ideally be caught by `notFound: true` in getServerSideProps,
+  // leading to a 404 page by Next.js.
+  if (!initialProduct && !serverError && !clientError) { // If product is null, no server error, and no client error yet
+     return (
+        <Layout categories={[]}>
+            <div className={styles.container}>
+                <p>Product not found.</p>
+            </div>
+        </Layout>
+    );
+  }
+
+  // If there's a client-side error to show (e.g. variant not found, or if initial error wasn't caught above)
+  if (clientError && !displayData) { // Check !displayData to avoid showing error if data is already being shown
+      return (
+          <Layout categories={[]}>
+              <div className={styles.container}>
+                  <p className={styles.error}>{clientError}</p>
+              </div>
+          </Layout>
+      );
+  }
+
+  // If, after all checks, displayData is still null (e.g. product was found, but then variant logic failed silently)
+  // This is a fallback. Should ideally not be reached if initialProduct is valid.
+  if (!displayData) {
+    return (
+        <Layout categories={[]}>
+            <div className={styles.container}>
+                {/* This could be a brief "Loading variant..." or similar if initialProduct exists */}
+                <p>Product details are currently processing or unavailable.</p>
+            </div>
+        </Layout>
+    );
+  }
+
+  // Ensure all necessary fields for components have fallbacks if displayData is partial
+  // These should now reliably come from displayData which has merged baseProduct fields
+  const images = displayData.images || []; // Default to empty array if somehow still undefined
+  const price = displayData.price || 0;
+  const priceTiers = displayData.priceTiers || [];
+  const contractPrice = displayData.contractPrice; // Can be null or undefined
+  const specifications = displayData.specifications || {};
+  const productName = displayData.name;
+  const productDescription = displayData.description || '';
+  const productSku = displayData.id || ''; // displayData should have an id (either base or variant)
+
   // Construct product URL for JSON-LD
-  const productUrl = typeof window !== 'undefined' ? window.location.href : '';
+  // For SSR, router.asPath might be more reliable if window is not available, but this runs client-side for JSON-LD too.
+  const productUrl = typeof window !== 'undefined' ? window.location.href : (initialProduct ? `/product/${initialProduct.slug}` : '');
 
 
   // Prepare JSON-LD data
@@ -138,25 +168,22 @@ const ProductPage = () => {
     "@type": "Product",
     "name": productName,
     "description": productDescription,
-    "image": images, // Already an array of strings
+    "image": images,
     "sku": productSku,
     "offers": {
       "@type": "Offer",
-      "priceCurrency": "USD", // Assuming USD for now
+      "priceCurrency": "USD",
       "price": price.toFixed(2),
-      "availability": "https://schema.org/InStock", // Assuming InStock for now
-      "url": productUrl, // Full URL of the current page
+      "availability": "https://schema.org/InStock",
+      "url": productUrl,
     },
-    // Potentially add more fields like brand, reviews, aggregateRating if available
   };
 
-
   return (
-    <Layout categories={[]}> {/* TODO: Fetch and pass actual main navigation categories */}
+    <Layout categories={[]}>
       <Head>
         <title>{productName} | My E-commerce Site</title>
         <meta name="description" content={productDescription} />
-        {/* Other head elements */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdData) }}
@@ -167,7 +194,6 @@ const ProductPage = () => {
 
         <ImageGallery images={images} productName={productName} />
 
-        {/* B2B User Simulation Checkbox */}
         <div className={styles.b2bToggle}>
           <label>
             <input
@@ -181,23 +207,22 @@ const ProductPage = () => {
 
         <PriceDisplay
           price={price}
-          priceTiers={priceTiers}
+          priceTiers={priceTiers as PriceTier[]} // Cast as PriceTier[] as displayData.priceTiers might be generic
           contractPrice={contractPrice}
           customerToken={customerToken}
         />
 
         <ProductSpecifications specifications={specifications} />
 
-        {/* Add a simple variant selector for testing (optional) */}
-        {baseProduct && baseProduct.variants && baseProduct.variants.length > 0 && (
+        {initialProduct && initialProduct.variants && initialProduct.variants.length > 0 && (
           <div className={styles.variantSelector}>
             <h4>Select Variant:</h4>
             <select
               value={Array.isArray(variantIdFromQuery) ? variantIdFromQuery[0] : variantIdFromQuery || ''}
-              onChange={(e) => router.push(`/product/${slug}?variant=${e.target.value}`, undefined, { shallow: true })}
+              onChange={(e) => router.push(`/product/${initialProduct.slug}?variant=${e.target.value}`, undefined, { shallow: true })}
             >
               <option value="">Select a variant</option>
-              {baseProduct.variants.map(v => (
+              {initialProduct.variants.map(v => (
                 <option key={v.id} value={v.id}>{v.name}</option>
               ))}
             </select>
@@ -208,6 +233,39 @@ const ProductPage = () => {
       </div>
     </Layout>
   );
+};
+
+// Import getProducts for getServerSideProps
+// This ensures it's tree-shaken from client bundle if only used here.
+import { getProducts } from '@/bff/products';
+
+export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (context) => {
+  const { slug } = context.params || {};
+  // const { variant: variantIdFromQuery } = context.query; // Can also get variant here
+
+  if (typeof slug !== 'string') {
+    return { notFound: true }; // Or handle as an error
+  }
+
+  try {
+    // The getProducts call is now server-side only
+    const allProductsData: ProductApiResponse = await getProducts();
+    const product = allProductsData.products.find((p: Product) => p.slug === slug);
+
+    if (!product) {
+      return { notFound: true };
+    }
+
+    // Optionally, resolve initial variant here if variantIdFromQuery is used
+    // For simplicity, current plan keeps variant resolution client-side for now
+
+    return { props: { product, error: null } }; // Ensure error is explicitly null if no error
+  } catch (e) {
+    const error = e as Error;
+    console.error('Failed to fetch product in getServerSideProps:', error.message);
+    // Pass an error message to the page component
+    return { props: { product: null, error: 'Failed to load product details from server.' } };
+  }
 };
 
 export default ProductPage;

@@ -2,7 +2,7 @@
 import Head from 'next/head'; // Import Head
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { Product, ProductVariant } from '@/types'; // Import ProductVariant
+import { Product, ProductVariant, ProductApiResponse } from '@/types'; // Add ProductApiResponse here
 import { useEffect, useState } from 'react';
 import styles from '@/styles/ProductPage.module.css';
 // NOTE: We will need to implement a way to fetch a single product.
@@ -31,7 +31,7 @@ const ProductPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const allProductsData = await getProducts();
+        const allProductsData: ProductApiResponse = await getProducts();
         const currentProduct = allProductsData.products.find((p: Product) => p.slug === slug);
 
         if (currentProduct) {

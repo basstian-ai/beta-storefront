@@ -39,3 +39,11 @@ export type ProductVariant = {
   specifications?: Record<string, any> | Array<Record<string, any>>; // Variant-specific specifications
   // Add other variant-specific fields as needed, e.g., stock levels
 };
+
+export interface ProductApiResponse {
+  products: Product[];
+  total: number;
+  skip: number;
+  limit: number;
+  // Add any other fields that dummyjson.com/products might return at the top level
+}

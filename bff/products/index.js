@@ -3,7 +3,7 @@ import appInsights from 'applicationinsights';
 
 /**
  * Fetches product data from dummyjson.com.
- * @returns {Promise<Object>} A promise that resolves to the product data.
+ * @returns {Promise<import('../../types').ProductApiResponse>} A promise that resolves to the product data.
  */
 export async function getProducts() {
   const client = appInsights.defaultClient;

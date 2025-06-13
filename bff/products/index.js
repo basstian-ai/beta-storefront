@@ -2,8 +2,11 @@ import { fetchData } from '../utils/fetchData.js';
 import appInsights from 'applicationinsights';
 
 /**
- * Fetches product data from dummyjson.com.
- * @returns {Promise<import('../../types').ProductApiResponse>} A promise that resolves to the product data.
+ * Transforms raw product data from dummyjson into our {@link Product} shape.
+ *
+ * @param {Record<string, any>} product - Raw product object from the API.
+ * @param {number} [index=-1] - Index of the product in the list (used for demo variants).
+ * @returns {import('../../types').Product | null} Processed product or `null` when input is invalid.
  */
 
 export function processProduct(product, index = -1) { // Added index default

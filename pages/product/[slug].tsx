@@ -259,7 +259,7 @@ export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (c
     // Optionally, resolve initial variant here if variantIdFromQuery is used
     // For simplicity, current plan keeps variant resolution client-side for now
 
-    return { props: { product, error: null } }; // Ensure error is explicitly null if no error
+    return { props: { product } };
   } catch (e) {
     const error = e as Error;
     console.error('Failed to fetch product in getServerSideProps:', error.message);

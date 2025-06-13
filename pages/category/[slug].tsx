@@ -9,7 +9,8 @@ import { ParsedUrlQuery } from 'querystring';
 import {
   fetchCategoryWithProducts,
   CategoryPageData,
-  Facets
+  Facets,
+  fetchCategories
 } from '@/lib/api';
 // Removed filterProducts import
 import { useState, useEffect } from 'react';
@@ -208,8 +209,10 @@ export async function getStaticProps(
 }
 
 export async function getStaticPaths() {
-   const knownSlugs = ['electronics', 'apparel']; // Mock slugs based on current data
-   const paths = knownSlugs.map(s => ({ params: { slug: s } }));
+  const categories = await fetchCategories();
+  const paths = categories.map(category => ({
+    params: { slug: category.slug },
+  }));
   return { paths, fallback: 'blocking' };
 }
 

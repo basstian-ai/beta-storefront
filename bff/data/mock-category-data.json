@@ -22,5 +22,18 @@
       "brand": ["FashionCo", "StyleStitch"],
       "size": ["S", "M", "10"]
     }
+  },
+  {
+    "category": { "id": "cat3", "name": "Furniture", "slug": "furniture" },
+    "products": [
+      { "id": "prod7", "name": "Modern Sofa", "slug": "modern-sofa", "price": 599.99, "brand": "ComfyHome", "size": "3-seater", "imageUrl": "/images/sofa.jpg", "createdAt": "2023-09-01T10:00:00Z" },
+      { "id": "prod8", "name": "Oak Coffee Table", "slug": "oak-coffee-table", "price": 149.00, "brand": "WoodCraft", "size": "Medium", "imageUrl": "/images/coffee-table.jpg", "createdAt": "2023-09-05T11:00:00Z" },
+      { "id": "prod9", "name": "Bookshelf", "slug": "bookshelf", "price": 89.50, "brand": "ReadWell", "size": "Large", "imageUrl": "/images/bookshelf.jpg", "createdAt": "2023-09-02T14:20:00Z" }
+    ],
+    "facets": {
+      "brand": ["ComfyHome", "WoodCraft", "ReadWell"],
+      "material": ["Fabric", "Wood"],
+      "size": ["3-seater", "Medium", "Large"]
+    }
   }
 ]

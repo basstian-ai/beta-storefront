@@ -37,6 +37,8 @@ export type ProductVariant = {
   images?: string[]; // Variant-specific images
   price?: number; // Variant-specific price
   specifications?: Record<string, any> | Array<Record<string, any>>; // Variant-specific specifications
+  priceTiers?: Array<Record<string, any>>; // Optional price tiers for the variant
+  contractPrice?: number | null; // Optional contract price for the variant (can be null if explicitly no contract price)
   // Add other variant-specific fields as needed, e.g., stock levels
 };
 

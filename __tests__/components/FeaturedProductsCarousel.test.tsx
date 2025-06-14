@@ -50,7 +50,7 @@ describe('FeaturedProductsCarousel', () => {
 
       // Check product link
       const linkElement = screen.getByRole('link', { name: new RegExp(product.name, 'i') });
-      expect(linkElement).toHaveAttribute('href', `/products/${product.slug}`);
+      expect(linkElement).toHaveAttribute('href', `/product/${product.slug}`);
 
       // Check product image
       const imageElement = screen.getByAltText(product.name);

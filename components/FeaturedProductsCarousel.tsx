@@ -12,7 +12,7 @@ export default function FeaturedProductsCarousel({ products }: Props) {
       <h2>Featured Products</h2>
       <div className={styles.carousel}>
         {products.map((product) => (
-          <a key={product.id} href={`/products/${product.slug}`} className={styles.productCard}>
+          <a key={product.id} href={`/product/${product.slug}`} className={styles.productCard}>
             <img src={product.imageUrl} alt={product.name} />
             <h3>{product.name}</h3>
             <p>${product.price.toFixed(2)}</p>

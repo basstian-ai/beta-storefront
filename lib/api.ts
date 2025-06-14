@@ -43,6 +43,7 @@ export interface CategoryPageData {
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
 import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import MOCK_PRODUCT_DETAILS_JSON from '../bff/data/mock-product-details.json';
 import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
 const applyFiltersToProducts = (
@@ -176,14 +177,14 @@ export async function fetchCategories(): Promise<ImportedCategory[]> {
 
 export async function fetchFeaturedProducts(): Promise<ImportedProduct[]> {
   const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
-  const res = await fetch(`${CMS_BASE_URL}/products?limit=6`); // DummyCMS format
+  const res = await fetch(`${CMS_BASE_URL}/products?limit=6`);
   if (!res.ok) throw new Error('Failed to fetch featured products');
 
   const json = await res.json();
   return (json.products || []).map((p: any) => ({
-    id: p.id.toString(), // Ensure id is string
+    id: p.id.toString(),
     name: p.title,
-    slug: p.id.toString(), // Use id as slug for simplicity with dummyjson
+    slug: p.id.toString(),
     price: p.price,
     imageUrl: p.thumbnail,
   }));
@@ -230,6 +231,25 @@ export async function fetchProductById(
     imageUrl: p.thumbnail,
     createdAt: p.createdAt || '',
   };
+}
+
+// Fetches detailed product data including gallery images and specifications
+export async function fetchProductDetailsById(
+  id: string
+): Promise<ImportedProduct | null> {
+  try {
+    const base = await fetchProductById(id);
+    const local = (MOCK_PRODUCT_DETAILS_JSON as ImportedProduct[]).find(
+      p => String(p.id) === String(id)
+    );
+    if (!base && !local) {
+      return null;
+    }
+    return { ...(base || {}), ...(local || {}) } as ImportedProduct;
+  } catch (error) {
+    console.error('Failed to load detailed product', id, error);
+    return null;
+  }
 }
 
 // Placeholder for CMS_BASE_URL, should be set in environment variables

@@ -43,6 +43,7 @@ export interface CategoryPageData {
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
 import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import MOCK_PRODUCT_DETAILS_JSON from '../bff/data/mock-product-details.json';
 import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
 const applyFiltersToProducts = (
@@ -175,17 +176,17 @@ export async function fetchCategories(): Promise<ImportedCategory[]> {
 }
 
 export async function fetchFeaturedProducts(): Promise<ImportedProduct[]> {
-  const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
-  const res = await fetch(`${CMS_BASE_URL}/products?limit=6`); // DummyCMS format
-  if (!res.ok) throw new Error('Failed to fetch featured products');
+  // Use local mock details to keep IDs consistent across the app
+  const products = MOCK_PRODUCT_DETAILS_JSON as ImportedProduct[];
 
-  const json = await res.json();
-  return (json.products || []).map((p: any) => ({
-    id: p.id.toString(), // Ensure id is string
-    name: p.title,
-    slug: p.id.toString(), // Use id as slug for simplicity with dummyjson
+  // Return up to 6 products for the homepage carousel
+  return products.slice(0, 6).map(p => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
     price: p.price,
-    imageUrl: p.thumbnail,
+    imageUrl: p.imageUrl,
+    createdAt: p.createdAt,
   }));
 }
 
@@ -230,6 +231,21 @@ export async function fetchProductById(
     imageUrl: p.thumbnail,
     createdAt: p.createdAt || '',
   };
+}
+
+// Fetches detailed product data including gallery images and specifications
+export async function fetchProductDetailsById(
+  id: string
+): Promise<ImportedProduct | null> {
+  try {
+    const product = (MOCK_PRODUCT_DETAILS_JSON as ImportedProduct[]).find(
+      p => String(p.id) === String(id)
+    );
+    return product || null;
+  } catch (error) {
+    console.error('Failed to load detailed product', id, error);
+    return null;
+  }
 }
 
 // Placeholder for CMS_BASE_URL, should be set in environment variables

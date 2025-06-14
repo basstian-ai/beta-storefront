@@ -8,10 +8,10 @@ import type { Product, Category, Variant } from '@/types';
 const mockRouterPush = jest.fn();
 jest.mock('next/router', () => ({
   useRouter: () => ({
-    query: { id: 'prod1' }, // Default mock query
-    pathname: '/product/prod1',
+    query: { id: '1' }, // Default mock query
+    pathname: '/product/1',
     push: mockRouterPush,
-    asPath: '/product/prod1',
+    asPath: '/product/1',
   }),
 }));
 
@@ -65,7 +65,7 @@ describe('ProductPage Component', () => {
     // Reset product data for each test to ensure isolation
     MOCK_PRODUCT_DATA = {
       ...mockProductBase,
-      id: 'prod1',
+      id: '1',
       name: 'Test Product 1',
       price: 100.00,
     };

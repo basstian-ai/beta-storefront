@@ -43,6 +43,7 @@ export interface CategoryPageData {
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
 import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import MOCK_PRODUCT_DETAILS_JSON from '../bff/data/mock-product-details.json';
 import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
 const applyFiltersToProducts = (
@@ -230,6 +231,21 @@ export async function fetchProductById(
     imageUrl: p.thumbnail,
     createdAt: p.createdAt || '',
   };
+}
+
+// Fetches detailed product data including gallery images and specifications
+export async function fetchProductDetailsById(
+  id: string
+): Promise<ImportedProduct | null> {
+  try {
+    const product = (MOCK_PRODUCT_DETAILS_JSON as ImportedProduct[]).find(
+      p => String(p.id) === String(id)
+    );
+    return product || null;
+  } catch (error) {
+    console.error('Failed to load detailed product', id, error);
+    return null;
+  }
 }
 
 // Placeholder for CMS_BASE_URL, should be set in environment variables

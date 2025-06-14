@@ -1,0 +1,108 @@
+[
+  {
+    "id": "1",
+    "name": "Super Advanced Laptop",
+    "slug": "super-advanced-laptop",
+    "price": 1200.00,
+    "imageUrl": "/images/laptop1.jpg",
+    "createdAt": "2023-10-01T10:00:00Z",
+    "images": [
+      { "src": "/images/laptop1-large.jpg", "alt": "Large view of Super Advanced Laptop" },
+      { "src": "/images/laptop1-side.jpg", "alt": "Side view of Super Advanced Laptop" }
+    ],
+    "specifications": [
+      { "name": "Processor", "value": "UltraFast i9" },
+      { "name": "RAM", "value": "32GB DDR5" },
+      { "name": "Storage", "value": "1TB NVMe SSD" },
+      { "name": "Display", "value": "15.6-inch 4K OLED" }
+    ],
+    "priceTiers": [
+      { "quantity": 1, "price": 1200.00 },
+      { "quantity": 5, "price": 1150.00 },
+      { "quantity": 10, "price": 1100.00 }
+    ],
+    "contractPrice": 1050.00,
+    "variants": [
+      {
+        "id": "1-silver-1tb",
+        "name": "Silver, 1TB SSD",
+        "sku": "SCL-SLV-1TB",
+        "attributes": { "color": "Silver", "storage": "1TB SSD" },
+        "imageUrl": "/images/laptop-silver.jpg"
+      },
+      {
+        "id": "1-spacegray-2tb",
+        "name": "Space Gray, 2TB SSD",
+        "sku": "SCL-GRY-2TB",
+        "attributes": { "color": "Space Gray", "storage": "2TB SSD" },
+        "imageUrl": "/images/laptop-spacegray.jpg"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Wireless Ergonomic Mouse",
+    "slug": "wireless-ergonomic-mouse",
+    "price": 75.50,
+    "imageUrl": "/images/mouse1.jpg",
+    "createdAt": "2023-10-05T14:30:00Z",
+    "images": [
+      { "src": "/images/mouse1-top.jpg", "alt": "Top view of Wireless Ergonomic Mouse" },
+      { "src": "/images/mouse1-angle.jpg", "alt": "Angled view of Wireless Ergonomic Mouse" }
+    ],
+    "specifications": [
+      { "name": "Connectivity", "value": "Bluetooth 5.0, 2.4GHz RF" },
+      { "name": "DPI", "value": "16000" },
+      { "name": "Buttons", "value": "6 programmable" },
+      { "name": "Battery Life", "value": "70 hours" }
+    ],
+    "priceTiers": [
+      { "quantity": 1, "price": 75.50 },
+      { "quantity": 10, "price": 70.00 },
+      { "quantity": 25, "price": 65.00 }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Mechanical Gaming Keyboard",
+    "slug": "mechanical-gaming-keyboard",
+    "price": 150.00,
+    "imageUrl": "/images/keyboard1.jpg",
+    "createdAt": "2023-09-20T09:15:00Z",
+    "images": [
+      { "src": "/images/keyboard1-full.jpg", "alt": "Full view of Mechanical Gaming Keyboard" },
+      { "src": "/images/keyboard1-keys.jpg", "alt": "Close-up of keys on Mechanical Gaming Keyboard" }
+    ],
+    "specifications": [
+      { "name": "Switch Type", "value": "Cherry MX Red" },
+      { "name": "Backlight", "value": "RGB Per-Key" },
+      { "name": "Layout", "value": "Full Size (104 keys)" },
+      { "name": "Connectivity", "value": "USB-C Wired" }
+    ],
+    "priceTiers": [
+      { "quantity": 1, "price": 150.00 },
+      { "quantity": 3, "price": 140.00 }
+    ],
+    "contractPrice": 130.00,
+    "variants": [
+      {
+        "id": "3-red-linear",
+        "name": "Red Switches (Linear)",
+        "sku": "MGK-RED-LIN",
+        "attributes": { "switchType": "Red", "feedback": "Linear" }
+      },
+      {
+        "id": "3-blue-clicky",
+        "name": "Blue Switches (Clicky)",
+        "sku": "MGK-BLU-CLK",
+        "attributes": { "switchType": "Blue", "feedback": "Clicky" }
+      },
+      {
+        "id": "3-brown-tactile",
+        "name": "Brown Switches (Tactile)",
+        "sku": "MGK-BRN-TAC",
+        "attributes": { "switchType": "Brown", "feedback": "Tactile" }
+      }
+    ]
+  }
+]

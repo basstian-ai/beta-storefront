@@ -1,36 +1,5 @@
 import { fetchData } from '../utils/fetchData.js';
-import fs from 'fs/promises';
-import path from 'path';
 import appInsights from 'applicationinsights';
-
-// Path to the mock data file
-const mockDataPath = path.join(process.cwd(), 'bff', 'data', 'mock-product-details.json');
-let productsData = [];
-
-// Load mock data at startup
-async function loadMockData() {
-  const client = appInsights.defaultClient;
-  try {
-    const data = await fs.readFile(mockDataPath, 'utf-8');
-    productsData = JSON.parse(data);
-    client.trackTrace({
-      message: 'Mock product data loaded successfully',
-      severity: 1,
-      properties: { origin: 'bff/products', count: productsData.length },
-    });
-  } catch (error) {
-    client.trackException({
-      exception: error,
-      properties: { origin: 'bff/products', event: 'loadMockDataFailed', path: mockDataPath },
-    });
-    // Depending on the application's needs, you might want to throw this error
-    // or handle it by setting productsData to an empty array or default set.
-    console.error('Failed to load mock product data:', error);
-    productsData = []; // Ensure it's an empty array on failure to prevent crashes
-  }
-}
-
-loadMockData(); // Load the data when the module is initialized
 
 /**
  * Fetches product data from dummyjson.com.
@@ -74,42 +43,32 @@ export async function getProducts() {
 }
 
 /**
- * Fetches a single product by id from the loaded mock data.
+ * Fetches a single product by id from dummyjson.com.
  * @param {string|number} id - The product id.
- * @returns {Promise<Object|null>} The product data, or null if not found.
+ * @returns {Promise<Object>} The product data.
  */
 export async function getProduct(id) {
   const client = appInsights.defaultClient;
-  // Ensure data is loaded. This is a fallback, ideally loadMockData completes at startup.
-  if (productsData.length === 0) {
-    await loadMockData(); // Attempt to reload if empty, might indicate initial load failure
-  }
-
-  const product = productsData.find(p => String(p.id) === String(id));
-
-  if (product) {
+  try {
     client.trackTrace({
-      message: 'Product retrieved from mock data',
+      message: 'Calling dummyjson for product detail',
       severity: 1,
-      properties: { origin: 'bff/products', method: 'getProduct', id: String(id), source: 'mock-file' },
+      properties: { origin: 'bff/products', method: 'getProduct', id: String(id) },
     });
+
+    const data = await fetchData(`https://dummyjson.com/products/${id}`);
+
     client.trackEvent({
       name: 'ProductFetchSuccess',
-      properties: { id: String(id), source: 'mock-file' },
+      properties: { id: String(id) },
     });
-    return product;
-  } else {
-    client.trackTrace({
-      message: 'Product not found in mock data',
-      severity: 2, // Warning
-      properties: { origin: 'bff/products', method: 'getProduct', id: String(id), source: 'mock-file' },
+
+    return data;
+  } catch (error) {
+    client.trackException({
+      exception: error,
+      properties: { origin: 'bff/products', method: 'getProduct' },
     });
-    client.trackEvent({
-      name: 'ProductFetchNotFound',
-      properties: { id: String(id), source: 'mock-file' },
-    });
-    return null; // Return null if product not found
+    throw error;
   }
-  // Errors during file loading are handled in loadMockData.
-  // If loadMockData itself throws an unhandled error, that would propagate.
 }

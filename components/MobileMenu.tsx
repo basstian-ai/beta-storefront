@@ -106,6 +106,9 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
           .mobile-menu-container {
             display: none;
           }
+          .mobile-menu-drawer { /* Added this rule */
+            display: none;
+          }
         }
       `}</style>
     </div>

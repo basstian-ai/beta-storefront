@@ -100,6 +100,13 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
         }
         /* Styling for SVGs if not directly handled by props, though width/height are on SVG elements */
         /* .mobile-menu-button svg {} */
+
+        /* Hide MobileMenu on desktop */
+        @media (min-width: 769px) { /* Consistent with hiding parts of Navbar at max-width: 768px */
+          .mobile-menu-container {
+            display: none;
+          }
+        }
       `}</style>
     </div>
   );

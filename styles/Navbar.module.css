@@ -112,26 +112,51 @@
 
 /* Responsive design adjustments */
 @media (max-width: 768px) { /* Tablet and smaller */
+  .navbar { /* Root of Navbar component */
+    display: flex; /* To layout its children: topNav */
+    flex-grow: 1; /* To take available space in main-site-header */
+    align-items: center;
+    padding: 0; /* Remove padding if main-site-header handles it */
+  }
+
   .topNav {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
+    /* Ensure it lays out logo and searchContainer in a row */
+    display: flex;
+    flex-direction: row; /* Override potential column layout */
+    align-items: center;
+    width: 100%; /* Take full width of .navbar */
+    padding: 0; /* Remove padding if .navbar or main-site-header handles it */
+    border-bottom: none; /* Remove border for mobile header if desired */
+  }
+
+  .logo a {
+    font-size: 1.5rem; /* Smaller logo text on mobile */
+    /* margin-right: 1rem; /* Optional: if more space is needed next to logo */
   }
 
   .searchContainer {
-    margin: 1rem 0; /* Adjust margin for vertical layout */
-    width: 100%;
+    display: block; /* Or flex, ensure visibility */
+    flex-grow: 1; /* Allow it to take available space next to logo/menu */
+    margin: 0 1rem; /* Adjust margin for horizontal layout */
+    width: auto; /* Override width: 100% */
   }
 
+  /* Hide elements not needed in mobile header bar */
   .userActions {
-    width: 100%;
-    justify-content: space-between; /* Space out user actions on mobile */
-    margin-top: 1rem;
+    display: none;
   }
+
+  .categoryNav {
+    display: none;
+  }
+
+  /* The following rules for .userActionLink, .categoryNav ul, .categoryNav li,
+     .categoryNav::after are effectively overridden by .userActions and .categoryNav being display: none.
+     They could be removed from this media query if desired, but leaving them does no harm. */
 
   .userActionLink {
-    margin-left: 0; /* Remove left margin for the first item */
-    margin-right: 1rem; /* Add some right margin */
+    margin-left: 0;
+    margin-right: 1rem;
   }
 
   .userActionLink:last-child {
@@ -139,24 +164,28 @@
   }
 
   .categoryNav ul {
-    flex-direction: column; /* Stack categories vertically */
+    flex-direction: column;
     align-items: flex-start;
   }
 
   .categoryNav li {
     margin-right: 0;
-    margin-bottom: 0.5rem; /* Spacing for vertical category links */
+    margin-bottom: 0.5rem;
   }
 
   .categoryNav::after {
-    display: none; /* Hide scroll hint when categories are stacked */
+    display: none;
   }
 }
 
 @media (max-width: 480px) { /* Mobile specific adjustments */
+  /* .logo a is already handled by max-width: 768px if font-size: 1.5rem is desired for all smaller screens */
+  /* If a different size for 480px is needed, it can be specified here. */
+  /* For example:
   .logo a {
-    font-size: 1.5rem; /* Slightly smaller logo for mobile */
+    font-size: 1.3rem;
   }
+  */
 
   .searchInput {
     padding: 0.6rem 0.8rem; /* Smaller padding for search input */

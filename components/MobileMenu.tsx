@@ -77,7 +77,7 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
         .mobile-menu-drawer {
           position: absolute;
           top: 100%; /* Position below the trigger */
-          left: 0; /* Align to the left of the container */
+          right: 0; /* CHANGED: Align to the right of the container */
           background-color: white;
           border: 1px solid #ccc;
           padding: 0.5rem;
@@ -100,6 +100,16 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
         }
         /* Styling for SVGs if not directly handled by props, though width/height are on SVG elements */
         /* .mobile-menu-button svg {} */
+
+        /* Hide MobileMenu on desktop */
+        @media (min-width: 769px) { /* Consistent with hiding parts of Navbar at max-width: 768px */
+          .mobile-menu-container {
+            display: none;
+          }
+          .mobile-menu-drawer { /* Added this rule */
+            display: none;
+          }
+        }
       `}</style>
     </div>
   );

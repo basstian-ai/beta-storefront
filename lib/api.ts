@@ -211,27 +211,6 @@ export async function fetchSearchResults(query: string): Promise<Product[]> {
   }));
 }
 
-export async function fetchProductById(id: string): Promise<Product | null> {
-  const CMS_BASE_URL =
-    process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
-  const res = await fetch(`${CMS_BASE_URL}/products/${id}`);
-  if (!res.ok) {
-    console.error('Failed to fetch product', id, res.status);
-    return null;
-  }
-  const p = await res.json();
-  return {
-    id: p.id?.toString() || '',
-    name: p.title,
-    slug: p.id?.toString() || '',
-    price: p.price,
-    brand: p.brand || '',
-    size: p.size || '',
-    imageUrl: p.thumbnail,
-    createdAt: p.createdAt || '',
-  };
-}
-
 // Placeholder for CMS_BASE_URL, should be set in environment variables
 const CMS_BASE_URL = process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com'; // Using NEXT_PUBLIC_ prefix for client-side access if needed, or just process.env for server-side. For getStaticProps, process.env is fine.
 

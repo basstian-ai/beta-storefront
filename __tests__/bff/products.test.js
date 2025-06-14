@@ -1,6 +1,5 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getProducts } from '../../bff/products/index.js';
-import { getProduct } from '../../bff/products/index.js';
 import * as fetchDataModule from '../../bff/utils/fetchData.js';
 
 // Mock applicationinsights
@@ -169,35 +168,6 @@ describe('BFF Products Service - getProducts', () => {
     });
 
     expect(mockTrackMetric).not.toHaveBeenCalled();
-    expect(mockTrackException).not.toHaveBeenCalled();
-  });
-});
-
-describe('BFF Products Service - getProduct', () => {
-  let fetchDataSpy;
-
-  beforeEach(() => {
-    fetchDataSpy = vi.spyOn(fetchDataModule, 'fetchData');
-    mockTrackTrace.mockClear();
-    mockTrackEvent.mockClear();
-    mockTrackMetric.mockClear();
-    mockTrackException.mockClear();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('fetches a single product and logs telemetry', async () => {
-    const mockProduct = { id: 1, title: 'Phone' };
-    fetchDataSpy.mockResolvedValue(mockProduct);
-
-    const result = await getProduct(1);
-
-    expect(result).toEqual(mockProduct);
-    expect(fetchDataSpy).toHaveBeenCalledWith('https://dummyjson.com/products/1');
-    expect(mockTrackTrace).toHaveBeenCalled();
-    expect(mockTrackEvent).toHaveBeenCalled();
     expect(mockTrackException).not.toHaveBeenCalled();
   });
 });

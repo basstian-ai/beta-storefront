@@ -41,34 +41,3 @@ export async function getProducts() {
     throw error; // Re-throw the error so the caller can handle it
   }
 }
-
-/**
- * Fetches a single product by id from dummyjson.com.
- * @param {string|number} id - The product id.
- * @returns {Promise<Object>} The product data.
- */
-export async function getProduct(id) {
-  const client = appInsights.defaultClient;
-  try {
-    client.trackTrace({
-      message: 'Calling dummyjson for product detail',
-      severity: 1,
-      properties: { origin: 'bff/products', method: 'getProduct', id: String(id) },
-    });
-
-    const data = await fetchData(`https://dummyjson.com/products/${id}`);
-
-    client.trackEvent({
-      name: 'ProductFetchSuccess',
-      properties: { id: String(id) },
-    });
-
-    return data;
-  } catch (error) {
-    client.trackException({
-      exception: error,
-      properties: { origin: 'bff/products', method: 'getProduct' },
-    });
-    throw error;
-  }
-}

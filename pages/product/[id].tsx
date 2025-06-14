@@ -5,7 +5,7 @@ import Head from 'next/head'; // Import Head
 import Layout from '@/components/Layout';
 import BreadcrumbNav from '@/components/BreadcrumbNav';
 import ImageGallery from '@/components/ImageGallery';
-import { fetchCategories, fetchProductById } from '@/lib/api';
+import { fetchCategories, fetchProductDetailsById } from '@/lib/api';
 import { generateProductJsonLd } from '@/lib/jsonLd'; // Import JSON-LD generator
 import type { Category, Product, Variant } from '@/types';
 
@@ -22,7 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     categories = await fetchCategories();
     if (typeof id === 'string') {
-      product = await fetchProductById(id);
+      product = await fetchProductDetailsById(id);
     }
   } catch (error) {
     console.error('Error loading product page:', error);

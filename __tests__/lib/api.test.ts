@@ -172,7 +172,7 @@ describe('fetchCategoryWithProducts - BFF Filtering Logic (Updated Tests)', () =
   it('should sort products by newest first', async () => {
     const result = await fetchCategoryWithProducts(electronicsCategorySlug, {}, 'newest');
     const ids = result!.products.map(p => p.id);
-    expect(ids).toEqual(['prod3', 'prod2', 'prod1']);
+    expect(ids).toEqual(['3', '2', '1']);
   });
 });
 

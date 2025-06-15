@@ -30,12 +30,11 @@ export async function generateStaticParams() {
 
 // Removed ProductPageProps interface
 
-export default async function ProductPage({ params, searchParams }: any) {
-  const typedParams = params as { slug: string };
-  // searchParams not typically used directly in PDP, but good practice for consistency:
-  const typedSearchParams = searchParams as { [key: string]: string | string[] | undefined } | undefined;
-
-  const { slug } = typedParams; // Use slug from typedParams
+export default async function ProductPage({ params, searchParams }: {
+  params: { slug: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const { slug } = params; // Correctly typed
   let product: z.infer<typeof ProductSchema>;
 
   try {

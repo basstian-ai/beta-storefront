@@ -18,7 +18,12 @@
       "@/*": ["src/*"] // Updated path
     },
     "types": ["node"], // Removed "jest"
-    "forceConsistentCasingInFileNames": true // Added
+    "forceConsistentCasingInFileNames": true, // Added
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"], // Adjusted include
   "exclude": ["node_modules"]

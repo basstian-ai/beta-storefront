@@ -8,7 +8,7 @@ import { z } from 'zod';
 const ProductCard = ({ product }: { product: z.infer<typeof ProductSchema> }) => (
   <div className="border p-4 rounded-lg shadow hover:shadow-xl transition-shadow flex flex-col justify-between">
     <div>
-      <Link href={`/product/${product.id}`} className="group">
+      <Link href={`/product/${product.slug}`} className="group"> {/* Use product.slug */}
         {product.thumbnail && (
           <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
             <img
@@ -31,7 +31,7 @@ const ProductCard = ({ product }: { product: z.infer<typeof ProductSchema> }) =>
           <span className="text-sm text-red-500 line-through">{`$${product.price.toFixed(2)}`}</span>
         )}
       </div>
-      <Link href={`/product/${product.id}`} className="mt-3 block text-center w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+      <Link href={`/product/${product.slug}`} className="mt-3 block text-center w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"> {/* Use product.slug */}
         View Details
       </Link>
     </div>

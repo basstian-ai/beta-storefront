@@ -5,13 +5,14 @@ import { z } from 'zod';
 // Based on dummyjson, products have 'price', 'discountPercentage'
 export const PriceSchema = z.object({
   amount: z.number(),
-  currencyCode: z.string().default('USD'), // Assuming USD if not specified
+  currencyCode: z.string().optional().default('USD'), // Changed this line
   discountPercentage: z.number().optional(),
 });
 
 export const ProductSchema = z.object({
   id: z.number(),
   title: z.string(),
+  slug: z.string().optional(), // Add slug, make it optional for now
   description: z.string(),
   price: z.number(), // This is the original price from dummyjson
   discountPercentage: z.number().optional(),

@@ -55,6 +55,16 @@ export async function fetchCategories() {
   return response.json();
 }
 
+export async function fetchAllProductsSimple() {
+  // DummyJSON limit is 100 by default if not specified, and total is 100.
+  // If it were more, we'd need to handle pagination to get all products.
+  const response = await fetch(`${API_BASE_URL}/products?limit=0`); // limit=0 often means all items
+  if (!response.ok) {
+    throw new Error(`Failed to fetch all products: ${response.statusText}`);
+  }
+  return response.json(); // This should return { products: [], total, skip, limit }
+}
+
 export async function login(credentials: { username?: string; password?: string }) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',

@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { CheckIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast'; // Import toast
 
 export default function CopyLinkButton() {
   const [copied, setCopied] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
-    // Ensure this runs only on the client where window is defined
     if (typeof window !== 'undefined') {
       setCurrentUrl(window.location.href);
     }
@@ -20,13 +20,11 @@ export default function CopyLinkButton() {
     try {
       await navigator.clipboard.writeText(currentUrl);
       setCopied(true);
-      // Show "Copied!" message for a short duration
+      toast.success('Link copied to clipboard!'); // Use toast.success
       setTimeout(() => setCopied(false), 2000);
-      // TODO: Implement a more robust toast notification system
-      alert('Link copied to clipboard!'); // Simple alert for now
     } catch (err) {
       console.error('Failed to copy link: ', err);
-      alert('Failed to copy link.');
+      toast.error('Failed to copy link.'); // Use toast.error
     }
   };
 

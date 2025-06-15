@@ -13,11 +13,13 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".", // Added
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["src/*"] // Updated path
     },
-    "types": ["jest", "node"]
+    "types": ["node"], // Removed "jest"
+    "forceConsistentCasingInFileNames": true // Added
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"], // Adjusted include
   "exclude": ["node_modules"]
 }

@@ -32,6 +32,9 @@
     "typescript": "^5",
     "vitest": "^3.2.0",
     "@tailwindcss/forms": "*",
-    "@tailwindcss/typography": "*"
+    "@tailwindcss/typography": "*",
+    "tailwindcss": "3.4.4",
+    "postcss": "*",
+    "autoprefixer": "*"
   }
 }

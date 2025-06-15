@@ -11,7 +11,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve", // Ensure this is set
     "incremental": true,
     "baseUrl": ".", // Added
     "paths": {

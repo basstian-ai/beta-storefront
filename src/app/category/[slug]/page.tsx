@@ -50,7 +50,12 @@ export async function generateStaticParams() {
   }
 }
 
-interface CategoryPageProps {
+// Removed CategoryPageProps interface
+
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
   params: { slug: string };
   searchParams?: {
     brand?: string;
@@ -58,9 +63,7 @@ interface CategoryPageProps {
     maxPrice?: string;
     sort?: 'price-asc' | 'price-desc' | 'newest';
   };
-}
-
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+}) {
   const { slug } = params;
   const categoryApiName = slug;
 

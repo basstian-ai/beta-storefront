@@ -158,5 +158,11 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 };
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// const handler = NextAuth(authOptions);
+// export { handler as GET, handler as POST };
+export const { handlers: { GET, POST }, auth } = NextAuth(authOptions);
+
+if (process.env.NODE_ENV === 'development') {
+  console.log('typeof GET handler in route.ts:', typeof GET);
+  console.log('typeof POST handler in route.ts:', typeof POST);
+}

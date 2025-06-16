@@ -64,12 +64,16 @@ export const PaginatedProductsSchema = z.object({
   limit: z.number(),
 });
 
+// Define available sort options
+export type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
+export const AllSortOptions: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest']; // For validation if needed
+
 // Options for getProducts service function
 export interface GetProductsOptions {
   category?: string;
   limit?: number;
   skip?: number;
-  sort?: string; // Example: 'price-asc', 'price-desc', 'title-asc', 'title-desc'
+  sort?: SortOption; // Changed from string to SortOption
   brands?: string[]; // For filtering by one or more brands
   minPrice?: number;
   maxPrice?: number;

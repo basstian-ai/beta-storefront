@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, createRef, KeyboardEvent } from 'react'; // Added useRef, createRef, KeyboardEvent
 import Image from 'next/image';
 
 interface ProductGalleryProps {
@@ -19,8 +19,37 @@ export default function ProductGallery({ images, thumbnail, productTitle }: Prod
   }, [thumbnail]);
 
   const allDisplayableImages = [thumbnail, ...(images || [])].filter(Boolean) as string[];
-  // Remove duplicates if thumbnail is also in images array
   const uniqueImages = Array.from(new Set(allDisplayableImages));
+
+  // Refs for thumbnail buttons
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => {
+    thumbnailRefs.current = uniqueImages.map((_, i) => thumbnailRefs.current[i] || createRef<HTMLButtonElement>() as any);
+  }, [uniqueImages.length]); // Re-populate refs if number of images changes, check uniqueImages.length
+  // The `as any` above is not ideal, but createRef type seems to clash with (HTMLButtonElement | null)[] without it.
+  // Better would be to initialize with nulls: thumbnailRefs.current = Array(uniqueImages.length).fill(null).map(...)
+
+  const handleThumbnailKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!uniqueImages || uniqueImages.length <= 1) return;
+
+    const currentIndex = uniqueImages.findIndex(img => img === mainImage);
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      nextIndex = (currentIndex + 1) % uniqueImages.length;
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      nextIndex = (currentIndex - 1 + uniqueImages.length) % uniqueImages.length;
+    } else {
+      return; // Not an arrow key we handle for navigation
+    }
+
+    if (nextIndex !== currentIndex) {
+      setMainImage(uniqueImages[nextIndex]);
+      thumbnailRefs.current[nextIndex]?.focus();
+    }
+  };
 
   if (!thumbnail && (!images || images.length === 0)) {
     return (
@@ -45,15 +74,24 @@ export default function ProductGallery({ images, thumbnail, productTitle }: Prod
       </div>
 
       {/* Thumbnails */}
-      {uniqueImages.length > 1 && ( // Only show thumbnails if there's more than one unique image
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2">
+      {uniqueImages.length > 1 && (
+        <div
+          className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2"
+          role="listbox" // Using listbox role for a collection of interactive items
+          aria-label="Product image thumbnails"
+          tabIndex={0} // Make the container focusable
+          onKeyDown={handleThumbnailKeyDown}
+        >
           {uniqueImages.map((image, index) => (
             <button
               key={index}
+              ref={el => thumbnailRefs.current[index] = el} // Assign ref
               onClick={() => setMainImage(image)}
               className={`aspect-square w-full relative overflow-hidden rounded-md border-2 transition-all
                           ${mainImage === image ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200 hover:border-gray-400'}
                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1`}
+              aria-selected={mainImage === image} // Indicate selection state
+              role="option" // Role for items within a listbox
             >
               <Image
                 src={image}

@@ -34,24 +34,27 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
   let fetchLimit = limit;
   let fetchSkip = skip;
 
+  // DummyJSON API does not support sorting by price or newest (ID).
+  // 'relevance' will be the default API order.
+  // We will fetch data then sort manually if needed.
+  // So, the 'sort' option from GetProductsOptions will not be passed as a query param to DummyJSON.
+
   if (category) {
     url = `${API_BASE_URL}/products/category/${category}`;
-    if (fetchAllForManualFiltering) {
-      fetchLimit = 0; // Fetch all for this category for manual filtering
+    if (fetchAllForManualFiltering || sort && sort !== 'relevance') { // Also fetch all if manual sort is needed
+      fetchLimit = 0; // Fetch all for this category for manual filtering/sorting
       fetchSkip = undefined;
     }
-  } else if (fetchAllForManualFiltering) {
-    // No category, but brands or price filters specified. Fetch all products.
+  } else if (fetchAllForManualFiltering || sort && sort !== 'relevance') {
+    // No category, but filters or manual sort specified. Fetch all products.
     fetchLimit = 0; // Fetch all products
     fetchSkip = undefined;
   }
 
-
   const queryParams = new URLSearchParams();
   if (fetchLimit !== undefined) queryParams.append('limit', String(fetchLimit));
   if (fetchSkip !== undefined) queryParams.append('skip', String(fetchSkip));
-  if (sort) queryParams.append('sort', sort);
-
+  // Do not append `sort` here; manual sorting will be applied later.
 
   if (queryParams.toString()) {
     url += (url.includes('?') ? '&' : '?') + queryParams.toString();
@@ -94,20 +97,35 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
       console.log(`[Adapter.fetchProducts] After maxPrice filter: ${filteredProducts.length} products.`);
     }
 
+    // Apply sorting after filtering
+    if (sort && sort !== 'relevance') {
+      console.log(`[Adapter.fetchProducts] Before sorting by "${sort}": ${filteredProducts.length} products.`);
+      if (sort === 'price_asc') {
+        filteredProducts.sort((a, b) => a.price - b.price);
+      } else if (sort === 'price_desc') {
+        filteredProducts.sort((a, b) => b.price - a.price);
+      } else if (sort === 'newest') {
+        filteredProducts.sort((a, b) => b.id - a.id); // Assuming higher ID is newer
+      }
+      console.log(`[Adapter.fetchProducts] After sorting: ${filteredProducts.length} products.`);
+    }
+
     data.products = filteredProducts;
-    // Update total to reflect filtered count. This is a client-side adjustment.
+    // Update total to reflect filtered count (after filtering, before pagination).
     data.total = filteredProducts.length;
 
-    // Apply manual pagination if we fetched all due to any filtering
-    if (fetchAllForManualFiltering && limit !== undefined && limit > 0) {
+    // Apply manual pagination if we fetched all (due to any filtering or manual sorting)
+    const needsManualPagination = (fetchAllForManualFiltering || (sort && sort !== 'relevance'));
+    if (needsManualPagination && limit !== undefined && limit > 0) {
        const actualSkip = skip || 0;
        data.products = filteredProducts.slice(actualSkip, actualSkip + limit);
        data.skip = actualSkip; // Reflect the manual skip
-       data.limit = limit; // Reflect the manual limit (actual number of items returned)
-    } else if (!fetchAllForManualFiltering) {
-      // If API did pagination, ensure skip/limit from API response are respected if they exist
-      // DummyJSON response includes 'skip' and 'limit' that it applied.
-      // No specific action needed here as data.skip and data.limit would already be from API response.
+       data.limit = data.products.length; // Reflect the actual number of items returned after slice
+    } else if (!needsManualPagination) {
+      // If API did pagination, ensure skip/limit from API response are respected
+      // data.skip and data.limit would already be from API response.
+      // data.limit should reflect the actual number of items returned by API.
+      data.limit = data.products.length;
     }
   }
   return data;

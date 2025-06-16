@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
-import { ProductSchema } from '@/bff/types';
+import { ProductSchema, SortOption, AllSortOptions } from '@/bff/types'; // Import SortOption and AllSortOptions
 import { getProducts, ServiceProductsResponseSchema } from '@/bff/services';
+import { buildProductFilterQueryString } from '@/lib/filterUtils';
 
 type Product = z.infer<typeof ProductSchema>;
 
@@ -43,6 +44,17 @@ const ProductCard = ({ product }: { product: Product }) => (
   </div>
 );
 
+// Skeleton component for ProductCard
+const ProductCardSkeleton = () => (
+  <div className="border p-4 rounded-lg shadow animate-pulse">
+    <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-300 xl:aspect-w-7 xl:aspect-h-8"></div>
+    <div className="mt-4 h-6 bg-gray-300 rounded w-3/4"></div>
+    <div className="mt-1 h-10 bg-gray-300 rounded"></div>
+    <div className="mt-2 h-8 bg-gray-300 rounded w-1/2"></div>
+    <div className="mt-3 h-10 bg-gray-300 rounded"></div>
+  </div>
+);
+
 interface CategoryFilterableProductsProps {
   initialProducts: Product[]; // Should now be ALL products for the category for client-side filtering
   totalInitialProducts: number; // Total for the category
@@ -77,6 +89,16 @@ function CategoryFilterableProductsClient({
   // State for applied price filters (parsed and validated)
   const [appliedMinPrice, setAppliedMinPrice] = useState<number | undefined>(undefined);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState<number | undefined>(undefined);
+  const [priceValidationError, setPriceValidationError] = useState<string | null>(null);
+  const [appliedSort, setAppliedSort] = useState<SortOption>('relevance'); // Added sort state
+
+  // Configuration for sort dropdown
+  const sortOptionsConfiguration: { value: SortOption; label: string }[] = [
+    { value: 'relevance', label: 'Relevance' },
+    { value: 'price_asc', label: 'Price: Low to High' },
+    { value: 'price_desc', label: 'Price: High to Low' },
+    { value: 'newest', label: 'Newest Arrivals' },
+  ];
 
   // Effect to initialize filters from URL on mount and when searchParams change
   useEffect(() => {
@@ -86,78 +108,84 @@ function CategoryFilterableProductsClient({
 
     const minPriceFromUrl = searchParams.get('minPrice');
     const maxPriceFromUrl = searchParams.get('maxPrice');
+    const sortFromUrl = searchParams.get('sort') as SortOption | null;
 
     const parsedMin = minPriceFromUrl ? parseFloat(minPriceFromUrl) : undefined;
     const parsedMax = maxPriceFromUrl ? parseFloat(maxPriceFromUrl) : undefined;
 
-    setAppliedMinPrice(isNaN(parsedMin!) ? undefined : parsedMin);
-    setAppliedMaxPrice(isNaN(parsedMax!) ? undefined : parsedMax);
+    const finalMinPrice = isNaN(parsedMin!) ? undefined : parsedMin;
+    const finalMaxPrice = isNaN(parsedMax!) ? undefined : parsedMax;
 
+    setAppliedMinPrice(finalMinPrice);
+    setAppliedMaxPrice(finalMaxPrice);
     setMinPriceInput(minPriceFromUrl || '');
     setMaxPriceInput(maxPriceFromUrl || '');
 
+    const validSortFromUrl = sortFromUrl && AllSortOptions.includes(sortFromUrl) ? sortFromUrl : 'relevance';
+    setAppliedSort(validSortFromUrl);
+
+    // Initial product display logic based on URL params or initial props
+    if (validBrandsFromUrl.length === 0 && finalMinPrice === undefined && finalMaxPrice === undefined && validSortFromUrl === 'relevance') {
+        setDisplayedProducts(initialProducts);
+        setTotalProductsFromServer(totalInitialProducts);
+    }
+    // Else, the fetching effect will be triggered by changes to applied filters including appliedSort.
+
     setIsMounted(true);
-  }, [searchParams, availableBrands]);
+  }, [searchParams, availableBrands, initialProducts, totalInitialProducts]);
 
-  // Effect to fetch products when filters change, only after mount
+  // Memoized function for fetching products
+  const fetchProductsFromApi = useCallback(async () => {
+    if (!isMounted) return;
+
+    setIsLoading(true);
+    try {
+      const limit = 12;
+      const result = await getProducts({
+        category: categorySlug,
+        brands: selectedBrands.length > 0 ? selectedBrands : undefined,
+        minPrice: appliedMinPrice,
+        maxPrice: appliedMaxPrice,
+        sort: appliedSort, // Pass sort option
+        limit: limit,
+        skip: 0,
+      });
+      setDisplayedProducts(result.items);
+      setTotalProductsFromServer(result.total);
+    } catch (error) {
+      console.error('Failed to fetch products based on filters:', error);
+      setDisplayedProducts([]);
+      setTotalProductsFromServer(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isMounted, categorySlug, selectedBrands, appliedMinPrice, appliedMaxPrice, appliedSort, setIsLoading, setDisplayedProducts, setTotalProductsFromServer]);
+
+  // Effect to fetch products when relevant filters change
   useEffect(() => {
-    if (!isMounted) {
-      // Initial render with server-passed props if no client-side filters from URL are immediately applicable
-      // This logic might need refinement if initialProducts should always be shown first regardless of URL params
-      // For now, if URL has params, they will be applied by the first run of the above useEffect, then this one.
-      if (selectedBrands.length === 0 && appliedMinPrice === undefined && appliedMaxPrice === undefined) {
-          setDisplayedProducts(initialProducts);
-          setTotalProductsFromServer(totalInitialProducts);
-      }
-      return;
+    if (isMounted) {
+      fetchProductsFromApi();
     }
+  }, [isMounted, fetchProductsFromApi]);
 
-    const fetchProductsFromApi = async () => {
-      setIsLoading(true);
-      try {
-        const limit = 12;
-        const result = await getProducts({
-          category: categorySlug,
-          brands: selectedBrands.length > 0 ? selectedBrands : undefined,
-          minPrice: appliedMinPrice,
-          maxPrice: appliedMaxPrice,
-          limit: limit,
-          skip: 0,
-        });
-        setDisplayedProducts(result.items);
-        setTotalProductsFromServer(result.total);
-      } catch (error) {
-        console.error('Failed to fetch products based on filters:', error);
-        setDisplayedProducts([]);
-        setTotalProductsFromServer(0);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Effect to update URL when filters change
+  useEffect(() => {
+    if (!isMounted) return;
 
-    fetchProductsFromApi();
+    const newQueryString = buildProductFilterQueryString(
+      {
+        brands: selectedBrands,
+        minPrice: appliedMinPrice,
+        maxPrice: appliedMaxPrice,
+        sort: appliedSort, // Add sort to URL builder
+      },
+      searchParams.toString()
+    );
 
-    // Update URL based on selectedBrands and applied prices
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('brand');
-    selectedBrands.forEach(brand => params.append('brand', brand));
-
-    if (appliedMinPrice !== undefined) {
-      params.set('minPrice', String(appliedMinPrice));
-    } else {
-      params.delete('minPrice');
+    if (searchParams.toString() !== newQueryString) {
+      router.push(`${pathname}?${newQueryString}`, { scroll: false });
     }
-    if (appliedMaxPrice !== undefined) {
-      params.set('maxPrice', String(appliedMaxPrice));
-    } else {
-      params.delete('maxPrice');
-    }
-
-    const queryString = params.toString();
-    if (searchParams.toString() !== queryString) {
-      router.push(`${pathname}?${queryString}`, { scroll: false });
-    }
-  }, [selectedBrands, appliedMinPrice, appliedMaxPrice, categorySlug, isMounted, pathname, router, searchParams, initialProducts, totalInitialProducts]);
+  }, [isMounted, selectedBrands, appliedMinPrice, appliedMaxPrice, appliedSort, pathname, router, searchParams]);
 
   const handleBrandChange = (brand: string) => {
     setSelectedBrands(prev => {
@@ -168,19 +196,29 @@ function CategoryFilterableProductsClient({
     });
   };
 
-  const handleApplyPriceFilter = () => {
-    const min = parseFloat(minPriceInput);
-    const max = parseFloat(maxPriceInput);
+  // Debounced effect for price inputs
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const min = parseFloat(minPriceInput);
+      const max = parseFloat(maxPriceInput);
 
-    const newMinPrice = !isNaN(min) && min >= 0 ? min : undefined;
-    const newMaxPrice = !isNaN(max) && max >= 0 ? max : undefined;
+      const newMinPrice = !isNaN(min) && min >= 0 ? min : undefined;
+      const newMaxPrice = !isNaN(max) && max >= 0 ? max : undefined;
 
-    // Basic validation: if min > max, maybe reset max or show error. For now, allow.
-    // User can also clear inputs, which should result in undefined.
-    setAppliedMinPrice(newMinPrice);
-    setAppliedMaxPrice(newMaxPrice);
-    // The useEffect for fetching will pick up these changes and also update URL
-  };
+      if (newMinPrice !== undefined && newMaxPrice !== undefined && newMinPrice > newMaxPrice) {
+        setPriceValidationError('Min price cannot exceed max price.');
+        // Do not update appliedMinPrice or appliedMaxPrice if validation fails
+      } else {
+        setPriceValidationError(null); // Clear error
+        setAppliedMinPrice(newMinPrice);
+        setAppliedMaxPrice(newMaxPrice);
+      }
+    }, 500); // 500ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [minPriceInput, maxPriceInput]);
 
   let filterBadges: string[] = [];
   if (selectedBrands.length > 0) {
@@ -192,16 +230,42 @@ function CategoryFilterableProductsClient({
   if (appliedMaxPrice !== undefined) {
     filterBadges.push(`Max Price: $${appliedMaxPrice}`);
   }
+  if (appliedSort && appliedSort !== 'relevance') {
+    const sortOptionLabel = sortOptionsConfiguration.find(opt => opt.value === appliedSort)?.label || appliedSort;
+    filterBadges.push(`Sort: ${sortOptionLabel}`);
+  }
+
+
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setAppliedSort(event.target.value as SortOption);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2">Category: {initialHumanReadableCategoryName}</h1>
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="text-3xl font-bold">Category: {initialHumanReadableCategoryName}</h1>
+        <div>
+          <label htmlFor="sort-products" className="sr-only">Sort products by</label>
+          <select
+            id="sort-products"
+            value={appliedSort}
+            onChange={handleSortChange}
+            className="border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          >
+            {sortOptionsConfiguration.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <p className="text-gray-600 mb-1">
         Showing {isLoading ? '...' : displayedProducts.length} of {totalProductsFromServer} products.
       </p>
       {filterBadges.length > 0 && (
         <p className="text-sm text-gray-500 mb-6">
-          Filtered by: {filterBadges.join('; ')}
+          Active filters: {filterBadges.join('; ')}
         </p>
       )}
        {!filterBadges.length && <p className="text-sm text-gray-500 mb-6">No active filters.</p>}
@@ -211,26 +275,33 @@ function CategoryFilterableProductsClient({
         <aside className="w-full md:w-1/4 lg:w-1/5">
           <h2 className="text-xl font-semibold mb-4">Filters</h2>
 
-          <div className="mb-6"> {/* Increased mb for spacing */}
+          <div className="mb-6">
             <h3 className="font-medium mb-2">Brand</h3>
-            {availableBrands.map(brand => (
-              <label key={brand} className="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded">
-                <input
-                  type="checkbox"
-                  className="form-checkbox rounded text-blue-600 focus:ring-blue-500"
-                  value={brand}
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => handleBrandChange(brand)}
-                />
-                <span>{brand}</span>
-              </label>
-            ))}
+            {availableBrands.map(brand => {
+              const brandId = `brand-checkbox-${brand.toLowerCase().replace(/\s+/g, '-')}`;
+              return (
+                <label key={brand} htmlFor={brandId} className="flex items-center space-x-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded">
+                  <input
+                    type="checkbox"
+                    id={brandId}
+                    className="form-checkbox rounded text-blue-600 focus:ring-blue-500"
+                    value={brand}
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => handleBrandChange(brand)}
+                  />
+                  <span>{brand}</span>
+                </label>
+              );
+            })}
             {availableBrands.length === 0 && <p className="text-sm text-gray-500">No brands to filter.</p>}
           </div>
 
           <div>
             <h3 className="font-medium mb-2">Price Range</h3>
             <div className="space-y-3">
+              {priceValidationError && (
+                <p className="text-sm text-red-600 bg-red-100 p-2 rounded">{priceValidationError}</p>
+              )}
               <div>
                 <label htmlFor="minPrice" className="block text-sm font-medium text-gray-700">Min Price</label>
                 <input
@@ -240,7 +311,9 @@ function CategoryFilterableProductsClient({
                   value={minPriceInput}
                   onChange={(e) => setMinPriceInput(e.target.value)}
                   placeholder="e.g., 10"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                    priceValidationError ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
               <div>
@@ -252,25 +325,29 @@ function CategoryFilterableProductsClient({
                   value={maxPriceInput}
                   onChange={(e) => setMaxPriceInput(e.target.value)}
                   placeholder="e.g., 100"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                    priceValidationError ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
-              <button
-                onClick={handleApplyPriceFilter}
-                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md text-sm"
-              >
-                Apply Price Filter
-              </button>
+              {/* Apply button removed, debouncing handles updates */}
             </div>
           </div>
         </aside>
 
         <main className="w-full md:w-3/4 lg:w-4/5">
-          {isLoading && <p className="text-center py-10">Loading products...</p>}
-          {!isLoading && displayedProducts.length === 0 && (
-            <p className="text-center py-10">No products match the selected filters.</p>
-          )}
-          {!isLoading && displayedProducts.length > 0 && (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => ( // Display 6 skeletons
+                <ProductCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : displayedProducts.length === 0 ? (
+            <div className="text-center py-10">
+              <h2 className="text-2xl font-semibold mb-2">No products found</h2>
+              <p className="text-gray-600">Try adjusting your filters or check back later.</p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayedProducts.map(product => (
                 <ProductCard key={product.id} product={product} />

@@ -23,8 +23,27 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
 // Import GetProductsOptions type
 import { GetProductsOptions } from '../types';
 
+// Minimal interface for raw product data from DummyJSON before Zod parsing
+interface DummyJsonProductRaw {
+  id: number;
+  title: string; // Though not directly used in map/filter, it's part of the object
+  price: number;
+  brand?: string;
+  category: string; // Initially a string from DummyJSON
+  // Add other fields if they are directly accessed in map/filter before Zod parsing
+  // For example, if sorting used other raw fields:
+  // rating?: number;
+}
+
+interface DummyJsonResponse {
+  products: DummyJsonProductRaw[]; // Use DummyJsonProductRaw for the items in the products array
+  total: number;
+  skip: number;
+  limit: number;
+}
+
 export async function fetchProducts(options: GetProductsOptions = {}) {
-  const { category, limit, skip, sort, brands, minPrice, maxPrice } = options; // Added minPrice, maxPrice
+  const { category, limit, skip, sort, brands, minPrice, maxPrice } = options;
   let url = `${API_BASE_URL}/products`;
 
   // Determine if we need to fetch all products for client-side filtering/pagination
@@ -69,23 +88,24 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
   if (!response.ok) {
     throw new Error(`Failed to fetch products from ${url}: ${response.statusText}`);
   }
-  const data = await response.json();
+  const data: DummyJsonResponse = await response.json();
 
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
-    data.products = data.products.map((product: any) => ({
+    // Type products from API before Zod parsing, if needed for intermediate steps
+    data.products = data.products.map((product: DummyJsonProductRaw) => ({
       ...product,
-      category: transformCategoryStringToObject(product.category),
+      category: transformCategoryStringToObject(product.category), // transformCategoryStringToObject expects string
     }));
 
-    let filteredProducts = data.products;
+    let filteredProducts: DummyJsonProductRaw[] = data.products; // Now an array of typed raw products
 
     // Client-side filtering for brands if brands are specified
     if (brands && brands.length > 0) {
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[Adapter.fetchProducts] Before brand filter: ${filteredProducts.length} products.`);
       }
-      filteredProducts = filteredProducts.filter((product: any) =>
+      filteredProducts = filteredProducts.filter((product: DummyJsonProductRaw) =>
         product.brand && brands.includes(product.brand)
       );
       if (process.env.NODE_ENV !== 'production') {
@@ -98,7 +118,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[Adapter.fetchProducts] Before minPrice filter (${minPrice}): ${filteredProducts.length} products.`);
       }
-      filteredProducts = filteredProducts.filter((product: any) => product.price >= minPrice);
+      filteredProducts = filteredProducts.filter((product: DummyJsonProductRaw) => product.price >= minPrice);
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[Adapter.fetchProducts] After minPrice filter: ${filteredProducts.length} products.`);
       }
@@ -107,7 +127,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[Adapter.fetchProducts] Before maxPrice filter (${maxPrice}): ${filteredProducts.length} products.`);
       }
-      filteredProducts = filteredProducts.filter((product: any) => product.price <= maxPrice);
+      filteredProducts = filteredProducts.filter((product: DummyJsonProductRaw) => product.price <= maxPrice);
       if (process.env.NODE_ENV !== 'production') {
         console.log(`[Adapter.fetchProducts] After maxPrice filter: ${filteredProducts.length} products.`);
       }
@@ -169,10 +189,11 @@ export async function searchProducts(query: string) {
   if (!response.ok) {
     throw new Error(`Failed to search products with query "${query}": ${response.statusText}`);
   }
-  const data = await response.json();
+  const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
-    data.products = data.products.map((product: any) => ({
+    // Type products from API before Zod parsing
+    data.products = data.products.map((product: DummyJsonProductRaw) => ({
       ...product,
       category: transformCategoryStringToObject(product.category),
     }));
@@ -246,10 +267,11 @@ export async function fetchAllProductsSimple() {
   if (!response.ok) {
     throw new Error(`Failed to fetch all products: ${response.statusText}`);
   }
-  const data = await response.json();
+  const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
-    data.products = data.products.map((product: any) => ({
+    // Type products from API before Zod parsing
+    data.products = data.products.map((product: DummyJsonProductRaw) => ({
       ...product,
       category: transformCategoryStringToObject(product.category),
     }));

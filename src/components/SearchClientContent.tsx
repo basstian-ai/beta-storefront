@@ -83,7 +83,11 @@ export default function SearchClientContent() {
   // and explicit with ESLint, we memoize the result of debounce(performSearch, ...).
   // The dependency is `performSearch` because if `performSearch` changes (due to its own deps like `query`),
   // we need a new debounced version.
-  const debouncedSearchForSuggestions = useCallback(debounce((term: string) => performSearch(term, false), 300), [performSearch]);
+  // Using useMemo to memoize the debounced function itself.
+  const debouncedSearchForSuggestions = useMemo(
+    () => debounce((term: string) => performSearch(term, false), 300),
+    [performSearch]
+  );
 
   // Effect for handling initial query from URL & subsequent primary searches
   useEffect(() => {

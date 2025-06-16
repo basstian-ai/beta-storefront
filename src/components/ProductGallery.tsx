@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, createRef, KeyboardEvent } from 'react'; // Added useRef, createRef, KeyboardEvent
+import { useState, useEffect, useRef, KeyboardEvent } from 'react'; // Removed createRef, Added KeyboardEvent (already there)
 import Image from 'next/image';
 
 interface ProductGalleryProps {

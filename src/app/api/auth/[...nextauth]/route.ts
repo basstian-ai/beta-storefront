@@ -41,7 +41,9 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         if (!credentials?.username || !credentials?.password) {
-          console.error('Auth: Missing username or password in credentials');
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Auth: Missing username or password in credentials');
+          }
           return null;
         }
         try {
@@ -73,14 +75,18 @@ export const authOptions: NextAuthOptions = {
             role: userRole,
             rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // Add this
           };
-          console.log('Auth: User authorized:', user);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Auth: User authorized:', user);
+          }
           return user;
 
         } catch (error: any) { // Added :any for error typing
-          if (error instanceof z.ZodError) {
-            console.error('Auth: Zod validation error in authorize callback:', error.errors);
-          } else {
-            console.error('Auth: Error in authorize callback:', error.message || error);
+          if (process.env.NODE_ENV !== 'production') {
+            if (error instanceof z.ZodError) {
+              console.error('Auth: Zod validation error in authorize callback:', error.errors);
+            } else {
+              console.error('Auth: Error in authorize callback:', error.message || error);
+            }
           }
           // Regardless of error type, return null for auth failure
           // Return null if authentication fails
@@ -114,13 +120,15 @@ export const authOptions: NextAuthOptions = {
       }
       if (token.rememberMe !== undefined && session.user) { (session.user as any).rememberMe = token.rememberMe; } // Add this
       // session.user.image = token.picture ?? session.user.image; // Get image from token if set
-      console.log('Auth: Session created/updated:', session);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Auth: Session created/updated:', session);
+      }
       return session;
     }
   },
   pages: {
     signIn: '/login', // Redirect users to /login page for sign-in
-    // error: '/auth/error', // (optional) Error page
+    error: '/auth/error', // Custom error page
     // signOut: '/auth/signout' // (optional)
   },
   // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local

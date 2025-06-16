@@ -32,6 +32,17 @@ This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-appl
 
 To run this project effectively and enable all features, you will need to set up the following environment variables. You can create a `.env.local` file in the root of the project to store these variables locally for development.
 
+### Authentication
+
+-   `NEXTAUTH_SECRET`: A secret key used to sign and encrypt session cookies and tokens. This is **critical** for security.
+    -   **Local Development**: You can generate a random string (e.g., using `openssl rand -hex 32` in your terminal).
+    -   **Vercel (Production)**: You **must** set this to a strong, unique, randomly generated string in your Vercel project's environment variable settings. **Do not use a weak or guessable secret.**
+    -   Example for `.env.local`: `NEXTAUTH_SECRET=your-super-secret-key-here-for-local-dev`
+
+-   `NEXTAUTH_URL`: The canonical URL of your Next.js application.
+    -   **Local Development**: `NEXTAUTH_URL=http://localhost:3000` (assuming your app runs on port 3000).
+    -   **Vercel (Production)**: This will be your production domain (e.g., `NEXTAUTH_URL=https://your-app-name.vercel.app`). Vercel usually sets `VERCEL_URL` which can often be used, but explicitly setting `NEXTAUTH_URL` is safer for NextAuth.js.
+
 ### Application Insights
 -   `APPINSIGHTS_INSTRUMENTATIONKEY`: Your Application Insights Instrumentation Key. This is used for logging and telemetry.
     -   **Local Development**: Add this key to your `.env.local` file:

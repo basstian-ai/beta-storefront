@@ -135,7 +135,7 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error', // Custom error page
     // signOut: '/auth/signout' // (optional)
   },
-  // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
+  secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
   // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 };
 

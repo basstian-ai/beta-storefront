@@ -1,4 +1,23 @@
 // src/app/api/auth/[...nextauth]/route.ts
+
+if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV !== 'production') {
+  console.warn(
+    `[33mwarn[0m  - NEXTAUTH_URL environment variable is not set. ` +
+    `This can lead to issues, especially in production and build environments. ` +
+    `Please ensure it is set (e.g., http://localhost:3000 for local development).`
+  );
+}
+
+// Also check for AUTH_URL as mentioned by the user, in case it's used by a specific helper
+if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.env.NEXTAUTH_URL) {
+    // Only warn about AUTH_URL if NEXTAUTH_URL is also not set, as NEXTAUTH_URL is the primary one.
+  console.warn(
+    `[33mwarn[0m  - AUTH_URL environment variable is not set. ` +
+    `Consider setting this if NEXTAUTH_URL is not resolving all URL construction issues, ` +
+    `though NEXTAUTH_URL is the primary variable for NextAuth v5.`
+  );
+}
+
 import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin } from '@/bff/services'; // Your BFF login service

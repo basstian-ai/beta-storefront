@@ -39,9 +39,13 @@ To run this project effectively and enable all features, you will need to set up
     -   **Vercel (Production)**: You **must** set this to a strong, unique, randomly generated string in your Vercel project's environment variable settings. **Do not use a weak or guessable secret.**
     -   Example for `.env.local`: `NEXTAUTH_SECRET=your-super-secret-key-here-for-local-dev`
 
--   `NEXTAUTH_URL`: The canonical URL of your Next.js application.
-    -   **Local Development**: `NEXTAUTH_URL=http://localhost:3000` (assuming your app runs on port 3000).
-    -   **Vercel (Production)**: This will be your production domain (e.g., `NEXTAUTH_URL=https://your-app-name.vercel.app`). Vercel usually sets `VERCEL_URL` which can often be used, but explicitly setting `NEXTAUTH_URL` is safer for NextAuth.js.
+-   `NEXTAUTH_URL`: The **critical** canonical URL of your Next.js application. This variable is essential not only for runtime authentication flows but also **during the build process** for prerendering pages and for any NextAuth utility functions that construct absolute URLs.
+    -   **Local Development & Local Builds (`.env.local`)**: `NEXTAUTH_URL=http://localhost:3000` (or your development port).
+    -   **Vercel (Production Environment)**: Set this to your canonical production domain in Vercel project settings (e.g., `NEXTAUTH_URL=https://your-app-name.vercel.app`).
+    -   **Vercel (Preview Environments)**: Set this to `https://${VERCEL_URL}` in Vercel project settings. `VERCEL_URL` is a system environment variable provided by Vercel that automatically points to the unique URL of each preview deployment.
+    -   **Important for Builds**: If this variable is not correctly set and available during Vercel's build phase, you may encounter `TypeError: Invalid URL` errors, especially when prerendering static pages like `_not-found`.
+
+-   `AUTH_URL`: (Optional, for compatibility or specific helpers) Typically, `NEXTAUTH_URL` is sufficient for NextAuth v5. However, if you experience URL-related errors during build or runtime even with `NEXTAUTH_URL` correctly set, consider also setting `AUTH_URL` to the same value as `NEXTAUTH_URL`. Some older utilities or specific NextAuth internal helpers might fall back to `AUTH_URL`.
 
 -   `AUTH_TRUST_HOST`: Set to `true` when deploying to Vercel or other environments that use a proxy or load balancer in front of your Next.js application. This is often required for NextAuth v5 to work correctly in such environments, especially for preview deployments.
     -   **Vercel/Production**: `AUTH_TRUST_HOST=true`

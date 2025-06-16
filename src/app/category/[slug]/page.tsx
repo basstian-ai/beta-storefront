@@ -39,14 +39,40 @@ const ProductCard = ({ product }: { product: z.infer<typeof ProductSchema> }) =>
 );
 
 export async function generateStaticParams() {
+  console.log("Attempting to generate static params for category pages...");
   try {
-    // getCategories() now returns Promise<{ id: number; name: string; slug: string }[]>
-    const categories = await getCategories();
-    return categories.map(category => ({
-      slug: category.slug, // Use the slug property directly
-    }));
+    const categories = await getCategories(); // Should be Array<{ id, name, slug }>
+
+    if (!Array.isArray(categories)) {
+      console.error("generateStaticParams: categories is not an array. Received:", categories);
+      throw new Error("Categories data is not an array.");
+    }
+
+    console.log(`generateStaticParams: Received ${categories.length} categories.`);
+
+    return categories.map((category, index) => {
+      if (typeof category !== 'object' || category === null) {
+        console.error(`generateStaticParams: Category at index ${index} is not an object. Received:`, category);
+        throw new Error(`Invalid category item at index ${index} (not an object).`);
+      }
+      if (typeof category.slug !== 'string') {
+        console.error(`generateStaticParams: Category slug at index ${index} is not a string. Received:`, category.slug, "Full category object:", category);
+        // Attempt to recover or provide a default to see if build passes, though this hides the root cause
+        // For now, let's throw to ensure the error is caught.
+        throw new Error(`Invalid category slug at index ${index} (not a string). Slug: ${category.slug}`);
+      }
+      // console.log(`generateStaticParams: Mapping category ${index + 1}/${categories.length}, slug: ${category.slug}`);
+      return {
+        slug: category.slug,
+      };
+    });
   } catch (error) {
-    console.error("Failed to generate static params for category pages:", error);
+    // Log the error with more context if possible
+    if (error instanceof Error) {
+      console.error("Failed to generate static params for category pages:", error.message, error.stack);
+    } else {
+      console.error("Failed to generate static params for category pages (unknown error type):", error);
+    }
     return [];
   }
 }
@@ -66,14 +92,22 @@ export default async function CategoryPage({
   };
 }) {
   const { slug } = params;
+
+  // Fetch all categories
+  const categories = await getCategories();
+  // Find the current category by slug
+  const currentCategory = categories.find(cat => cat.slug === slug);
+
+  // Use the slug for the API call, as the API expects the slug string
   const categoryApiName = slug;
 
   const { items: products, total } = await getProducts({
-    category: categoryApiName,
+    category: categoryApiName, // This should be the slug string for the API
     limit: 100,
   });
 
-  const humanReadableCategoryName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  // Use the actual category name if found, otherwise fallback to a formatted slug
+  const humanReadableCategoryName = currentCategory?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   if (!products || products.length === 0) {
     return (

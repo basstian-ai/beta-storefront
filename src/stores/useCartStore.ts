@@ -105,12 +105,13 @@ export const useCartStore = create<CartState>()(
             const now = Date.now();
             if (restoredState.lastUpdated && (now - restoredState.lastUpdated > SEVEN_DAYS_IN_MS)) {
               console.log('Cart store: Persisted cart data is expired. Rehydrating with cleared items.');
-              // Return a new state object with items cleared and lastUpdated nulled (or reset).
-              // This object will be used by the persist middleware as the rehydrated state.
-              useCartStore.setState({ items: [], lastUpdated: null }, true); // Explicitly clear the store state
+              // Set only the persisted parts of the state, merging with existing actions.
+              useCartStore.setState({ items: [], lastUpdated: null });
             } else {
               console.log('Cart store: Persisted cart data is valid. Proceeding with stored state.');
-              // If data is valid, we don't need to return anything; persist middleware uses `restoredState`.
+              // If data is valid, the persist middleware itself will have applied 'restoredState'.
+              // If we needed to manually set it here (e.g. if not using the built-in hydration part of persist),
+              // it should also be a merge: useCartStore.setState(restoredState);
               // Or, can explicitly return restoredState: return restoredState;
             }
           } else {

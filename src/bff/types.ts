@@ -27,7 +27,7 @@ export const ProductSchema = z.object({
 });
 
 export const CategorySchema = z.object({
-  id: z.number(), // Or z.string() if IDs are not numbers
+  id: z.number().optional(), // Or z.string() if IDs are not numbers
   name: z.string(), // This will be the display-friendly name
   slug: z.string()  // This will be the URL-friendly slug (original string from dummyjson)
 });

@@ -58,11 +58,17 @@ export async function fetchCategories(fetchOptions?: RequestInit) { // Added fet
   const categorySlugs: string[] = await response.json();
 
   // Transform to the new Category object structure
-  return categorySlugs.map((slug, index) => ({
-    id: index + 1, // Assign a simple numeric ID (1-based)
-    name: slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Convert "home-decoration" to "Home Decoration"
-    slug: slug // Original string from dummyjson is the slug
-  }));
+  return categorySlugs
+    .filter(slug => typeof slug === 'string' && slug.trim() !== '') // Ensure slug is a non-empty string
+    .map((slug, index) => {
+      // slug is now guaranteed to be a string
+      const name = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      return {
+        id: index + 1, // Assign a simple numeric ID (1-based on the filtered/valid items)
+        name: name,
+        slug: slug
+      };
+    });
 }
 
 export async function fetchAllProductsSimple() {

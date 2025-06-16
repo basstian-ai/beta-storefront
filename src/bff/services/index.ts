@@ -182,9 +182,9 @@ export async function login(credentials: { username?: string; password?: string 
   return validatedResponse;
 }
 
-export async function getCategories(): Promise<z.infer<typeof CategorySchema>[]> {
-  console.log('BFF> getCategories', {});
-  const rawData = await dummyJsonAdapter.fetchCategories();
+export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions
+  console.log('BFF> getCategories', { fetchOptions });
+  const rawData = await dummyJsonAdapter.fetchCategories(fetchOptions); // Pass options
   const categories = z.array(CategorySchema).parse(rawData);
   return categories;
 }

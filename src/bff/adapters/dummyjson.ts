@@ -47,10 +47,13 @@ export async function searchProducts(query: string) {
   return response.json();
 }
 
-export async function fetchCategories() {
-  const response = await fetch(`${API_BASE_URL}/products/categories`);
+export async function fetchCategories(fetchOptions?: RequestInit) { // Added fetchOptions
+  const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions); // Pass options
   if (!response.ok) {
-    throw new Error(`Failed to fetch categories: ${response.statusText}`);
+    // Log more details from response if possible
+    const errorBody = await response.text();
+    console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
+    throw new Error(`Failed to fetch categories: ${response.statusText} - ${errorBody}`);
   }
   return response.json();
 }

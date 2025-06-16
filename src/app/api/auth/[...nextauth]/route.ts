@@ -76,10 +76,13 @@ export const authOptions: NextAuthOptions = {
           console.log('Auth: User authorized:', user);
           return user;
 
-        } catch (error) {
-          console.error('Auth: Error in authorize callback:', error);
-          // ZodError will be caught here if parsing fails
-          // Error from bffLogin (e.g., "Login failed: Invalid credentials") will also be caught
+        } catch (error: any) { // Added :any for error typing
+          if (error instanceof z.ZodError) {
+            console.error('Auth: Zod validation error in authorize callback:', error.errors);
+          } else {
+            console.error('Auth: Error in authorize callback:', error.message || error);
+          }
+          // Regardless of error type, return null for auth failure
           // Return null if authentication fails
           return null;
         }

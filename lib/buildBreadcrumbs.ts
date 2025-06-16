@@ -27,7 +27,7 @@ async function fetchProductName(id: string): Promise<string> {
 
 export async function buildBreadcrumbs(
   pathname: string,
-  query: any
+  query: BreadcrumbQuery
 ): Promise<BreadcrumbSegment[]> {
   const segments: BreadcrumbSegment[] = [{ label: 'Home', href: '/' }];
   const pathParts = pathname.split('/').filter(part => part);

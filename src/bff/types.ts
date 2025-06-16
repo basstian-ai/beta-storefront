@@ -19,7 +19,7 @@ export const ProductSchema = z.object({
   rating: z.number().optional(),
   stock: z.number().optional(),
   brand: z.string().optional(),
-  category: z.string(),
+  category: z.lazy(() => CategorySchema), // Using z.lazy()
   thumbnail: z.string().url().optional(),
   images: z.array(z.string().url()).optional(),
   // This will be populated by our service layer
@@ -27,7 +27,7 @@ export const ProductSchema = z.object({
 });
 
 export const CategorySchema = z.object({
-  id: z.number(), // Or z.string() if IDs are not numbers
+  id: z.number().optional(), // Or z.string() if IDs are not numbers
   name: z.string(), // This will be the display-friendly name
   slug: z.string()  // This will be the URL-friendly slug (original string from dummyjson)
 });
@@ -63,6 +63,21 @@ export const PaginatedProductsSchema = z.object({
   skip: z.number(),
   limit: z.number(),
 });
+
+// Define available sort options
+export type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'newest';
+export const AllSortOptions: SortOption[] = ['relevance', 'price_asc', 'price_desc', 'newest']; // For validation if needed
+
+// Options for getProducts service function
+export interface GetProductsOptions {
+  category?: string;
+  limit?: number;
+  skip?: number;
+  sort?: SortOption; // Changed from string to SortOption
+  brands?: string[]; // For filtering by one or more brands
+  minPrice?: number;
+  maxPrice?: number;
+}
 
 // For services layer to return a consistent structure
 export const ServiceProductsResponseSchema = z.object({

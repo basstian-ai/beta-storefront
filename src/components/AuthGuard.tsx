@@ -10,7 +10,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession(); // 'session' data removed as it's not used
   const pathname = usePathname();
 
   useEffect(() => {

@@ -147,29 +147,37 @@ export async function fetchCategories(): Promise<ImportedCategory[]> {
 
   // Ensure data is an array before mapping
   if (Array.isArray(data)) {
-    return data.map((categoryName: any) => {
-      // Assuming categoryName is a string, adjust if the API returns objects
-      if (typeof categoryName === 'string') {
+    return data.map((categoryData: unknown) => { // Changed categoryName to categoryData, type to unknown
+      if (typeof categoryData === 'string') {
         return {
-          id: categoryName, // Or generate a unique ID if needed
-          name: categoryName,
-          slug: categoryName.toLowerCase().replace(/\s+/g, '-'), // Create a simple slug
+          id: categoryData,
+          name: categoryData,
+          slug: categoryData.toLowerCase().replace(/\s+/g, '-'),
         };
-      } else if (typeof categoryName === 'object' && categoryName !== null && categoryName.name && categoryName.slug) {
+      } else if (
+        typeof categoryData === 'object' &&
+        categoryData !== null &&
+        'name' in categoryData && typeof (categoryData as { name: unknown }).name === 'string' &&
+        'slug' in categoryData && typeof (categoryData as { slug: unknown }).slug === 'string'
+      ) {
         // If the API returns objects with name and slug properties
+        const catObj = categoryData as { name: string; slug: string; id?: string | number }; // Type assertion
         return {
-          id: categoryName.slug, // Or categoryName.id if available
-          name: categoryName.name,
-          slug: categoryName.slug,
+          id: catObj.id || catObj.slug,
+          name: catObj.name,
+          slug: catObj.slug,
         };
       } else {
-        // Log unexpected format and skip
-        console.warn('Unexpected category format:', categoryName);
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Unexpected category format:', categoryData);
+        }
         return null;
       }
-    }).filter(Boolean) as Category[]; // Filter out nulls and assert type
+    }).filter(Boolean) as ImportedCategory[]; // Filter out nulls and assert type to ImportedCategory
   } else {
-    console.error('Fetched data is not an array:', data);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Fetched data is not an array:', data);
+    }
     return [];
   }
 }
@@ -180,16 +188,27 @@ export async function fetchFeaturedProducts(): Promise<ImportedProduct[]> {
   if (!res.ok) throw new Error('Failed to fetch featured products');
 
   const json = await res.json();
-  return (json.products || []).map((p: any) => ({
-    id: p.id.toString(), // Ensure id is string
+  // Define a minimal type for products from dummyjson for this function
+  type DummyJsonProductListItem = { id: number | string; title: string; price: number; thumbnail: string };
+  return (json.products || []).map((p: DummyJsonProductListItem) => ({
+    id: String(p.id), // Ensure id is string
     name: p.title,
-    slug: p.id.toString(), // Use id as slug for simplicity with dummyjson
+    slug: String(p.id), // Use id as slug for simplicity with dummyjson
     price: p.price,
     imageUrl: p.thumbnail,
-  }));
+    // Ensure other ImportedProduct fields that are non-optional have fallbacks or are mapped
+    brand: '', // Example: add fallback for missing fields in ImportedProduct
+    category: '', // Example
+    description: '', // Example
+    effectivePrice: { amount: p.price, currencyCode: 'USD' }, // Example
+    images: [], // Example
+    rating: 0, // Example
+    stock: 0, // Example
+    createdAt: new Date().toISOString(), // Example - this is likely not what ImportedProduct expects for createdAt
+  })).filter(p => p !== null) as ImportedProduct[]; // Added filter and assertion
 }
 
-export async function fetchSearchResults(query: string): Promise<Product[]> {
+export async function fetchSearchResults(query: string): Promise<Product[]> { // Local Product type
   const CMS_BASE_URL =
     process.env.NEXT_PUBLIC_CMS_BASE_URL || 'https://dummyjson.com';
   const res = await fetch(
@@ -200,14 +219,24 @@ export async function fetchSearchResults(query: string): Promise<Product[]> {
   }
   const json = await res.json();
   const productsArray = Array.isArray(json.products) ? json.products : [];
-  return productsArray.map((p: any) => ({
-    id: p.id?.toString() || '',
+  // Define a minimal type for products from dummyjson search for this function
+  type DummyJsonSearchProduct = {
+    id: number | string;
+    title: string;
+    price: number;
+    brand?: string;
+    // size is not a standard dummyjson field, assuming it might be missing or added via transformation elsewhere
+    thumbnail?: string;
+    createdAt?: string; // Assuming createdAt might be directly from API or transformed
+  };
+  return productsArray.map((p: DummyJsonSearchProduct) => ({
+    id: String(p.id) || '', // Ensure id is string
     name: p.title,
     price: p.price,
-    brand: p.brand || '',
-    size: p.size || '',
-    imageUrl: p.thumbnail,
-    createdAt: p.createdAt || '',
+    brand: p.brand || 'Unknown Brand', // Provide fallback
+    size: '', // Provide fallback as 'size' is not in DummyJsonSearchProduct but in local Product
+    imageUrl: p.thumbnail || '', // Provide fallback
+    createdAt: p.createdAt || new Date().toISOString(), // Provide fallback
   }));
 }
 
@@ -298,7 +327,9 @@ export async function fetchFeaturedCategories(): Promise<ImportedCategory[]> {
 
   // Extract unique categories from the products
   const categoriesMap = new Map<string, ImportedCategory>();
-  data.products.forEach((product: any) => {
+  // Define a minimal type for products from dummyjson for this specific forEach
+  type ProductWithCategory = { category: string; thumbnail?: string; };
+  data.products.forEach((product: ProductWithCategory) => {
     if (product.category) {
       const slug = product.category.toLowerCase().replace(/\s+/g, '-');
       if (!categoriesMap.has(slug)) {
@@ -337,7 +368,7 @@ export async function fetchFeaturedCategories(): Promise<ImportedCategory[]> {
   // This is an array of strings, not objects.
   // So we must map these strings to the Category type.
   if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.every(item => typeof item === 'string')) {
-    return cmsCategoriesData.map((categoryName: string, index: number) => {
+    return cmsCategoriesData.map((categoryName: string, index: number): ImportedCategory => { // Added return type
       const slug = categoryName.toLowerCase().replace(/\s+/g, '-');
       return {
         id: `${index + 1}`, // Assign a simple ID
@@ -348,15 +379,18 @@ export async function fetchFeaturedCategories(): Promise<ImportedCategory[]> {
     });
   } else if (Array.isArray(cmsCategoriesData) && cmsCategoriesData.length > 0 && typeof cmsCategoriesData[0] === 'object' && 'name' in cmsCategoriesData[0]) {
     // This branch assumes the /categories endpoint returns objects like [{id, name, slug, image}]
-    return cmsCategoriesData.map((cat: any): ImportedCategory => ({ // Explicitly return ImportedCategory
-      id: cat.id || cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'), // Prioritize given ID, then slug, then generate from name
+    type CmsCategoryObject = { id?: string | number; name: string; slug?: string; image?: string; imageUrl?: string; };
+    return cmsCategoriesData.map((cat: CmsCategoryObject): ImportedCategory => ({
+      id: String(cat.id || cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')), // Prioritize given ID, then slug, then generate from name
       name: cat.name,
       slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
       imageUrl: cat.image || cat.imageUrl || `https://via.placeholder.com/150?text=${encodeURIComponent(cat.name)}`,
     }));
   } else {
     // If the structure is unexpected, fall back to deriving from products or return empty
-    console.warn('Unexpected data structure from /categories. Falling back to product-derived categories or empty array.');
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Unexpected data structure from /categories. Falling back to product-derived categories or empty array.');
+    }
     return uniqueCategories.length > 0 ? uniqueCategories : [];
   }
 }

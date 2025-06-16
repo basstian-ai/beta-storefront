@@ -1,5 +1,5 @@
 // src/components/PriceBox.test.tsx
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest'; // Removed 'vi'
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom'; // For extended matchers like .toHaveStyle, .toBeInTheDocument
 import PriceBox from './PriceBox';
@@ -127,7 +127,16 @@ describe('PriceBox Component', () => {
     // Ensure B2B badge is NOT present
     expect(screen.queryByText('Your B2B Price')).not.toBeInTheDocument();
 
-    // Check stock (Out of Stock)
-    expect(screen.getByText('Out of Stock')).toBeInTheDocument();
+    // Check stock (Out of Stock) - be specific about which element
+    // Find the <p> element containing "Out of Stock"
+    const stockStatusElement = screen.getByText((content, element) => {
+      return element?.tagName.toLowerCase() === 'p' && content.trim() === 'Out of Stock';
+    });
+    expect(stockStatusElement).toBeInTheDocument();
+
+    // Also check the button text is "Out of Stock" since it's disabled
+    // For this specific test, we expect "Out of Stock" button text due to stock: 0
+    // The button's accessible name changes based on stock.
+    expect(screen.getByRole('button', { name: "Out of Stock" })).toBeDisabled();
   });
 });

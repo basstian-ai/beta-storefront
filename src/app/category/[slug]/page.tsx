@@ -61,7 +61,7 @@ export async function generateStaticParams() {
         // For now, let's throw to ensure the error is caught.
         throw new Error(`Invalid category slug at index ${index} (not a string). Slug: ${category.slug}`);
       }
-      // console.log(`generateStaticParams: Mapping category ${index + 1}/${categories.length}, slug: ${category.slug}`);
+      console.log(`generateStaticParams: Processing category slug: ${category.slug}`); // Enhanced logging
       return {
         slug: category.slug,
       };

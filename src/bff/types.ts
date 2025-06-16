@@ -19,7 +19,7 @@ export const ProductSchema = z.object({
   rating: z.number().optional(),
   stock: z.number().optional(),
   brand: z.string().optional(),
-  category: z.string(),
+  category: z.lazy(() => CategorySchema), // Using z.lazy()
   thumbnail: z.string().url().optional(),
   images: z.array(z.string().url()).optional(),
   // This will be populated by our service layer

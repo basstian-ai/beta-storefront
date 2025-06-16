@@ -2,6 +2,22 @@
 
 const API_BASE_URL = 'https://dummyjson.com';
 
+// Helper to transform a category slug string into a Category-like object (name/slug)
+const transformCategoryStringToObject = (categorySlug: string): { slug: string; name: string } => {
+  if (typeof categorySlug !== 'string' || !categorySlug.trim()) {
+    // This case should ideally not happen if DummyJSON product data is consistent
+    console.warn(`Invalid category slug encountered: "${categorySlug}". Using default.`);
+    return {
+      slug: categorySlug || 'unknown',
+      name: 'Unknown Category'
+    };
+  }
+  return {
+    slug: categorySlug,
+    name: categorySlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  };
+};
+
 export async function fetchProducts(options: { category?: string; limit?: number; skip?: number; sort?: string } = {}) {
   const { category, limit, skip, sort } = options;
   let url = `${API_BASE_URL}/products`;
@@ -13,14 +29,10 @@ export async function fetchProducts(options: { category?: string; limit?: number
   const queryParams = new URLSearchParams();
   if (limit !== undefined) queryParams.append('limit', String(limit));
   if (skip !== undefined) queryParams.append('skip', String(skip));
-  // Note: dummyjson doesn't explicitly support sorting on all fields or multiple sort fields.
-  // We'll assume a simple 'sortBy' and 'order' if the API supports it, or handle it client-side/in service layer if not.
-  // For now, let's assume dummyjson might support a 'sort' query param directly if we pass it.
   if (sort) queryParams.append('sort', sort);
 
 
   if (queryParams.toString()) {
-    // Check if the URL already has query parameters (e.g. in category case)
     url += (url.includes('?') ? '&' : '?') + queryParams.toString();
   }
 
@@ -28,7 +40,15 @@ export async function fetchProducts(options: { category?: string; limit?: number
   if (!response.ok) {
     throw new Error(`Failed to fetch products: ${response.statusText}`);
   }
-  return response.json();
+  const data = await response.json();
+  // Transform category string to object for each product
+  if (data.products && Array.isArray(data.products)) {
+    data.products = data.products.map((product: any) => ({
+      ...product,
+      category: transformCategoryStringToObject(product.category),
+    }));
+  }
+  return data;
 }
 
 export async function fetchProductById(id: number | string) {
@@ -36,7 +56,12 @@ export async function fetchProductById(id: number | string) {
   if (!response.ok) {
     throw new Error(`Failed to fetch product by id ${id}: ${response.statusText}`);
   }
-  return response.json();
+  const product = await response.json();
+  // Transform category string to object
+  if (product && product.category) {
+    product.category = transformCategoryStringToObject(product.category);
+  }
+  return product;
 }
 
 export async function searchProducts(query: string) {
@@ -44,27 +69,32 @@ export async function searchProducts(query: string) {
   if (!response.ok) {
     throw new Error(`Failed to search products with query "${query}": ${response.statusText}`);
   }
-  return response.json();
+  const data = await response.json();
+  // Transform category string to object for each product
+  if (data.products && Array.isArray(data.products)) {
+    data.products = data.products.map((product: any) => ({
+      ...product,
+      category: transformCategoryStringToObject(product.category),
+    }));
+  }
+  return data;
 }
 
-export async function fetchCategories(fetchOptions?: RequestInit) { // Added fetchOptions
-  const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions); // Pass options
+export async function fetchCategories(fetchOptions?: RequestInit) {
+  const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
   if (!response.ok) {
-    // Log more details from response if possible
     const errorBody = await response.text();
     console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
     throw new Error(`Failed to fetch categories: ${response.statusText} - ${errorBody}`);
   }
   const categorySlugs: string[] = await response.json();
 
-  // Transform to the new Category object structure
   return categorySlugs
-    .filter(slug => typeof slug === 'string' && slug.trim() !== '') // Ensure slug is a non-empty string
+    .filter(slug => typeof slug === 'string' && slug.trim() !== '')
     .map((slug, index) => {
-      // slug is now guaranteed to be a string
       const name = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       return {
-        id: index + 1, // Assign a simple numeric ID (1-based on the filtered/valid items)
+        id: index + 1,
         name: name,
         slug: slug
       };
@@ -72,13 +102,19 @@ export async function fetchCategories(fetchOptions?: RequestInit) { // Added fet
 }
 
 export async function fetchAllProductsSimple() {
-  // DummyJSON limit is 100 by default if not specified, and total is 100.
-  // If it were more, we'd need to handle pagination to get all products.
-  const response = await fetch(`${API_BASE_URL}/products?limit=0`); // limit=0 often means all items
+  const response = await fetch(`${API_BASE_URL}/products?limit=0`);
   if (!response.ok) {
     throw new Error(`Failed to fetch all products: ${response.statusText}`);
   }
-  return response.json(); // This should return { products: [], total, skip, limit }
+  const data = await response.json();
+  // Transform category string to object for each product
+  if (data.products && Array.isArray(data.products)) {
+    data.products = data.products.map((product: any) => ({
+      ...product,
+      category: transformCategoryStringToObject(product.category),
+    }));
+  }
+  return data;
 }
 
 export async function login(credentials: { username?: string; password?: string }) {
@@ -88,7 +124,6 @@ export async function login(credentials: { username?: string; password?: string 
     body: JSON.stringify(credentials),
   });
   if (!response.ok) {
-    // It's common for login errors to return specific messages in the body
     const errorBody = await response.json().catch(() => ({ message: response.statusText }));
     throw new Error(`Login failed: ${errorBody.message || response.statusText}`);
   }

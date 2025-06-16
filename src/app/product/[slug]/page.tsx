@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useParams } from 'next/navigation'; // useParams for client component
-import Gallery from '@/components/Gallery';
+import ProductGallery from '@/components/ProductGallery'; // Changed from Gallery to ProductGallery
 import PriceBox from '@/components/PriceBox';
 import CopyLinkButton from '@/components/CopyLinkButton';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
@@ -108,18 +108,27 @@ export default function ProductPage() {
     return <div className="container mx-auto px-4 py-8 text-center">Product not found.</div>;
   }
 
-  const categoryDisplayName = product.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  // product.category is now an object { name: string, slug: string }
+  // The name is already display-friendly.
+  const categoryDisplayName = product.category.name;
+  const categorySlug = product.category.slug;
+
 
   return (
     <div className="container mx-auto px-4 py-8">
       {productLdJsonScript}
       <Breadcrumbs
-        categoryName={categoryDisplayName}
+        category={{ name: categoryDisplayName, slug: categorySlug }} // Pass category object
         productTitle={product.title}
       />
       <div className="mt-6 lg:grid lg:grid-cols-2 lg:gap-x-8 items-start">
         <div className="lg:col-span-1">
-          <Gallery images={product.images} title={product.title} />
+          {/* Use new ProductGallery component and pass correct props */}
+          <ProductGallery
+            images={product.images}
+            thumbnail={product.thumbnail}
+            productTitle={product.title}
+          />
         </div>
         <div className="lg:col-span-1 mt-6 lg:mt-0">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">{product.title}</h1>

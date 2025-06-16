@@ -1,10 +1,10 @@
 // components/BreadcrumbNav.tsx
 // import { Breadcrumbs } from '@digdir/designsystemet-react'; // Removed
-import Link from 'next/link'; // Keep for now, might be used in a future custom breadcrumb
-import { generateBreadcrumbs } from '../utils/generateBreadcrumbs'; // Keep for now
+// import Link from 'next/link'; // Link removed as it's unused
+// import { generateBreadcrumbs } from '../lib/generateBreadcrumbs'; // Corrected path and commented out as its result is unused
 
 const BreadcrumbNav = () => {
-  const breadcrumbs = generateBreadcrumbs(); // This can stay, data is generated
+  // const breadcrumbs = generateBreadcrumbs(); // breadcrumbs variable commented out as it's unused
 
   // Original Breadcrumbs rendering commented out / replaced
   return (

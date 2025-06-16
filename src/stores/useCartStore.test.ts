@@ -1,7 +1,7 @@
 // src/stores/useCartStore.test.ts
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useCartStore, CartItem } from './useCartStore';
-import { ProductSchema, PriceSchema } from '@/bff/types';
+import { ProductSchema } from '@/bff/types'; // Removed PriceSchema
 import { z } from 'zod';
 
 // Mock product data

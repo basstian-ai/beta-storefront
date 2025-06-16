@@ -4,24 +4,25 @@ import { Fragment, useEffect, useState, useCallback } from 'react';
 import { Combobox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Next.js Image
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ProductSchema, ServiceProductsResponseSchema } from '@/bff/types';
 import { z } from 'zod';
 import ProductCardSkeleton from './ProductCardSkeleton'; // Import shared skeleton
 
-// Debounce function
-function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+// Debounce function - improved typing
+function debounce<A extends unknown[], R>(
+  func: (...args: A) => R,
+  waitFor: number
+): ((...args: A) => void) { // Debounced function typically doesn't return the original value
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
-  const debounced = (...args: Parameters<F>) => {
+  return (...args: A) => {
     if (timeout !== null) {
       clearTimeout(timeout);
-      timeout = null;
     }
     timeout = setTimeout(() => func(...args), waitFor);
   };
-
-  return debounced as (...args: Parameters<F>) => ReturnType<F>;
 }
 
 type Product = z.infer<typeof ProductSchema>;
@@ -39,10 +40,10 @@ export default function SearchClientContent() {
   const [initialProducts, setInitialProducts] = useState<Product[]>([]);
   const [totalResults, setTotalResults] = useState(0);
 
-  const performSearch = async (searchTerm: string, isInitialLoad = false) => {
+  const performSearch = useCallback(async (searchTerm: string, isInitialLoad = false) => {
     if (searchTerm.length < 3) {
       setFilteredProducts([]);
-      if (!isInitialLoad) setInitialProducts([]); // Clear initial results if query becomes too short
+      if (!isInitialLoad) setInitialProducts([]);
       if (!isInitialLoad) setTotalResults(0);
       return;
     }
@@ -53,13 +54,18 @@ export default function SearchClientContent() {
         throw new Error('Search request failed');
       }
       const data: z.infer<typeof ServiceProductsResponseSchema> = await response.json();
-      setFilteredProducts(data.items); // For combobox suggestions
-      if (isInitialLoad || searchTerm === query) { // Update main list if it's initial load or current primary query
+      setFilteredProducts(data.items);
+      // Only update main list if this search corresponds to the current primary query
+      // or if it's the initial load triggered by URL param.
+      if (isInitialLoad || searchTerm === query) {
         setInitialProducts(data.items);
         setTotalResults(data.total);
       }
     } catch (error) {
-      console.error('Failed to fetch search results:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        // Gate console.error for production
+        console.error('Failed to fetch search results:', error);
+      }
       setFilteredProducts([]);
       if (isInitialLoad || searchTerm === query) {
         setInitialProducts([]);
@@ -68,22 +74,30 @@ export default function SearchClientContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [query, setIsLoading, setFilteredProducts, setInitialProducts, setTotalResults]); // Dependencies for performSearch
 
-  // Debounced version of performSearch for combobox input changes
-  const debouncedSearch = useCallback(debounce(performSearch, 300), [query]); // Added query to dependency array
+  // Debounced version of performSearch for combobox input changes (for suggestions)
+  // Note: performSearch itself is already memoized.
+  // The debounce utility creates a new function, so this useCallback might seem redundant
+  // if debounce itself always returns the same memoized function. However, to be safe
+  // and explicit with ESLint, we memoize the result of debounce(performSearch, ...).
+  // The dependency is `performSearch` because if `performSearch` changes (due to its own deps like `query`),
+  // we need a new debounced version.
+  const debouncedSearchForSuggestions = useCallback(debounce((term: string) => performSearch(term, false), 300), [performSearch]);
 
   // Effect for handling initial query from URL & subsequent primary searches
   useEffect(() => {
-    const initialQuery = searchParams?.get('query');
-    if (initialQuery && initialQuery.length >=3) {
-      setQuery(initialQuery); // Set the query state for the input field
-      performSearch(initialQuery, true); // Perform initial search
+    const initialQueryFromUrl = searchParams?.get('query');
+    if (initialQueryFromUrl && initialQueryFromUrl.length >=3) {
+      setQuery(initialQueryFromUrl);
+      performSearch(initialQueryFromUrl, true);
     } else {
-      setInitialProducts([]); // Clear results if no valid initial query
+      // If no valid query in URL, ensure results are cleared
+      setInitialProducts([]);
       setTotalResults(0);
+      setFilteredProducts([]); // Also clear suggestions
     }
-  }, [searchParams]);
+  }, [searchParams, performSearch]); // performSearch is now a dependency
 
 
   // Handler for when the user types in the main search input field
@@ -104,7 +118,7 @@ export default function SearchClientContent() {
 
     // For combobox suggestions, if different from primary search logic
     if (newQuery.length >= 3) {
-        debouncedSearch(newQuery, false); // Get suggestions
+        debouncedSearchForSuggestions(newQuery); // Get suggestions
     } else {
         setFilteredProducts([]); // Clear suggestions
     }
@@ -116,8 +130,14 @@ export default function SearchClientContent() {
       <div>
         <Link href={`/product/${product.slug}`} className="group">
           {product.thumbnail && (
-            <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
-              <img src={product.thumbnail} alt={product.title} className="h-full w-full object-cover object-center group-hover:opacity-75"/>
+            <div className="aspect-square w-full relative overflow-hidden rounded-lg bg-gray-200"> {/* Ensure relative for fill */}
+              <Image
+                src={product.thumbnail}
+                alt={product.title}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" // Example sizes
+                className="object-cover object-center group-hover:opacity-75"
+              />
             </div>
           )}
           <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-blue-600">{product.title}</h3>
@@ -177,7 +197,7 @@ export default function SearchClientContent() {
                 {isLoading && <div className="relative cursor-default select-none py-2 px-4 text-gray-700">Loading...</div>}
                 {!isLoading && filteredProducts.length === 0 && query.length >= 3 && (
                   <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                    No products found for "{query}".
+                    No products found for &quot;{query}&quot;.
                   </div>
                 )}
                 {!isLoading && filteredProducts.map((product) => (
@@ -215,7 +235,7 @@ export default function SearchClientContent() {
       {query && query.length >= 3 && ( // Show results area if there's an active query
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Results for "{query}" ({isLoading ? '...' : totalResults} found)
+            Results for &quot;{query}&quot; ({isLoading ? '...' : totalResults} found)
           </h2>
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -3,9 +3,9 @@ import { SortOption } from '@/bff/types'; // Import SortOption
 
 export interface ProductFilterState {
   brands?: string[];
-  minPrice?: number;
-  maxPrice?: number;
-  sort?: SortOption; // Added sort option
+  minPrice?: number | null; // Allow null
+  maxPrice?: number | null; // Allow null
+  sort?: SortOption;
 }
 
 export function buildProductFilterQueryString(

@@ -3,7 +3,7 @@ import * as dummyJsonAdapter from '../adapters/dummyjson';
 import {
   ProductSchema,
   CategorySchema,
-  UserSchema,
+  // UserSchema, // Removed as unused
   AuthResponseSchema,
   PriceSchema,
   PaginatedProductsSchema,
@@ -16,7 +16,7 @@ import { slugify } from '@/lib/utils'; // Import slugify
 // Helper to simulate session for B2B pricing
 // In-memory cache for products and slug-to-id mapping
 let allProductsCache: z.infer<typeof ProductSchema>[] | null = null;
-let slugToIdMap = new Map<string, number>();
+const slugToIdMap = new Map<string, number>();
 let productsPromise: Promise<void> | null = null;
 
 async function initializeProductsCache(): Promise<void> {
@@ -235,6 +235,7 @@ export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer
 
 // Example usage check (not for runtime, just for type checking during dev)
 // Updated to reflect new function name and potential slug usage
+/*
 async function check() {
   const { items } = await getProducts({ limit: 3 });
   if (items[0]) {
@@ -250,3 +251,4 @@ async function check() {
     }
   }
 }
+*/

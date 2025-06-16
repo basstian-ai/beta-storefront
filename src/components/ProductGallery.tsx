@@ -24,10 +24,10 @@ export default function ProductGallery({ images, thumbnail, productTitle }: Prod
   // Refs for thumbnail buttons
   const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   useEffect(() => {
-    thumbnailRefs.current = uniqueImages.map((_, i) => thumbnailRefs.current[i] || createRef<HTMLButtonElement>() as any);
-  }, [uniqueImages.length]); // Re-populate refs if number of images changes, check uniqueImages.length
-  // The `as any` above is not ideal, but createRef type seems to clash with (HTMLButtonElement | null)[] without it.
-  // Better would be to initialize with nulls: thumbnailRefs.current = Array(uniqueImages.length).fill(null).map(...)
+    // Ensure the refs array has the correct number of entries, initialized to null.
+    // The actual DOM elements will be assigned by the `ref` prop on each button.
+    thumbnailRefs.current = Array(uniqueImages.length).fill(null);
+  }, [uniqueImages]); // Depend on uniqueImages to re-initialize if the images themselves change, not just length.
 
   const handleThumbnailKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!uniqueImages || uniqueImages.length <= 1) return;

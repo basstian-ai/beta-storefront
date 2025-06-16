@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Next.js Image
 import { z } from 'zod';
 import { ProductSchema, SortOption, AllSortOptions } from '@/bff/types';
-import { getProducts, ServiceProductsResponseSchema } from '@/bff/services';
+import { getProducts } from '@/bff/services'; // Removed ServiceProductsResponseSchema
 import { buildProductFilterQueryString } from '@/lib/filterUtils';
 import ProductCardSkeleton from './ProductCardSkeleton'; // Import shared skeleton
 
@@ -17,11 +18,13 @@ const ProductCard = ({ product }: { product: Product }) => (
     <div>
       <Link href={`/product/${product.slug}`} className="group">
         {product.thumbnail && (
-          <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
-            <img
+          <div className="aspect-square w-full relative overflow-hidden rounded-lg bg-gray-200"> {/* Ensure relative for fill */}
+            <Image
               src={product.thumbnail}
               alt={product.title}
-              className="h-full w-full object-cover object-center group-hover:opacity-75"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw" // Example sizes
+              className="object-cover object-center group-hover:opacity-75"
             />
           </div>
         )}
@@ -212,7 +215,7 @@ function CategoryFilterableProductsClient({
     };
   }, [minPriceInput, maxPriceInput]);
 
-  let filterBadges: string[] = [];
+  const filterBadges: string[] = []; // Changed let to const
   if (selectedBrands.length > 0) {
     filterBadges.push(`Brands: ${selectedBrands.join(', ')}`);
   }

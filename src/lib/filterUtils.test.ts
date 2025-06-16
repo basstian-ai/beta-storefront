@@ -1,7 +1,7 @@
 // src/lib/filterUtils.test.ts
 import { describe, it, expect } from 'vitest';
 import { buildProductFilterQueryString, ProductFilterState } from './filterUtils';
-import { SortOption } from '@/bff/types'; // Import SortOption for context
+// import { SortOption } from '@/bff/types'; // SortOption import removed as it's not directly used
 
 describe('buildProductFilterQueryString', () => {
   it('should return an empty string if no filters are provided', () => {
@@ -62,14 +62,14 @@ describe('buildProductFilterQueryString', () => {
   it('should ignore minPrice if it is NaN or null', () => {
     const filters1: ProductFilterState = { minPrice: NaN };
     expect(buildProductFilterQueryString(filters1)).toEqual('');
-    const filters2: ProductFilterState = { minPrice: null as any }; // Type cast for test
+    const filters2: ProductFilterState = { minPrice: null }; // Removed 'as any'
     expect(buildProductFilterQueryString(filters2)).toEqual('');
   });
 
   it('should ignore maxPrice if it is NaN or null', () => {
     const filters1: ProductFilterState = { maxPrice: NaN };
     expect(buildProductFilterQueryString(filters1)).toEqual('');
-    const filters2: ProductFilterState = { maxPrice: null as any }; // Type cast for test
+    const filters2: ProductFilterState = { maxPrice: null }; // Removed 'as any'
     expect(buildProductFilterQueryString(filters2)).toEqual('');
   });
 

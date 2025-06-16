@@ -2,7 +2,7 @@
 'use client'; // This page needs client-side interactivity for cart management
 
 import AuthGuard from '@/components/AuthGuard';
-import { useCartStore, CartItem } from '@/stores/useCartStore'; // Import store and CartItem type
+import { useCartStore } from '@/stores/useCartStore'; // Import store, CartItem type removed as it's not directly used here
 import Link from 'next/link';
 import Image from 'next/image'; // For better image handling
 import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';

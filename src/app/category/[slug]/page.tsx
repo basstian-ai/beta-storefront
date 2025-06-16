@@ -51,15 +51,15 @@ export async function generateStaticParams() {
 
 export default async function CategoryPage({
   params,
-  searchParams,
+  // searchParams, // Removed as it's not used directly in this Server Component
 }: {
   params: { slug: string };
-  searchParams?: {
-    brand?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    sort?: 'price-asc' | 'price-desc' | 'newest';
-  };
+  // searchParams?: { // Type definition also removed
+  //   brand?: string;
+  //   minPrice?: string;
+  //   maxPrice?: string;
+  //   sort?: 'price-asc' | 'price-desc' | 'newest';
+  // };
 }) {
   const { slug } = params;
 
@@ -80,7 +80,14 @@ export default async function CategoryPage({
     category: categoryApiName,
     limit: 0,
   });
-  const availableBrands = Array.from(new Set(allProductsData.items.map(p => p.brand).filter(Boolean as (value: any) => value is string).sort()));
+  const availableBrands = Array.from(
+    new Set(
+      allProductsData.items
+        .map(p => p.brand)
+        .filter((brand): brand is string => typeof brand === 'string' && brand.length > 0) // Type-safe filter
+        .sort()
+    )
+  );
 
   // Pass all products for client-side filtering initially, until BFF is updated for multi-brand.
   // This is not ideal for large categories but fulfills the current structure.

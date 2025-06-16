@@ -2,7 +2,7 @@
 import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin } from '@/bff/services'; // Your BFF login service
-import { UserSchema, AuthResponseSchema } from '@/bff/types'; // Zod schemas
+import { AuthResponseSchema } from '@/bff/types'; // Removed UserSchema as it's unused
 import { z } from 'zod';
 
 // Augment NextAuth types to include 'role' and 'id' on user and session
@@ -39,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
         rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) { // Removed _req
         if (!credentials?.username || !credentials?.password) {
           if (process.env.NODE_ENV !== 'production') {
             console.error('Auth: Missing username or password in credentials');
@@ -80,12 +80,14 @@ export const authOptions: NextAuthOptions = {
           }
           return user;
 
-        } catch (error: any) { // Added :any for error typing
+        } catch (error: unknown) { // Changed error type to unknown
           if (process.env.NODE_ENV !== 'production') {
             if (error instanceof z.ZodError) {
               console.error('Auth: Zod validation error in authorize callback:', error.errors);
+            } else if (error instanceof Error) { // Check if error is an instance of Error
+              console.error('Auth: Error in authorize callback:', error.message);
             } else {
-              console.error('Auth: Error in authorize callback:', error.message || error);
+              console.error('Auth: Unknown error in authorize callback:', error);
             }
           }
           // Regardless of error type, return null for auth failure
@@ -100,26 +102,28 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
   },
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) { // Removed _account, _profile
       // Persist 'id' and 'role' to the JWT right after signin
       if (user) { // User object is only passed on first call (signin)
-        token.id = user.id; // user.id comes from authorize callback's return
-        token.role = user.role; // user.role also from authorize (ensure User type has role)
-        token.rememberMe = (user as any).rememberMe; // Add this
-        // token.picture = user.image; // if you want to use 'picture' claim
+        token.id = user.id;
+        token.role = user.role;
+        token.rememberMe = user.rememberMe; // Removed 'as any'
+        // token.picture = user.image;
       }
       return token;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) { // Removed _user
       // Send properties to the client, like an access_token and user id from a provider.
-      if (token.id && session.user) { // Ensure session.user exists
+      if (token.id && session.user) {
         session.user.id = token.id;
       }
-      if (token.role && session.user) { // Ensure session.user exists
+      if (token.role && session.user) {
         session.user.role = token.role as string;
       }
-      if (token.rememberMe !== undefined && session.user) { (session.user as any).rememberMe = token.rememberMe; } // Add this
-      // session.user.image = token.picture ?? session.user.image; // Get image from token if set
+      if (token.rememberMe !== undefined && session.user) {
+        session.user.rememberMe = token.rememberMe; // Removed 'as any'
+      }
+      // session.user.image = token.picture ?? session.user.image;
       if (process.env.NODE_ENV !== 'production') {
         console.log('Auth: Session created/updated:', session);
       }

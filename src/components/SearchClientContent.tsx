@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ProductSchema, ServiceProductsResponseSchema } from '@/bff/types';
 import { z } from 'zod';
+import ProductCardSkeleton from './ProductCardSkeleton'; // Import shared skeleton
 
 // Debounce function
 function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
@@ -210,15 +211,21 @@ export default function SearchClientContent() {
       </div>
 
       {/* Display area for initial search results based on URL query */}
-      {searchParams?.get('query') && searchParams.get('query')!.length >= 3 && (
+      {/* This section now handles its own loading skeleton for subsequent searches */}
+      {query && query.length >= 3 && ( // Show results area if there's an active query
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Results for "{searchParams.get('query')}" ({totalResults} found)
+            Results for "{query}" ({isLoading ? '...' : totalResults} found)
           </h2>
-          {isLoading && initialProducts.length === 0 && <p>Loading results...</p>}
-          {!isLoading && initialProducts.length === 0 && <p>No products found for this search term.</p>}
-
-          {initialProducts.length > 0 && (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, index) => ( // Display 4 skeletons for search
+                <ProductCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : initialProducts.length === 0 ? (
+            <p>No products found for this search term.</p>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {initialProducts.map(product => (
                 <ProductCard key={product.id} product={product} />

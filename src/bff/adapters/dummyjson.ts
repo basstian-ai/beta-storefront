@@ -6,7 +6,9 @@ const API_BASE_URL = 'https://dummyjson.com';
 const transformCategoryStringToObject = (categorySlug: string): { slug: string; name: string } => {
   if (typeof categorySlug !== 'string' || !categorySlug.trim()) {
     // This case should ideally not happen if DummyJSON product data is consistent
-    console.warn(`Invalid category slug encountered: "${categorySlug}". Using default.`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`Invalid category slug encountered: "${categorySlug}". Using default.`);
+    }
     return {
       slug: categorySlug || 'unknown',
       name: 'Unknown Category'
@@ -59,7 +61,9 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
   if (queryParams.toString()) {
     url += (url.includes('?') ? '&' : '?') + queryParams.toString();
   }
-  console.log(`[Adapter.fetchProducts] Fetching URL: ${url}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[Adapter.fetchProducts] Fetching URL: ${url}`);
+  }
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -78,28 +82,42 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 
     // Client-side filtering for brands if brands are specified
     if (brands && brands.length > 0) {
-      console.log(`[Adapter.fetchProducts] Before brand filter: ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] Before brand filter: ${filteredProducts.length} products.`);
+      }
       filteredProducts = filteredProducts.filter((product: any) =>
         product.brand && brands.includes(product.brand)
       );
-      console.log(`[Adapter.fetchProducts] After brand filter: ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] After brand filter: ${filteredProducts.length} products.`);
+      }
     }
 
     // Client-side filtering for price range
     if (minPrice !== undefined) {
-      console.log(`[Adapter.fetchProducts] Before minPrice filter (${minPrice}): ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] Before minPrice filter (${minPrice}): ${filteredProducts.length} products.`);
+      }
       filteredProducts = filteredProducts.filter((product: any) => product.price >= minPrice);
-      console.log(`[Adapter.fetchProducts] After minPrice filter: ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] After minPrice filter: ${filteredProducts.length} products.`);
+      }
     }
     if (maxPrice !== undefined) {
-      console.log(`[Adapter.fetchProducts] Before maxPrice filter (${maxPrice}): ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] Before maxPrice filter (${maxPrice}): ${filteredProducts.length} products.`);
+      }
       filteredProducts = filteredProducts.filter((product: any) => product.price <= maxPrice);
-      console.log(`[Adapter.fetchProducts] After maxPrice filter: ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] After maxPrice filter: ${filteredProducts.length} products.`);
+      }
     }
 
     // Apply sorting after filtering
     if (sort && sort !== 'relevance') {
-      console.log(`[Adapter.fetchProducts] Before sorting by "${sort}": ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] Before sorting by "${sort}": ${filteredProducts.length} products.`);
+      }
       if (sort === 'price_asc') {
         filteredProducts.sort((a, b) => a.price - b.price);
       } else if (sort === 'price_desc') {
@@ -107,7 +125,9 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
       } else if (sort === 'newest') {
         filteredProducts.sort((a, b) => b.id - a.id); // Assuming higher ID is newer
       }
-      console.log(`[Adapter.fetchProducts] After sorting: ${filteredProducts.length} products.`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Adapter.fetchProducts] After sorting: ${filteredProducts.length} products.`);
+      }
     }
 
     data.products = filteredProducts;
@@ -164,15 +184,23 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
   const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
   if (!response.ok) {
     const errorBody = await response.text();
-    console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
+    // This error is critical for operation, so it might be useful in prod if not handled elsewhere.
+    // However, following the general instruction to gate most logs for this task.
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
+    }
     throw new Error(`Failed to fetch categories: ${response.statusText} - ${errorBody}`);
   }
 
   const rawResponseJson = await response.json();
-  console.log('[Adapter.fetchCategories] Raw JSON response from API:', JSON.stringify(rawResponseJson));
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Adapter.fetchCategories] Raw JSON response from API:', JSON.stringify(rawResponseJson));
+  }
 
   if (!Array.isArray(rawResponseJson)) {
-    console.error('[Adapter.fetchCategories] Raw response is not an array as expected:', rawResponseJson);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchCategories] Raw response is not an array as expected:', rawResponseJson);
+    }
     return []; // Return empty or throw, critical error if API contract changes
   }
 
@@ -184,14 +212,18 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
     item && typeof item.slug === 'string' && item.slug.trim() !== '' &&
     typeof item.name === 'string' && item.name.trim() !== ''
   );
-  console.log('[Adapter.fetchCategories] Validated category items from API (based on object structure):', JSON.stringify(validatedCategories));
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Adapter.fetchCategories] Validated category items from API (based on object structure):', JSON.stringify(validatedCategories));
+  }
 
   if (validatedCategories.length !== categoryDataFromApi.length) {
     const rejectedItems = categoryDataFromApi.filter(item =>
       !(item && typeof item.slug === 'string' && item.slug.trim() !== '' &&
         typeof item.name === 'string' && item.name.trim() !== '')
     );
-    console.warn('[Adapter.fetchCategories] Items rejected due to invalid structure/missing slug or name:', JSON.stringify(rejectedItems));
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Adapter.fetchCategories] Items rejected due to invalid structure/missing slug or name:', JSON.stringify(rejectedItems));
+    }
   }
 
   const transformedCategories = validatedCategories.map((item, index) => {
@@ -203,7 +235,9 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
       slug: item.slug
     };
   });
-  console.log('[Adapter.fetchCategories] Transformed category objects for service layer:', JSON.stringify(transformedCategories));
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Adapter.fetchCategories] Transformed category objects for service layer:', JSON.stringify(transformedCategories));
+  }
   return transformedCategories;
 }
 

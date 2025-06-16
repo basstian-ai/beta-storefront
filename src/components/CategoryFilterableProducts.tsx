@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
-import { ProductSchema, SortOption, AllSortOptions } from '@/bff/types'; // Import SortOption and AllSortOptions
+import { ProductSchema, SortOption, AllSortOptions } from '@/bff/types';
 import { getProducts, ServiceProductsResponseSchema } from '@/bff/services';
 import { buildProductFilterQueryString } from '@/lib/filterUtils';
+import ProductCardSkeleton from './ProductCardSkeleton'; // Import shared skeleton
 
 type Product = z.infer<typeof ProductSchema>;
 
@@ -44,16 +45,7 @@ const ProductCard = ({ product }: { product: Product }) => (
   </div>
 );
 
-// Skeleton component for ProductCard
-const ProductCardSkeleton = () => (
-  <div className="border p-4 rounded-lg shadow animate-pulse">
-    <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-300 xl:aspect-w-7 xl:aspect-h-8"></div>
-    <div className="mt-4 h-6 bg-gray-300 rounded w-3/4"></div>
-    <div className="mt-1 h-10 bg-gray-300 rounded"></div>
-    <div className="mt-2 h-8 bg-gray-300 rounded w-1/2"></div>
-    <div className="mt-3 h-10 bg-gray-300 rounded"></div>
-  </div>
-);
+// Skeleton component for ProductCard is now imported
 
 interface CategoryFilterableProductsProps {
   initialProducts: Product[]; // Should now be ALL products for the category for client-side filtering
@@ -240,6 +232,17 @@ function CategoryFilterableProductsClient({
     setAppliedSort(event.target.value as SortOption);
   };
 
+  const handleClearFilters = () => {
+    setSelectedBrands([]);
+    setMinPriceInput('');
+    setMaxPriceInput('');
+    setAppliedMinPrice(undefined);
+    setAppliedMaxPrice(undefined);
+    setPriceValidationError(null);
+    setAppliedSort('relevance');
+    // The existing useEffect for URL updates will handle pushing to router
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-2">
@@ -273,7 +276,15 @@ function CategoryFilterableProductsClient({
 
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="w-full md:w-1/4 lg:w-1/5">
-          <h2 className="text-xl font-semibold mb-4">Filters</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Filters</h2>
+            <button
+              onClick={handleClearFilters}
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Clear Filters
+            </button>
+          </div>
 
           <div className="mb-6">
             <h3 className="font-medium mb-2">Brand</h3>

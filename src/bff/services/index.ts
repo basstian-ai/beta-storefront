@@ -27,7 +27,9 @@ async function initializeProductsCache(): Promise<void> {
   }
   if (allProductsCache) return; // If cache is already populated, do nothing
 
-  console.log('BFF> Initializing products cache for slug lookup...');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> Initializing products cache for slug lookup...');
+  }
   const rawData = await dummyJsonAdapter.fetchAllProductsSimple();
   const parsedData = PaginatedProductsSchema.parse(rawData);
 
@@ -44,14 +46,18 @@ async function initializeProductsCache(): Promise<void> {
   allProductsCache.forEach(p => {
     if (p.slug) slugToIdMap.set(p.slug, p.id);
   });
-  console.log(`BFF> Products cache initialized. ${allProductsCache.length} products, ${slugToIdMap.size} slugs mapped.`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`BFF> Products cache initialized. ${allProductsCache.length} products, ${slugToIdMap.size} slugs mapped.`);
+  }
 }
 
 // Helper to ensure cache is ready
 async function ensureCacheReady() {
   if (!productsPromise) {
     productsPromise = initializeProductsCache().catch(err => {
-      console.error("BFF> Failed to initialize products cache:", err);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error("BFF> Failed to initialize products cache:", err);
+      }
       productsPromise = null; // Reset promise on failure to allow retry
       allProductsCache = null; // Ensure cache is null on failure
       throw err; // Re-throw to indicate failure to the caller
@@ -99,7 +105,9 @@ function applyB2BPrice(productData: z.infer<typeof ProductSchema>, session: { us
 export async function getProducts(
   options: GetProductsOptions = {}
 ): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
-  console.log('BFF> getProducts service called with options:', options );
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> getProducts service called with options:', options );
+  }
   // Pass all options, including `brands`, to the adapter.
   // The adapter will handle the DummyJSON specifics (e.g., client-side filtering for brands if API doesn't support it).
   const rawData = await dummyJsonAdapter.fetchProducts(options);
@@ -126,7 +134,9 @@ export async function getProducts(
 }
 
 export async function searchProducts(query: string): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
-    console.log('BFF> searchProducts (slug enhancement pass)', { query });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('BFF> searchProducts (slug enhancement pass)', { query });
+    }
     const rawData = await dummyJsonAdapter.searchProducts(query);
     const parsedData = PaginatedProductsSchema.parse(rawData);
     const session = await getSimulatedSession();
@@ -150,7 +160,9 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
 
   let productId: number | undefined;
   if (typeof idOrSlug === 'string' && isNaN(Number(idOrSlug))) {
-    console.log('BFF> getProductByIdOrSlug by SLUG', { slug: idOrSlug });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('BFF> getProductByIdOrSlug by SLUG', { slug: idOrSlug });
+    }
     productId = slugToIdMap.get(idOrSlug);
     if (productId === undefined && allProductsCache) { // Check cache if map misses
       const productFromCache = allProductsCache.find(p => p.slug === idOrSlug);
@@ -161,7 +173,9 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
     }
   } else {
     productId = Number(idOrSlug);
-    console.log('BFF> getProductByIdOrSlug by ID', { id: productId });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('BFF> getProductByIdOrSlug by ID', { id: productId });
+    }
   }
 
   const rawData = await dummyJsonAdapter.fetchProductById(productId);
@@ -179,29 +193,39 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
 }
 
 export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof AuthResponseSchema>> {
-  console.log('BFF> login', { username: credentials.username });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> login', { username: credentials.username });
+  }
   const rawData = await dummyJsonAdapter.login(credentials);
   const validatedResponse = AuthResponseSchema.parse(rawData);
   return validatedResponse;
 }
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions
-  console.log('BFF> getCategories service: Called with fetchOptions:', { fetchOptions });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> getCategories service: Called with fetchOptions:', { fetchOptions });
+  }
   try {
     const rawDataFromAdapter = await dummyJsonAdapter.fetchCategories(fetchOptions); // Pass options
-    console.log('[Service.getCategories] Data received from adapter:', JSON.stringify(rawDataFromAdapter));
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Service.getCategories] Data received from adapter:', JSON.stringify(rawDataFromAdapter));
+    }
 
     // Zod parsing will validate if rawDataFromAdapter matches Array<CategorySchema_compatible_objects>
     const categories = z.array(CategorySchema).parse(rawDataFromAdapter);
-    console.log('[Service.getCategories] Parsed categories (final result):', JSON.stringify(categories));
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Service.getCategories] Parsed categories (final result):', JSON.stringify(categories));
+    }
     return categories;
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('[Service.getCategories] Zod validation error:', JSON.stringify(error.errors));
-    } else if (error instanceof Error) {
-      console.error('[Service.getCategories] Error fetching or processing categories:', error.message, error.stack);
-    } else {
-      console.error('[Service.getCategories] Unknown error fetching or processing categories:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      if (error instanceof z.ZodError) {
+        console.error('[Service.getCategories] Zod validation error:', JSON.stringify(error.errors));
+      } else if (error instanceof Error) {
+        console.error('[Service.getCategories] Error fetching or processing categories:', error.message, error.stack);
+      } else {
+        console.error('[Service.getCategories] Unknown error fetching or processing categories:', error);
+      }
     }
     // Re-throw the error or return empty array / handle as per service contract
     // For now, let's re-throw so RootLayout's catch block handles it for UI error message.
@@ -214,11 +238,15 @@ export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer
 async function check() {
   const { items } = await getProducts({ limit: 3 });
   if (items[0]) {
-    console.log(items[0].title, items[0].slug);
-    console.log(items[0].effectivePrice?.amount);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(items[0].title, items[0].slug);
+      console.log(items[0].effectivePrice?.amount);
+    }
   }
   if (items[0] && items[0].slug) {
     const product = await getProductByIdOrSlug(items[0].slug);
-    console.log("Fetched by slug:", product.title);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("Fetched by slug:", product.title);
+    }
   }
 }

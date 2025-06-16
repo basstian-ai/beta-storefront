@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Fragment } from 'react';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
+import { useHasMounted } from '@/hooks/useHasMounted'; // Import useHasMounted
 
 interface CategoryNavItem {
   name: string;
@@ -26,6 +27,7 @@ function classNames(...classes: string[]) {
 export default function NavBar({ initialCategories, categoryError }: NavBarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const hasMounted = useHasMounted(); // Use the hook
 
   // Get total items from cart store for the badge
   const totalCartItems = useCartStore((state) => state.getTotalItems());
@@ -89,7 +91,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 <Link href="/cart" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="View Cart">
                   <span className="sr-only">View Cart</span>
                   <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
-                  {totalCartItems > 0 && (
+                  {hasMounted && totalCartItems > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {totalCartItems}
                     </span>

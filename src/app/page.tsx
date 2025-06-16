@@ -1,9 +1,9 @@
 // src/app/page.tsx
 import { getCategories } from '@/bff/services';
 import Link from 'next/link';
-import { slugify } from '@/lib/utils'; // Assuming slugify is in utils
+// import { slugify } from '@/lib/utils'; // Not needed for category slugs if fetched as objects
 
-interface CategoryInfo {
+interface CategoryInfo { // This interface might need adjustment or can use CategorySchema directly
   name: string;
   slug: string;
   // Add a placeholder image URL or a way to derive one if needed for display
@@ -39,21 +39,18 @@ const defaultCategoryImage = 'https://cdn.dummyjson.com/products/images/mobile-a
 
 
 export default async function HomePage() {
-  let categories: CategoryInfo[] = [];
+  let categoriesToDisplay: CategoryInfo[] = []; // Use CategoryInfo or adapt
   let fetchError: string | null = null;
 
   try {
-    const categoryNames = await getCategories();
-    categories = categoryNames.map(name => {
-      const s = slugify(name); // name is already a slug-like string from dummyjson
-      // To get a nicer display name, we convert slug to title case
-      const displayName = s.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-      return {
-        name: displayName,
-        slug: s, // Use the original slug from dummyjson for the URL
-        imageUrl: categoryImagePlaceholders[s] || defaultCategoryImage,
-      };
-    });
+    // getCategories now returns { id, name, slug }[]
+    const fetchedCategories: { id: number; name: string; slug: string }[] = await getCategories();
+
+    categoriesToDisplay = fetchedCategories.map(category => ({
+      name: category.name, // Use pre-formatted name
+      slug: category.slug,  // Use slug directly
+      imageUrl: categoryImagePlaceholders[category.slug] || defaultCategoryImage,
+    }));
   } catch (error) {
     console.error("Failed to fetch categories for HomePage:", error);
     fetchError = "Could not load categories at this time. Please try again later.";
@@ -70,7 +67,7 @@ export default async function HomePage() {
           <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
             Discover amazing products across all categories. Built with Next.js 14 and modern tech.
           </p>
-          <Link href={categories.length > 0 ? `/category/${categories[0].slug}` : "/"} legacyBehavior>
+          <Link href={categoriesToDisplay.length > 0 ? `/category/${categoriesToDisplay[0].slug}` : "/"} legacyBehavior>
             <a className="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-100 transition duration-300">
               Shop Now
             </a>
@@ -89,9 +86,9 @@ export default async function HomePage() {
               <p>{fetchError}</p>
             </div>
           )}
-          {categories.length > 0 ? (
+          {categoriesToDisplay.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-              {categories.map((category) => (
+              {categoriesToDisplay.map((category) => (
                 <Link key={category.slug} href={`/category/${category.slug}`} legacyBehavior>
                   <a className="group block bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
                     <div className="aspect-w-1 aspect-h-1 w-full">

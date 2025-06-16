@@ -28,11 +28,13 @@ export default async function RootLayout({
 
   try {
     // Call getCategories with revalidation option
-    const fetchedCategories: string[] = await getCategories({ next: { revalidate: 3600 } }); // Cache for 1 hour
+    // getCategories now returns { id, name, slug }[]
+    const fetchedCategories: { id: number; name: string; slug: string }[] = await getCategories({ next: { revalidate: 3600 } });
 
-    categoriesForNav = fetchedCategories.map((catName) => ({
-      name: catName.charAt(0).toUpperCase() + catName.slice(1).replace(/-/g, ' '), // Improved display name for slugs
-      slug: catName.toLowerCase().replace(/\s+/g, '-'), // Standard slugify
+    // Map to the structure NavBar expects (name and slug are directly available)
+    categoriesForNav = fetchedCategories.map(category => ({
+      name: category.name, // Use the pre-formatted name
+      slug: category.slug  // Use the slug directly
     }));
   } catch (err) {
     // console.error already happens in adapter if fetch fails.

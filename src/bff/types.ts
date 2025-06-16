@@ -26,7 +26,11 @@ export const ProductSchema = z.object({
   effectivePrice: PriceSchema.optional(),
 });
 
-export const CategorySchema = z.string(); // From dummyjson, categories are just strings in an array
+export const CategorySchema = z.object({
+  id: z.number(), // Or z.string() if IDs are not numbers
+  name: z.string(), // This will be the display-friendly name
+  slug: z.string()  // This will be the URL-friendly slug (original string from dummyjson)
+});
 
 export const UserSchema = z.object({
   id: z.number(),

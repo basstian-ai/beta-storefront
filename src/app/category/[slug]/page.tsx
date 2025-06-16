@@ -40,9 +40,10 @@ const ProductCard = ({ product }: { product: z.infer<typeof ProductSchema> }) =>
 
 export async function generateStaticParams() {
   try {
-    const categoryStrings = await getCategories();
-    return categoryStrings.map((catName) => ({
-      slug: catName.toLowerCase().replace(/\s+/g, '-'),
+    // getCategories() now returns Promise<{ id: number; name: string; slug: string }[]>
+    const categories = await getCategories();
+    return categories.map(category => ({
+      slug: category.slug, // Use the slug property directly
     }));
   } catch (error) {
     console.error("Failed to generate static params for category pages:", error);

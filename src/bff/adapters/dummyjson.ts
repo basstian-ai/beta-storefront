@@ -55,7 +55,14 @@ export async function fetchCategories(fetchOptions?: RequestInit) { // Added fet
     console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
     throw new Error(`Failed to fetch categories: ${response.statusText} - ${errorBody}`);
   }
-  return response.json();
+  const categorySlugs: string[] = await response.json();
+
+  // Transform to the new Category object structure
+  return categorySlugs.map((slug, index) => ({
+    id: index + 1, // Assign a simple numeric ID (1-based)
+    name: slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Convert "home-decoration" to "Home Decoration"
+    slug: slug // Original string from dummyjson is the slug
+  }));
 }
 
 export async function fetchAllProductsSimple() {

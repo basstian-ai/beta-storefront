@@ -68,7 +68,7 @@ export const authOptions: NextAuthOptions = {
           // The user object returned by authorize will be stored in the JWT
           // Ensure the id property here matches what you declared in the User interface augmentation
           const user: User = { // Use the augmented User type
-            id: parsedLoginResponse.id,
+            id: String(parsedLoginResponse.id), // Ensure ID is a string
             name: parsedLoginResponse.username,
             email: parsedLoginResponse.email,
             image: parsedLoginResponse.image,
@@ -136,7 +136,7 @@ export const authOptions: NextAuthOptions = {
     // signOut: '/auth/signout' // (optional)
   },
   secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
-  // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
+  debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 };
 
 const handler = NextAuth(authOptions);

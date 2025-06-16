@@ -43,6 +43,9 @@ To run this project effectively and enable all features, you will need to set up
     -   **Local Development**: `NEXTAUTH_URL=http://localhost:3000` (assuming your app runs on port 3000).
     -   **Vercel (Production)**: This will be your production domain (e.g., `NEXTAUTH_URL=https://your-app-name.vercel.app`). Vercel usually sets `VERCEL_URL` which can often be used, but explicitly setting `NEXTAUTH_URL` is safer for NextAuth.js.
 
+-   `AUTH_TRUST_HOST`: Set to `true` when deploying to Vercel or other environments that use a proxy or load balancer in front of your Next.js application. This is often required for NextAuth v5 to work correctly in such environments, especially for preview deployments.
+    -   **Vercel/Production**: `AUTH_TRUST_HOST=true`
+
 ### Application Insights
 -   `APPINSIGHTS_INSTRUMENTATIONKEY`: Your Application Insights Instrumentation Key. This is used for logging and telemetry.
     -   **Local Development**: Add this key to your `.env.local` file:
@@ -145,10 +148,33 @@ The Backend-for-Frontend (BFF) services (e.g., `getProducts`, `getUsers` located
 ### Coverage
 Code coverage is actively monitored using Vitest's built-in coverage reporting capabilities. While a strict target is not enforced for early development stages, contributions should aim to maintain or ideally improve the existing code coverage. This helps in identifying untested parts of the codebase and ensuring new features are adequately tested.
 
+### End-to-End (E2E) Tests
+
+This project uses [Playwright](https://playwright.dev/) for End-to-End testing. The tests cover critical user flows such as authentication.
+
+To run the E2E tests locally:
+
+1.  Ensure your local development server is running (usually `npm run dev` or `pnpm dev`).
+2.  Set the `PLAYWRIGHT_TEST_BASE_URL` environment variable if your application is not running on `http://localhost:3000`. For example, in your `.env.local` or directly in the command line:
+    ```bash
+    PLAYWRIGHT_TEST_BASE_URL=http://localhost:your_port npm run test:e2e
+    ```
+3.  Run the tests using the following npm script:
+
+    ```bash
+    npm run test:e2e
+    ```
+    Or, if using pnpm:
+    ```bash
+    pnpm test:e2e
+    ```
+
+Playwright will execute the tests defined in the `tests/e2e` directory. Test reports (HTML) can be found in `playwright-report` after the test run.
+
 ### Future Considerations
 As the project grows, we plan to incorporate additional testing methodologies:
 -   **Integration Testing**: To test the interactions between different parts of the application, such as BFF services and actual downstream APIs (once we move beyond `dummyjson`).
--   **End-to-End (E2E) Testing**: For UI components and user flows, we will consider tools like [Playwright](https://playwright.dev/) or [Cypress](https://www.cypress.io/) to automate browser testing and ensure the application works as expected from a user's perspective.
+-   **Expanded E2E Coverage**: While basic E2E tests for authentication are in place, coverage will be expanded to other critical user flows.
 
 ---
 

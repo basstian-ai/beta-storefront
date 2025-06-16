@@ -192,8 +192,8 @@ Once these steps are completed, any new pull request to your repository should t
 - [x] **Epic 1: Navigation** (NavBar, Breadcrumbs)
 - [x] **Epic 2: Product Discovery & Search** (Category Page, Search Page & API)
 - [x] **Epic 3: Product Detail Page** (PDP with Gallery, PriceBox, Slug URLs, JSON-LD)
-- [ ] **Epic 4: Auth & Session**
-- [ ] **Epic 5: Cart**
+- [x] **Epic 4: Auth & Session** (NextAuth, Credentials, Remember Me flag, AuthGuard, NavBar Avatar)
+- [x] **Epic 5: Cart MVP** (Zustand store with persistence & TTL, PDP integration, NavBar badge, Cart Page)
 - [ ] **Epic 6: Quick My Page shell**
 - [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
-- [ ] **Task 9: CI/CD** (Vercel preview workflow)
+- [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)

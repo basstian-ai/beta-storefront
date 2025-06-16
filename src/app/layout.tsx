@@ -7,6 +7,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { getCategories } from '@/bff/services';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Toaster } from 'react-hot-toast'; // Import Toaster
+import AuthSessionProvider from '@/components/AuthSessionProvider'; // Import
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,12 +39,14 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Toaster position="top-center" reverseOrder={false} /> {/* Add Toaster provider */}
-        <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
-        <Breadcrumbs />
-        <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
-          {children}
-        </main>
+        <AuthSessionProvider> {/* Wrap with SessionProvider */}
+          <Toaster position="top-center" reverseOrder={false} />
+          <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
+          <Breadcrumbs />
+          <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
+            {children}
+          </main>
+        </AuthSessionProvider>
       </body>
     </html>
   );

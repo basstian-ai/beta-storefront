@@ -12,6 +12,16 @@ const nextConfig = {
     config.resolve.alias['@'] = path.join(__dirname, 'src');
     return config;
   },
+  images: { // Add this section for external image domains
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.dummyjson.com',
+        // port: '', // if needed
+        // pathname: '/image/upload/**', // if specific path needed
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

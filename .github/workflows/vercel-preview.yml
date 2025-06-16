@@ -1,0 +1,36 @@
+# .github/workflows/vercel-preview.yml
+name: Vercel Preview Deployment
+
+on: [pull_request]
+
+jobs:
+  preview-deploy: # Changed job name to be more descriptive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8 # Specify a PNPM version, e.g., 8.x (latest stable)
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4 # It's good practice to setup Node explicitly
+        with:
+          node-version: '20' # Specify Node.js version (e.g., LTS)
+          cache: 'pnpm' # Enable caching for pnpm
+
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile # Using --no-frozen-lockfile as requested
+
+      - name: Run Tests
+        run: pnpm test # Assumes 'test' script in package.json runs Vitest
+
+      - name: Deploy to Vercel
+        # The user specified `vercel --prod`. For PR previews, this usually isn't what you want.
+        # A typical preview deployment doesn't use `--prod`.
+        # `vercel --yes --token XXXXX` would create a preview deployment.
+        # However, I will follow the user's specific instruction to use `--prod`.
+        # This might need adjustment if it unintentionally promotes PRs to production.
+        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes

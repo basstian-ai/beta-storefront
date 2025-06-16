@@ -11,13 +11,20 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve", // Ensure this is set
     "incremental": true,
+    "baseUrl": ".", // Added
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["src/*"] // Updated path
     },
-    "types": ["jest", "node"]
+    "types": ["node"], // Removed "jest"
+    "forceConsistentCasingInFileNames": true, // Added
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"], // Adjusted include
   "exclude": ["node_modules"]
 }

@@ -185,3 +185,15 @@ To add these secrets to GitHub:
 4.  Click on "New repository secret" for each of the three secrets listed above, pasting the corresponding values.
 
 Once these steps are completed, any new pull request to your repository should trigger the GitHub Action, which will then deploy a preview environment to Vercel. The deployment URL will typically be commented on the pull request by the Vercel bot.
+
+## Project Implementation Status
+
+- [x] **Task 1: Foundation + Mock BFF** (Adapters, Services, Zod, B2B logic, Vitest)
+- [x] **Epic 1: Navigation** (NavBar, Breadcrumbs)
+- [x] **Epic 2: Product Discovery & Search** (Category Page, Search Page & API)
+- [x] **Epic 3: Product Detail Page** (PDP with Gallery, PriceBox, Slug URLs, JSON-LD)
+- [x] **Epic 4: Auth & Session** (NextAuth, Credentials, Remember Me flag, AuthGuard, NavBar Avatar)
+- [x] **Epic 5: Cart MVP** (Zustand store with persistence & TTL, PDP integration, NavBar badge, Cart Page)
+- [ ] **Epic 6: Quick My Page shell**
+- [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
+- [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)

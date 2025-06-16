@@ -8,6 +8,7 @@ import {
   PriceSchema,
   PaginatedProductsSchema,
   ServiceProductsResponseSchema,
+  GetProductsOptions, // Import the new options type
 } from '../types';
 import { z } from 'zod';
 import { slugify } from '@/lib/utils'; // Import slugify
@@ -95,14 +96,16 @@ function applyB2BPrice(productData: z.infer<typeof ProductSchema>, session: { us
   };
 }
 
-export async function getProducts(options: {
-  category?: string;
-  limit?: number;
-  skip?: number;
-  sort?: string;
-} = {}): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
-  console.log('BFF> getProducts (slug enhancement pass)', { options });
+export async function getProducts(
+  options: GetProductsOptions = {}
+): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
+  console.log('BFF> getProducts service called with options:', options );
+  // Pass all options, including `brands`, to the adapter.
+  // The adapter will handle the DummyJSON specifics (e.g., client-side filtering for brands if API doesn't support it).
   const rawData = await dummyJsonAdapter.fetchProducts(options);
+
+  // The adapter now returns data where product.category is already an object.
+  // So, PaginatedProductsSchema should correctly parse this.
   const parsedData = PaginatedProductsSchema.parse(rawData);
   const session = await getSimulatedSession();
 
@@ -183,10 +186,27 @@ export async function login(credentials: { username?: string; password?: string 
 }
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions
-  console.log('BFF> getCategories', { fetchOptions });
-  const rawData = await dummyJsonAdapter.fetchCategories(fetchOptions); // Pass options
-  const categories = z.array(CategorySchema).parse(rawData);
-  return categories;
+  console.log('BFF> getCategories service: Called with fetchOptions:', { fetchOptions });
+  try {
+    const rawDataFromAdapter = await dummyJsonAdapter.fetchCategories(fetchOptions); // Pass options
+    console.log('[Service.getCategories] Data received from adapter:', JSON.stringify(rawDataFromAdapter));
+
+    // Zod parsing will validate if rawDataFromAdapter matches Array<CategorySchema_compatible_objects>
+    const categories = z.array(CategorySchema).parse(rawDataFromAdapter);
+    console.log('[Service.getCategories] Parsed categories (final result):', JSON.stringify(categories));
+    return categories;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('[Service.getCategories] Zod validation error:', JSON.stringify(error.errors));
+    } else if (error instanceof Error) {
+      console.error('[Service.getCategories] Error fetching or processing categories:', error.message, error.stack);
+    } else {
+      console.error('[Service.getCategories] Unknown error fetching or processing categories:', error);
+    }
+    // Re-throw the error or return empty array / handle as per service contract
+    // For now, let's re-throw so RootLayout's catch block handles it for UI error message.
+    throw error;
+  }
 }
 
 // Example usage check (not for runtime, just for type checking during dev)

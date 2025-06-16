@@ -64,6 +64,17 @@ export const PaginatedProductsSchema = z.object({
   limit: z.number(),
 });
 
+// Options for getProducts service function
+export interface GetProductsOptions {
+  category?: string;
+  limit?: number;
+  skip?: number;
+  sort?: string; // Example: 'price-asc', 'price-desc', 'title-asc', 'title-desc'
+  brands?: string[]; // For filtering by one or more brands
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 // For services layer to return a consistent structure
 export const ServiceProductsResponseSchema = z.object({
   items: z.array(ProductSchema),

@@ -280,14 +280,67 @@ export async function fetchAllProductsSimple() {
 }
 
 export async function login(credentials: { username?: string; password?: string }) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(`Login failed: ${errorBody.message || response.statusText}`);
+  const targetUrl = `${API_BASE_URL}/auth/login`;
+  const method = 'POST';
+  const requestHeaders = { 'Content-Type': 'application/json' };
+  // For logging, mask password or just indicate its presence
+  const loggedCredentials = { ...credentials, password: credentials?.password ? '********' : undefined };
+
+  console.log('[dummyJsonAdapter.login] Attempting login.');
+  console.log('[dummyJsonAdapter.login] Target URL:', targetUrl);
+  console.log('[dummyJsonAdapter.login] Method:', method);
+  console.log('[dummyJsonAdapter.login] Headers:', JSON.stringify(requestHeaders));
+  console.log('[dummyJsonAdapter.login] Body (credentials with masked password):', JSON.stringify(loggedCredentials));
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: method,
+      headers: requestHeaders,
+      body: JSON.stringify(credentials), // Send actual credentials here
+    });
+
+    console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`);
+    console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`);
+
+    const responseBodyText = await response.text(); // Get raw text for logging
+    console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`);
+
+    if (!response.ok) {
+      // Try to parse the already fetched text as JSON for error details
+      let errorBodyJson = { message: `Request failed with status ${response.status}` };
+      try {
+        errorBodyJson = JSON.parse(responseBodyText);
+      } catch (e) {
+        console.warn('[dummyJsonAdapter.login] Failed to parse error response body as JSON:', e);
+        // errorBodyJson already has a default message
+      }
+      console.error('[dummyJsonAdapter.login] Login failed. Error details from response body:', JSON.stringify(errorBodyJson));
+      throw new Error(`Login failed: ${errorBodyJson.message || response.statusText}`);
+    }
+
+    // Parse the successful response text as JSON
+    let responseJson;
+    try {
+         responseJson = JSON.parse(responseBodyText);
+    } catch (e) {
+         console.error('[dummyJsonAdapter.login] Failed to parse successful response body as JSON:', e);
+         console.error('[dummyJsonAdapter.login] Raw body that failed parsing:', responseBodyText);
+         throw new Error('Failed to parse successful login response from DummyJSON.');
+    }
+    console.log('[dummyJsonAdapter.login] Successfully parsed response JSON:', JSON.stringify(responseJson));
+    return responseJson;
+
+  } catch (error) {
+    console.error('[dummyJsonAdapter.login] Error during fetch operation or response processing:', error instanceof Error ? error.message : JSON.stringify(error));
+    // If it's an error from `throw new Error(...)` above, it will be re-thrown.
+    // If it's a network error or other fetch-related error, it will be thrown here.
+    // Ensure the error message is useful or re-wrap if necessary.
+    if (error instanceof Error && error.message.startsWith('Login failed:')) {
+         throw error; // Re-throw the specific "Login failed" error
+    }
+    if (error instanceof Error && error.message.startsWith('Failed to parse successful login response from DummyJSON.')) {
+        throw error; // Re-throw specific parsing error
+    }
+    throw new Error(`Network or unexpected error during login: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  return response.json();
 }

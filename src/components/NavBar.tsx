@@ -32,14 +32,21 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
   // Get total items from cart store for the badge
   const totalCartItems = useCartStore((state) => state.getTotalItems());
 
+  const MAX_VISIBLE_CATEGORIES = 5;
+
+  const allCategoryItems = initialCategories.map((category) => ({
+    name: category.name,
+    href: `/category/${category.slug}`,
+    current: pathname === `/category/${category.slug}`,
+  }));
+
   const navigation = [
     { name: 'Home', href: '/', current: pathname === '/' },
-    ...initialCategories.map((category) => ({
-      name: category.name,
-      href: `/category/${category.slug}`,
-      current: pathname === `/category/${category.slug}`,
-    })),
+    ...allCategoryItems,
   ];
+
+  const visibleItems = navigation.slice(0, MAX_VISIBLE_CATEGORIES);
+  const hiddenItems = navigation.slice(MAX_VISIBLE_CATEGORIES);
 
   return (
     <Disclosure as="nav" className="bg-gray-800 shadow-md">
@@ -68,7 +75,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
-                    {navigation.map((item) => (
+                    {visibleItems.map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
@@ -81,6 +88,44 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                         {item.name}
                       </Link>
                     ))}
+                    {hiddenItems.length > 0 && (
+                      <Menu as="div" className="relative">
+                        <div>
+                          <Menu.Button className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                            More
+                          </Menu.Button>
+                        </div>
+                        <Transition
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            {hiddenItems.map((item) => (
+                              <Menu.Item key={item.name}>
+                                {({ active }) => (
+                                  <Link
+                                    href={item.href}
+                                    className={classNames(
+                                      active ? 'bg-gray-100' : '',
+                                      item.current ? 'bg-gray-100 text-gray-900' : 'text-gray-700', // Ensure current item in dropdown is highlighted
+                                      'block px-4 py-2 text-sm'
+                                    )}
+                                    aria-current={item.current ? 'page' : undefined}
+                                  >
+                                    {item.name}
+                                  </Link>
+                                )}
+                              </Menu.Item>
+                            ))}
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
+                    )}
                     {categoryError && <span className="px-3 py-2 text-sm font-medium text-red-400">{categoryError}</span>}
                   </div>
                 </div>
@@ -143,6 +188,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
           {/* Mobile Menu Panel - unchanged, but ensure error display is present if needed */}
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-1 px-2 pb-3 pt-2">
+              {/* Ensure mobile navigation also uses the full list or has its own logic if different */}
               {navigation.map((item) => (
                 <Disclosure.Button
                   key={item.name}

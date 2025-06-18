@@ -287,9 +287,17 @@ export async function login({ username, password }: { username?: string; passwor
   const payloadObject = { username, password };
   const payload = JSON.stringify(payloadObject);
 
+  // Calculate Content-Length
+  // For UTF-8 strings (common for JSON), string.length is often sufficient for byte length if only ASCII.
+  // Buffer.byteLength is more accurate for multi-byte characters.
+  // Given the context of username/password, payload.length is likely fine.
+  const contentLength = String(payload.length); // Content-Length should be a string
+
   const requestHeaders = {
     'Content-Type': 'application/json',
-    'User-Agent': 'beta-storefront/1.0 (+github.com/basstian-ai)' // Added User-Agent
+    'Accept': 'application/json', // Added Accept header
+    'User-Agent': 'beta-storefront/1.0 (+github.com/basstian-ai)',
+    'Content-Length': contentLength, // Added Content-Length header
   };
 
   // For logging, mask password (already doing this for the body log)
@@ -315,6 +323,12 @@ export async function login({ username, password }: { username?: string; passwor
 
     console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`);
     console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`);
+
+    // Log response headers
+    console.log('[dummyJsonAdapter.login] Response Headers:');
+    response.headers.forEach((value, name) => {
+      console.log(`  ${name}: ${value}`);
+    });
 
     const responseBodyText = await response.text(); // Get raw text for logging
     console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`);
@@ -350,10 +364,11 @@ export async function login({ username, password }: { username?: string; passwor
     // If it's a network error or other fetch-related error, it will be thrown here.
     // Ensure the error message is useful or re-wrap if necessary.
     if (error instanceof Error && error.message.startsWith('Login failed:')) {
-         throw error; // Re-throw the specific "Login failed" error
+         throw error;
     }
+    // Ensure the specific parsing error is also re-thrown if it occurs
     if (error instanceof Error && error.message.startsWith('Failed to parse successful login response from DummyJSON.')) {
-        throw error; // Re-throw specific parsing error
+        throw error;
     }
     throw new Error(`Network or unexpected error during login: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

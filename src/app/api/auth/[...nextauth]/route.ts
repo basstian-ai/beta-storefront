@@ -18,6 +18,16 @@ if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.e
   );
 }
 
+// After imports
+// Log environment variables for debugging, especially during startup/initialization
+console.log("[NextAuth Env Check]", {
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL || "Not Set",
+  NEXTAUTH_SECRET_EXISTS: !!process.env.NEXTAUTH_SECRET,
+  NODE_ENV: process.env.NODE_ENV || "Not Set",
+  VERCEL_URL: process.env.VERCEL_URL || "Not Set", // Useful for Vercel context
+  AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST || "Not Set" // From previous discussions
+});
+
 import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin } from '@/bff/services'; // Your BFF login service
@@ -58,62 +68,72 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
         rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
-      async authorize(credentials) { // Removed _req
+      async authorize(credentials, req) { // Added req for completeness, though credentials is primary here
+        // console.log("[authorize] Raw request (if needed):", req); // Example if full req needed
+        console.log("[authorize] Inbound credentials:", credentials ? JSON.stringify(credentials) : "undefined");
+
         if (!credentials?.username || !credentials?.password) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error('Auth: Missing username or password in credentials');
-          }
+          console.warn('[authorize] Missing username or password in credentials');
           return null;
         }
+
         try {
-          // Call your BFF login service
+          // Call your BFF login service (already in existing code)
           const loginData = await bffLogin({
             username: credentials.username,
             password: credentials.password
           });
 
-          // Validate response with Zod (AuthResponseSchema includes token and user details)
-          const parsedLoginResponse = AuthResponseSchema.parse(loginData);
+          if (!loginData) {
+            console.warn("[authorize] BFF login service returned no data (loginData is null or undefined). Username: ", credentials.username);
+            return null; // Explicitly return null if loginData is null/undefined
+          }
+          console.log("[authorize] Data received from bffLogin:", JSON.stringify(loginData));
 
-          // DummyJSON returns a user object with 'id', 'username', 'email', 'firstName', 'lastName', 'gender', 'image', 'token'
-          // We need to map this to what NextAuth expects for its User object.
-          // The 'role' for "b2b" needs to be determined. dummyjson doesn't provide it.
-          // For testing, let's assume 'kminchelle' is a b2b user.
-          let userRole = "customer"; // Default role
+          // Validate response with Zod (already in existing code)
+          const parsedLoginResponse = AuthResponseSchema.parse(loginData);
+          console.log("[authorize] Parsed login response from Zod:", JSON.stringify(parsedLoginResponse));
+
+          // Determine role (already in existing code)
+          let userRole = "customer";
           if (parsedLoginResponse.username === "kminchelle") {
             userRole = "b2b";
           }
+          console.log("[authorize] Determined user role:", userRole);
 
-          // The user object returned by authorize will be stored in the JWT
-          // Ensure the id property here matches what you declared in the User interface augmentation
-          const user: User = { // Use the augmented User type
-            id: String(parsedLoginResponse.id), // Ensure ID is a string
+          // Construct the user object for NextAuth (already in existing code)
+          const userForNextAuth: User = { // Use the augmented User type
+            id: String(parsedLoginResponse.id), // Ensure ID is string
             name: parsedLoginResponse.username,
             email: parsedLoginResponse.email,
             image: parsedLoginResponse.image,
             role: userRole,
-            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // Add this
+            // rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // rememberMe is part of credentials, not usually part of the user object model itself unless specifically needed elsewhere
           };
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('Auth: User authorized:', user);
+          // Add rememberMe to the user object if it's part of your augmented User type and you need it in the JWT/session
+          if (credentials.rememberMe) {
+              (userForNextAuth as any).rememberMe = credentials.rememberMe === 'true' || credentials.rememberMe === true;
           }
-          return user;
 
-        } catch (error: unknown) { // Changed error type to unknown
-          if (process.env.NODE_ENV !== 'production') {
-            if (error instanceof z.ZodError) {
-              console.error('Auth: Zod validation error in authorize callback:', error.errors);
-            } else if (error instanceof Error) { // Check if error is an instance of Error
-              console.error('Auth: Error in authorize callback:', error.message);
-            } else {
-              console.error('Auth: Unknown error in authorize callback:', error);
-            }
+
+          console.log("[authorize] Successfully constructed user object for NextAuth:", JSON.stringify(userForNextAuth));
+          return userForNextAuth;
+
+        } catch (error) {
+          console.error("[authorize] Error during authorization flow. Username: ", credentials.username);
+          if (error instanceof z.ZodError) {
+            console.error("[authorize] Zod validation error:", JSON.stringify(error.errors));
+          } else if (error instanceof Error) {
+            console.error("[authorize] Caught error message:", error.message);
+            console.error("[authorize] Caught error stack:", error.stack);
+          } else {
+            console.error("[authorize] Caught unknown error:", JSON.stringify(error));
           }
-          // Regardless of error type, return null for auth failure
-          // Return null if authentication fails
+          // Consistent with NextAuth docs for Credentials provider, return null on error.
+          // This should lead to ?error=CredentialsSignin or be handled by the generic "Configuration" error.
           return null;
         }
-      }
+      },
     })
   ],
   session: {
@@ -121,18 +141,29 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
   },
   callbacks: {
-    async jwt({ token, user }) { // Removed _account, _profile
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log("[signIn callback] Triggered.");
+      console.log("[signIn callback] User:", user ? JSON.stringify(user) : "undefined");
+      console.log("[signIn callback] Account:", account ? JSON.stringify(account) : "undefined");
+      console.log("[signIn callback] Profile:", profile ? JSON.stringify(profile) : "undefined");
+      console.log("[signIn callback] Email:", email ? JSON.stringify(email) : "undefined");
+      console.log("[signIn callback] Credentials:", credentials ? JSON.stringify(credentials) : "undefined");
+      return true;
+    },
+    async jwt({ token, user }) { // user here is the user object from authorize or OAuth provider
       // Persist 'id' and 'role' to the JWT right after signin
       if (user) { // User object is only passed on first call (signin)
         token.id = user.id;
         token.role = user.role;
-        token.rememberMe = user.rememberMe; // Removed 'as any'
-        // token.picture = user.image;
+        // If 'rememberMe' is part of your augmented User type and set in 'authorize'
+        if ((user as any).rememberMe !== undefined) {
+           token.rememberMe = (user as any).rememberMe;
+        }
       }
+      // console.log('[jwt callback] Token:', JSON.stringify(token)); // Optional: for deeper debugging
       return token;
     },
-    async session({ session, token }) { // Removed _user
-      // Send properties to the client, like an access_token and user id from a provider.
+    async session({ session, token }) { // token here is the JWT
       if (token.id && session.user) {
         session.user.id = token.id;
       }
@@ -140,11 +171,11 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
       }
       if (token.rememberMe !== undefined && session.user) {
-        session.user.rememberMe = token.rememberMe; // Removed 'as any'
+        session.user.rememberMe = token.rememberMe;
       }
-      // session.user.image = token.picture ?? session.user.image;
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Auth: Session created/updated:', session);
+      // console.log('[session callback] Session:', JSON.stringify(session)); // Optional: for deeper debugging
+      if (process.env.NODE_ENV !== 'production') { // Keep existing session log for dev
+        console.log('Auth: Session created/updated:', JSON.stringify(session));
       }
       return session;
     }
@@ -161,8 +192,3 @@ export const authOptions: NextAuthOptions = {
 // const handler = NextAuth(authOptions);
 // export { handler as GET, handler as POST };
 export const { handlers: { GET, POST }, auth } = NextAuth(authOptions);
-
-if (process.env.NODE_ENV === 'development') {
-  console.log('typeof GET handler in route.ts:', typeof GET);
-  console.log('typeof POST handler in route.ts:', typeof POST);
-}

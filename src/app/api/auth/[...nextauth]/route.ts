@@ -68,8 +68,8 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
         rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
-      async authorize(credentials, req) { // Added req for completeness, though credentials is primary here
-        // console.log("[authorize] Raw request (if needed):", req); // Example if full req needed
+      async authorize(credentials, _req) { // Changed req to _req
+        // console.log("[authorize] Raw request (if needed):", _req); // Example if full req needed
         console.log("[authorize] Inbound credentials:", credentials ? JSON.stringify(credentials) : "undefined");
 
         if (!credentials?.username || !credentials?.password) {
@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
           };
           // Add rememberMe to the user object if it's part of your augmented User type and you need it in the JWT/session
           if (credentials.rememberMe) {
-              (userForNextAuth as any).rememberMe = credentials.rememberMe === 'true' || credentials.rememberMe === true;
+              userForNextAuth.rememberMe = credentials.rememberMe === 'true' || credentials.rememberMe === true;
           }
 
 
@@ -156,8 +156,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         // If 'rememberMe' is part of your augmented User type and set in 'authorize'
-        if ((user as any).rememberMe !== undefined) {
-           token.rememberMe = (user as any).rememberMe;
+        if (user.rememberMe !== undefined) { // Removed 'as any'
+           token.rememberMe = user.rememberMe;
         }
       }
       // console.log('[jwt callback] Token:', JSON.stringify(token)); // Optional: for deeper debugging

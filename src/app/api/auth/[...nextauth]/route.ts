@@ -120,18 +120,26 @@ export const authOptions: NextAuthOptions = {
           return userForNextAuth;
 
         } catch (error) {
-          console.error("[authorize] Error during authorization flow. Username: ", credentials.username);
+          console.error("[authorize] Error during authorization flow. Username: ", credentials?.username); // Added optional chaining for credentials
+          let errorMessage = "Authorization failed due to an unexpected error.";
           if (error instanceof z.ZodError) {
             console.error("[authorize] Zod validation error:", JSON.stringify(error.errors));
+            errorMessage = "User data validation failed after login."; // More specific than generic
           } else if (error instanceof Error) {
             console.error("[authorize] Caught error message:", error.message);
             console.error("[authorize] Caught error stack:", error.stack);
+            errorMessage = error.message; // Use the actual error message from bffLogin/dummyJsonAdapter
           } else {
-            console.error("[authorize] Caught unknown error:", JSON.stringify(error));
+            const unknownErrorStr = JSON.stringify(error);
+            console.error("[authorize] Caught unknown error:", unknownErrorStr);
+            errorMessage = `An unknown error occurred: ${unknownErrorStr.slice(0, 100)}`; // Include part of unknown error
           }
-          // Consistent with NextAuth docs for Credentials provider, return null on error.
-          // This should lead to ?error=CredentialsSignin or be handled by the generic "Configuration" error.
-          return null;
+          // Instead of returning null, throw an error that NextAuth will catch.
+          // NextAuth typically creates a URL like /api/auth/error?error=Callback&message=...
+          // Or it might use a specific error code if the error message matches certain patterns.
+          // For a generic error thrown from authorize, it often results in ?error=Callback or similar.
+          // The key is that the thrown error's message might be accessible on the error page.
+          throw new Error(errorMessage);
         }
       },
     })

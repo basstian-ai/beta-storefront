@@ -1,5 +1,5 @@
 // src/bff/adapters/dummyjson.ts
-import { Buffer } from 'buffer';
+// import { Buffer } from 'buffer'; // No longer needed as Content-Length is removed
 
 const API_BASE_URL = 'https://dummyjson.com';
 
@@ -284,67 +284,57 @@ export async function login({ username, password }: { username?: string; passwor
   const targetUrl = `${API_BASE_URL}/auth/login`;
   const method = 'POST';
 
-  // Construct payload carefully with only username and password
-  const payloadObject = { username, password };
+  // Add expiresInMins to the payload
+  const payloadObject = {
+    username,
+    password,
+    expiresInMins: 30 // Added expiresInMins
+  };
   const payload = JSON.stringify(payloadObject);
 
-  // Calculate Content-Length
-  // For UTF-8 strings (common for JSON), string.length is often sufficient for byte length if only ASCII.
-  // Buffer.byteLength is more accurate for multi-byte characters.
-  // Given the context of username/password, payload.length is likely fine.
-  const contentLength = String(Buffer.byteLength(payload, 'utf-8')); // Updated to use Buffer.byteLength
-
+  // Simplified headers
   const requestHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json', // Added Accept header
-    'User-Agent': 'beta-storefront/1.0 (+github.com/basstian-ai)',
-    'Content-Length': contentLength, // Added Content-Length header
+    'Content-Type': 'application/json', // Keep this fundamental header
   };
 
-  // For logging, mask password (already doing this for the body log)
-  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined };
+  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, expiresInMins: 30 };
 
-  console.log('[dummyJsonAdapter.login] Attempting login.');
+  console.log('[dummyJsonAdapter.login] Attempting login (simplified headers, with expiresInMins).');
   console.log('[dummyJsonAdapter.login] Target URL:', targetUrl);
   console.log('[dummyJsonAdapter.login] Method:', method);
-  console.log('[dummyJsonAdapter.login] Headers:', JSON.stringify(requestHeaders));
-  // Log the type and a slice of the actual payload string being sent
+  console.log('[dummyJsonAdapter.login] Headers to be sent (minimal):', JSON.stringify(requestHeaders));
   console.log('[dummyJsonAdapter.login] Payload type:', typeof payload);
-  console.log('[dummyJsonAdapter.login] Payload slice (first 40 chars):', payload.slice(0, 40));
-  // Log the object that was stringified (with password masked for safety in logs)
-  console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password):', JSON.stringify(loggedCredentialsForDisplay));
-
+  console.log('[dummyJsonAdapter.login] Payload slice (first 50 chars):', payload.slice(0, 50)); // Increased slice slightly
+  console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password & expiresInMins):', JSON.stringify(loggedCredentialsForDisplay));
 
   try {
     const response = await fetch(targetUrl, {
       method: method,
-      headers: requestHeaders,
-      body: payload, // Use the carefully constructed payload
+      headers: requestHeaders, // Simplified headers
+      body: payload,
     });
 
     console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`);
     console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`);
 
-    // Log response headers
     console.log('[dummyJsonAdapter.login] Response Headers:');
     response.headers.forEach((value, name) => {
       console.log(`  ${name}: ${value}`);
     });
 
-    const responseBodyText = await response.text(); // Get raw text for logging
+    const responseBodyText = await response.text();
     console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`);
 
     if (!response.ok) {
-      // Try to parse the already fetched text as JSON for error details
-      let errorBodyJson = { message: `Request failed with status ${response.status}` };
+      let errorBodyJson = { message: `Request failed with status ${response.status}: ${responseBodyText}` }; // Include raw text in default
       try {
         errorBodyJson = JSON.parse(responseBodyText);
       } catch (e) {
-        console.warn('[dummyJsonAdapter.login] Failed to parse error response body as JSON:', e);
-        // errorBodyJson already has a default message
+        console.warn('[dummyJsonAdapter.login] Failed to parse error response body as JSON (raw text used in error):', e);
       }
-      console.error('[dummyJsonAdapter.login] Login failed. Error details from response body:', JSON.stringify(errorBodyJson));
-      throw new Error(`Login failed: ${errorBodyJson.message || response.statusText}`);
+      const errorMessage = errorBodyJson.message || response.statusText || `Request failed with status ${response.status}`;
+      console.error('[dummyJsonAdapter.login] Login failed. Error details:', errorMessage);
+      throw new Error(`Login failed: ${errorMessage}`);
     }
 
     // Parse the successful response text as JSON
@@ -371,6 +361,8 @@ export async function login({ username, password }: { username?: string; passwor
     if (error instanceof Error && error.message.startsWith('Failed to parse successful login response from DummyJSON.')) {
         throw error;
     }
-    throw new Error(`Network or unexpected error during login: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Ensure a comprehensive error message for other types of errors
+    const finalErrorMessage = error instanceof Error ? error.message : 'Unknown error during login attempt.';
+    throw new Error(`Network or unexpected error during login: ${finalErrorMessage}`);
   }
 }

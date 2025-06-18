@@ -279,24 +279,38 @@ export async function fetchAllProductsSimple() {
   return data;
 }
 
-export async function login(credentials: { username?: string; password?: string }) {
+export async function login({ username, password }: { username?: string; password?: string }) {
   const targetUrl = `${API_BASE_URL}/auth/login`;
   const method = 'POST';
-  const requestHeaders = { 'Content-Type': 'application/json' };
-  // For logging, mask password or just indicate its presence
-  const loggedCredentials = { ...credentials, password: credentials?.password ? '********' : undefined };
+
+  // Construct payload carefully with only username and password
+  const payloadObject = { username, password };
+  const payload = JSON.stringify(payloadObject);
+
+  const requestHeaders = {
+    'Content-Type': 'application/json',
+    'User-Agent': 'beta-storefront/1.0 (+github.com/basstian-ai)' // Added User-Agent
+  };
+
+  // For logging, mask password (already doing this for the body log)
+  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined };
 
   console.log('[dummyJsonAdapter.login] Attempting login.');
   console.log('[dummyJsonAdapter.login] Target URL:', targetUrl);
   console.log('[dummyJsonAdapter.login] Method:', method);
   console.log('[dummyJsonAdapter.login] Headers:', JSON.stringify(requestHeaders));
-  console.log('[dummyJsonAdapter.login] Body (credentials with masked password):', JSON.stringify(loggedCredentials));
+  // Log the type and a slice of the actual payload string being sent
+  console.log('[dummyJsonAdapter.login] Payload type:', typeof payload);
+  console.log('[dummyJsonAdapter.login] Payload slice (first 40 chars):', payload.slice(0, 40));
+  // Log the object that was stringified (with password masked for safety in logs)
+  console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password):', JSON.stringify(loggedCredentialsForDisplay));
+
 
   try {
     const response = await fetch(targetUrl, {
       method: method,
       headers: requestHeaders,
-      body: JSON.stringify(credentials), // Send actual credentials here
+      body: payload, // Use the carefully constructed payload
     });
 
     console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`);

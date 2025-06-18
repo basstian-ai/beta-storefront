@@ -1,4 +1,5 @@
 // src/bff/adapters/dummyjson.ts
+import { Buffer } from 'buffer';
 
 const API_BASE_URL = 'https://dummyjson.com';
 
@@ -291,7 +292,7 @@ export async function login({ username, password }: { username?: string; passwor
   // For UTF-8 strings (common for JSON), string.length is often sufficient for byte length if only ASCII.
   // Buffer.byteLength is more accurate for multi-byte characters.
   // Given the context of username/password, payload.length is likely fine.
-  const contentLength = String(payload.length); // Content-Length should be a string
+  const contentLength = String(Buffer.byteLength(payload, 'utf-8')); // Updated to use Buffer.byteLength
 
   const requestHeaders = {
     'Content-Type': 'application/json',

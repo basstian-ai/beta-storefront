@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin } from '@/bff/services'; // Your BFF login service
 import { AuthResponseSchema } from '@/bff/types'; // Removed UserSchema as it's unused
 import { z } from 'zod';
+import { logError } from "@/lib/logger";
 
 // Augment NextAuth types to include 'role' and 'id' on user and session
 declare module 'next-auth' {
@@ -42,7 +43,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) { // Removed _req
         if (!credentials?.username || !credentials?.password) {
           if (process.env.NODE_ENV !== 'production') {
-            console.error('Auth: Missing username or password in credentials');
+            logError('Auth: Missing username or password in credentials');
           }
           return null;
         }
@@ -83,11 +84,11 @@ export const authOptions: NextAuthOptions = {
         } catch (error: unknown) { // Changed error type to unknown
           if (process.env.NODE_ENV !== 'production') {
             if (error instanceof z.ZodError) {
-              console.error('Auth: Zod validation error in authorize callback:', error.errors);
+              logError('Auth: Zod validation error in authorize callback:', error.errors);
             } else if (error instanceof Error) { // Check if error is an instance of Error
-              console.error('Auth: Error in authorize callback:', error.message);
+              logError('Auth: Error in authorize callback:', error.message);
             } else {
-              console.error('Auth: Unknown error in authorize callback:', error);
+              logError('Auth: Unknown error in authorize callback:', error);
             }
           }
           // Regardless of error type, return null for auth failure

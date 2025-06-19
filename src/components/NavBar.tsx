@@ -3,6 +3,7 @@
 
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon, UserCircleIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'; // Keep outline or solid consistently
+import SearchBar from './SearchBar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -131,8 +132,11 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 </div>
               </div>
 
-              {/* Right side icons: Cart and Auth */}
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              {/* Right side icons and search */}
+              <div className="absolute inset-y-0 right-0 flex items-center space-x-3 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                <div className="hidden sm:block w-48">
+                  <SearchBar />
+                </div>
                 <Link href="/cart" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="View Cart">
                   <span className="sr-only">View Cart</span>
                   <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
@@ -187,7 +191,8 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
 
           {/* Mobile Menu Panel - unchanged, but ensure error display is present if needed */}
           <Disclosure.Panel className="sm:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2">
+            <div className="space-y-3 px-2 pb-3 pt-2">
+              <SearchBar />
               {/* Ensure mobile navigation also uses the full list or has its own logic if different */}
               {navigation.map((item) => (
                 <Disclosure.Button

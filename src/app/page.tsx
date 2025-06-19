@@ -13,17 +13,17 @@ interface CategoryInfo { // This interface might need adjustment or can use Cate
 // Placeholder images for categories - replace with actual or better logic if available
 const categoryImagePlaceholders: Record<string, string> = {
   'smartphones': 'https://cdn.dummyjson.com/products/images/smartphones/iPhone%20X/1.png',
-  'laptops': 'https://cdn.dummyjson.com/products/images/laptops/MacBook%20Pro%2014%20Inch%20Space%20Grey/1.png',
+  'laptops': 'https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp',
   'fragrances': 'https://cdn.dummyjson.com/products/images/fragrances/Chanel%20Coco%20Noir%20Eau%20De%20Parfum/1.png',
   'skincare': 'https://cdn.dummyjson.com/products/images/skincare/Dermalogica%20Daily%20Microfoliant/1.png',
   'groceries': 'https://cdn.dummyjson.com/products/images/groceries/Apple%20Red/1.png',
   'home-decoration': 'https://cdn.dummyjson.com/products/images/home-decoration/FamilyTreePhotoFrame/1.png',
   'furniture': 'https://cdn.dummyjson.com/products/images/furniture/Annibale%20Colombo%20Bed/1.png',
-  'tops': 'https://cdn.dummyjson.com/products/images/tops/Apple%20Headphones%20Set/1.png', // Placeholder, dummyjson doesn't have good top images
-  'womens-dresses': 'https://cdn.dummyjson.com/products/images/womens-dresses/Adidas%20Red%20Hoodie/1.png', // Placeholder
-  'womens-shoes': 'https://cdn.dummyjson.com/products/images/womens-shoes/Nike%20Air%20Jordan%201%20Red%20And%20Black/1.png', // Placeholder
+  'tops': 'https://cdn.dummyjson.com/product-images/tops/blue-frock/thumbnail.webp',
+  'womens-dresses': 'https://cdn.dummyjson.com/product-images/womens-dresses/black-women\\\'s-gown/thumbnail.webp',
+  'womens-shoes': 'https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/thumbnail.webp',
   // Add more as needed or implement a default for categories not listed above
-  'mens-shirts': 'https://cdn.dummyjson.com/products/images/mens-shirts/The%20Tank%20Strap%20Adjustable%20Training%20Tank%20Top/1.png',
+  'mens-shirts': 'https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/thumbnail.webp',
   'mens-shoes': 'https://cdn.dummyjson.com/products/images/mens-shoes/Nike%20Air%20Jordan%201%20Low%20Golf%20Wolf%20Grey/1.png',
   'mens-watches': 'https://cdn.dummyjson.com/products/images/mens-watches/Rolex%20Cellini%20Moonphase%20Watch/1.png',
   'womens-watches': 'https://cdn.dummyjson.com/products/images/womens-watches/Rolex%20Datejust%2028mm%20Automatic%20Diamond%20Ladies%20Watch/1.png',

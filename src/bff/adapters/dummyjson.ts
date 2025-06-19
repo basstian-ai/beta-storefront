@@ -280,21 +280,30 @@ export async function fetchAllProductsSimple() {
   return data;
 }
 
-export async function login({ username, password }: { username?: string; password?: string }) {
+export async function login(_credentials?: { username?: string; password?: string }) {
+  // Use environment variables for credentials, with fallback to new defaults
+  const username = process.env.DUMMYJSON_USER || 'emilys';
+  const password = process.env.DUMMYJSON_PASS || 'emilyspass';
+
+  // Log which credentials are being used (source)
+  if (process.env.DUMMYJSON_USER || process.env.DUMMYJSON_PASS) {
+     console.log('[dummyJsonAdapter.login] Using credentials from environment variables.');
+  } else {
+     console.log('[dummyJsonAdapter.login] Using fallback credentials (emilys/emilyspass).');
+  }
+
   const targetUrl = `${API_BASE_URL}/auth/login`;
   const method = 'POST';
 
-  // Add expiresInMins to the payload
   const payloadObject = {
     username,
     password,
-    expiresInMins: 30 // Added expiresInMins
+    expiresInMins: 30
   };
   const payload = JSON.stringify(payloadObject);
 
-  // Simplified headers
   const requestHeaders = {
-    'Content-Type': 'application/json', // Keep this fundamental header
+    'Content-Type': 'application/json',
   };
 
   const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, expiresInMins: 30 };

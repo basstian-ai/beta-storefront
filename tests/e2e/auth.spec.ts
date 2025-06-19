@@ -1,8 +1,10 @@
 // tests/e2e/auth.spec.ts
 import { test, expect } from '@playwright/test';
 
-const TEST_USERNAME = 'kminchelle'; // Standard test user
-const TEST_PASSWORD = '0lelplR';    // Standard test user password
+// Default test credentials for DummyJSON.
+// These can be overridden by environment variables in a more advanced test setup.
+const TEST_USERNAME = 'emilys'; // Updated
+const TEST_PASSWORD = 'emilyspass'; // Updated
 const INVALID_PASSWORD = 'invalidpassword';
 
 test.describe('Authentication Flow', () => {

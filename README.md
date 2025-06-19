@@ -30,7 +30,7 @@ This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-appl
 
 ## Environment Variables
 
-To run this project effectively and enable all features, you will need to set up the following environment variables. You can create a `.env.local` file in the root of the project to store these variables locally for development.
+To run this project effectively and enable all features, you will need to set up the following environment variables. An `.env.example` file is provided in the root of the project as a template; copy it to `.env.local` to get started with your local setup. You can create a `.env.local` file in the root of the project to store these variables locally for development.
 
 ### Authentication
 
@@ -62,6 +62,14 @@ To run this project effectively and enable all features, you will need to set up
 -   `NEXT_PUBLIC_CMS_BASE_URL`: The base URL for your headless CMS. This is used to fetch dynamic content, such as the hero banner for the home page.
     -   **Example**: `NEXT_PUBLIC_CMS_BASE_URL=https://your-cms-instance.com/api`
     -   If not set, the application will default to using `https://dummyjson.com` for placeholder content for some features like the Hero Banner.
+
+### DummyJSON Demo Credentials
+
+The application uses a demo user from [DummyJSON](https://dummyjson.com) for its sample login functionality. These credentials can occasionally change.
+You can configure them using the following environment variables. See `.env.example` for a template.
+
+-   `DUMMYJSON_USER`: The username for the DummyJSON demo account (defaults to "emilys" in the code if not set).
+-   `DUMMYJSON_PASS`: The password for the DummyJSON demo account (defaults to "emilyspass" in the code if not set).
 
 ## Learn More
 

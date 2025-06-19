@@ -1,10 +1,15 @@
 // src/app/api/auth/[...nextauth]/route.ts
+import NextAuth, { type NextAuthOptions, User as NextAuthUser, logger } from 'next-auth'; // Moved logger import up
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { login as bffLogin, refreshAccessToken as bffRefreshAccessToken } from '@/bff/services';
+import { AuthResponseSchema } from '@/bff/types';
+import { z } from 'zod';
 
 // Note: isProduction is defined further down, but logger usage here is fine.
 // These logs will appear during module load time if conditions are met.
 // If isProduction were needed here, it would need to be hoisted or condition repeated.
 if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV !== 'production') {
-  logger.warn( // Changed to logger.warn
+  logger.warn(
     `NEXTAUTH_URL environment variable is not set. ` +
     `This can lead to issues, especially in production and build environments. ` +
     `Please ensure it is set (e.g., http://localhost:3000 for local development).`
@@ -14,7 +19,7 @@ if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV !== 'production') {
 // Also check for AUTH_URL as mentioned by the user, in case it's used by a specific helper
 if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.env.NEXTAUTH_URL) {
     // Only warn about AUTH_URL if NEXTAUTH_URL is also not set, as NEXTAUTH_URL is the primary one.
-  logger.warn( // Changed to logger.warn
+  logger.warn(
     `AUTH_URL environment variable is not set. ` +
     `Consider setting this if NEXTAUTH_URL is not resolving all URL construction issues, ` +
     `though NEXTAUTH_URL is the primary variable for NextAuth v5.`
@@ -29,12 +34,6 @@ if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.e
 //   VERCEL_URL: process.env.VERCEL_URL || "Not Set", // Removed
 //   AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST || "Not Set" // Removed
 // }); // Removed
-
-import NextAuth, { type NextAuthOptions, User as NextAuthUser, logger } from 'next-auth'; // Added logger, type for NextAuthOptions
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { login as bffLogin, refreshAccessToken as bffRefreshAccessToken } from '@/bff/services'; // Your BFF login service & refresh
-import { AuthResponseSchema } from '@/bff/types';
-import { z } from 'zod';
 
 // Augment NextAuth types
 declare module 'next-auth' {

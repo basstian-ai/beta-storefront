@@ -7,7 +7,7 @@ interface HttpClientOptions extends RequestInit {
 
 // Default base URL for the DummyJSON API
 // DUMMYJSON_API_BASE is not currently in .env.example, but this makes it configurable if added.
-const DEFAULT_API_BASE_URL = process.env.DUMMYJSON_API_BASE || 'https://dummyjson.com';
+const DEFAULT_API_BASE_URL = process.env.API_BASE_URL || process.env.DUMMYJSON_API_BASE || 'https://dummyjson.com';
 
 /**
  * A simple HTTP client wrapper around fetch.

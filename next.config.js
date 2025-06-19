@@ -25,6 +25,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  env: {
+    API_BASE_URL: process.env.API_BASE_URL || process.env.DUMMYJSON_API_BASE || 'https://dummyjson.com',
+  },
 };
 
 module.exports = nextConfig;

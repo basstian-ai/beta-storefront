@@ -184,8 +184,10 @@ export async function fetchProductById(id: number | string) {
   return product;
 }
 
-export async function searchProducts(query: string) {
-  const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
+export async function searchProducts(query: string, sort?: string, skip = 0, limit = 20) {
+  const params = new URLSearchParams({ q: query, skip: String(skip), limit: String(limit) });
+  if (sort && sort !== 'relevance') params.append('sort', sort);
+  const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`);
   if (!response.ok) {
     throw new Error(`Failed to search products with query "${query}": ${response.statusText}`);
   }

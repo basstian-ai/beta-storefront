@@ -15,6 +15,7 @@
     "@heroicons/react": "*",
     "@next-auth/prisma-adapter": "^1.0.7",
     "applicationinsights": "^3.7.0",
+    "debug": "^4.3.4",
     "next-auth": "5.0.0-beta.19",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

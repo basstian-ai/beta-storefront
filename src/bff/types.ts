@@ -59,6 +59,7 @@ export const AuthResponseSchema = z.object({
   // role is not part of dummyjson /auth/login response, will be handled by session.
   // Optional fields from original schema are now required as adapter provides them.
 });
+export type AuthResponse = z.infer<typeof AuthResponseSchema>; // Added this line
 
 // Schema for the raw successful login response from DummyJSON API
 export const zDummyJsonLoginSuccess = z.object({

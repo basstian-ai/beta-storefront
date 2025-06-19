@@ -1,9 +1,9 @@
 // src/components/LoginForm.tsx
 'use client';
 
-import { signIn } from 'next-auth/react';
+import { getCsrfToken, signIn } from 'next-auth/react'; // Added getCsrfToken
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react'; // Added useEffect
 
 export default function LoginForm() {
   const router = useRouter();
@@ -14,7 +14,16 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Added isLoading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState(''); // Added csrfToken state
+
+  useEffect(() => {
+    async function fetchToken() {
+      const token = await getCsrfToken();
+      setCsrfToken(token || '');
+    }
+    fetchToken();
+  }, []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -54,6 +63,7 @@ export default function LoginForm() {
   return (
     <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
       <form className="space-y-6" onSubmit={handleSubmit}>
+        <input name="csrfToken" type="hidden" defaultValue={csrfToken} /> {/* Added CSRF token input */}
         <div>
           <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
             Username

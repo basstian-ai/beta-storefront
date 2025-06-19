@@ -27,7 +27,7 @@ if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.e
 //   AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST || "Not Set" // Removed
 // }); // Removed
 
-import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
+import NextAuth, { type NextAuthOptions, User as NextAuthUser, logger } from 'next-auth'; // Added logger, type for NextAuthOptions
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin, refreshAccessToken as bffRefreshAccessToken } from '@/bff/services'; // Your BFF login service & refresh
 import { AuthResponseSchema } from '@/bff/types';
@@ -103,7 +103,9 @@ export const authOptions: NextAuthOptions = {
           if (credentials.rememberMe === true || credentials.rememberMe === 'true') {
             expiresInMins = (Number.isNaN(rememberMeTtl) || rememberMeTtl <=0) ? 43200 : rememberMeTtl; // Fallback to 30 days if env var is invalid
           }
-          // console.log(`[authorize] Determined expiresInMins: ${expiresInMins} (rememberMe: ${credentials.rememberMe})`);
+          if (process.env.NODE_ENV === 'development') { // Or if (!isProduction)
+            logger.debug(`[authorize] Determined expiresInMins: ${expiresInMins} (rememberMe: ${credentials.rememberMe})`);
+          }
 
 
           // Call your BFF login service, now passing expiresInMins
@@ -139,7 +141,7 @@ export const authOptions: NextAuthOptions = {
           // Construct the user object for NextAuth
           // The augmented 'User' type will be updated in the next step to include token/refreshToken
           const userForNextAuth: User = { // This will be typed as 'User' from NextAuth augmentation implicitly or explicitly
-            id: String(parsedLoginResponse.id),    // Ensure ID is string
+            id: parsedLoginResponse.id,            // id is already a string from AuthResponseSchema
             name: parsedLoginResponse.name,        // Use combined name from normalized response
             email: parsedLoginResponse.email,
             image: parsedLoginResponse.image,
@@ -161,15 +163,15 @@ export const authOptions: NextAuthOptions = {
           return userForNextAuth;
 
         } catch (error) {
-          console.error("[authorize] Error during authorization flow. Username: ", credentials?.username);
+          logger.error("[authorize] Error during authorization flow. Username: ", credentials?.username);
           // Log details of the error
           if (error instanceof z.ZodError) { // This would be if AuthResponseSchema parsing fails
-            console.error("[authorize] Zod validation error for AuthResponseSchema:", JSON.stringify(error.errors));
+            logger.error("[authorize] Zod validation error for AuthResponseSchema:", JSON.stringify(error.errors));
           } else if (error instanceof Error) { // This catches errors from bffLogin/dummyJsonAdapter
-            console.error("[authorize] Caught error message from BFF/Adapter:", error.message);
-            // console.error("[authorize] Caught error stack:", error.stack); // Optional: stack might be too verbose for prod
+            logger.error("[authorize] Caught error message from BFF/Adapter:", error.message);
+            // logger.error("[authorize] Caught error stack:", error.stack); // Optional: stack might be too verbose for prod
           } else {
-            console.error("[authorize] Caught unknown error:", JSON.stringify(error));
+            logger.error("[authorize] Caught unknown error:", JSON.stringify(error));
           }
 
           // Return null to trigger NextAuth's standard CredentialsSignin error flow
@@ -232,7 +234,7 @@ export const authOptions: NextAuthOptions = {
       // Token is expired or about to expire, try to refresh it
       // console.log("[jwt callback] Token expired or needs refresh. Attempting refresh...");
       if (!token.refreshToken) {
-        console.error("[jwt callback] No refresh token available to refresh access token.");
+        logger.warn("[jwt callback] No refresh token available to refresh access token."); // Changed to logger.warn
         return { ...token, error: "RefreshFailure" };
       }
 
@@ -257,7 +259,11 @@ export const authOptions: NextAuthOptions = {
         return token;
 
       } catch (error) {
-        console.error("[jwt callback] Error refreshing access token:", error);
+        if (error instanceof Error) {
+          logger.error("[jwt callback] Error refreshing access token:", error.message);
+        } else {
+          logger.error("[jwt callback] Error refreshing access token (non-Error object):", JSON.stringify(error));
+        }
         return {
           ...token,
           error: "RefreshAccessTokenError",

@@ -22,7 +22,24 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
 };
 
 // Import GetProductsOptions type
-import { GetProductsOptions, zDummyJsonLoginSuccess, zDummyJsonRefreshResponse } from '../types'; // Added zDummyJsonRefreshResponse
+import { GetProductsOptions, zDummyJsonLoginSuccess, zDummyJsonRefreshResponse, AuthResponse } from '../types'; // Added AuthResponse
+
+// Utility to handle non-OK responses from DummyJSON
+function createErrorFromDummyJsonResponse(
+    response: Response, // The original Response object
+    responseData: any,  // The result of attempting response.json() (could be null if parsing failed)
+    operationContext: string // e.g., "Login", "Token refresh"
+): Error {
+    const defaultErrorMessage = `Request failed with status ${response.status}: ${response.statusText}`;
+    const errorMessage = responseData?.message || defaultErrorMessage;
+    console.error(`[dummyJsonAdapter] ${operationContext} failed. Error details:`, errorMessage);
+    if (responseData && responseData !== null && typeof responseData !== 'string') { // Log full object if it's not just the message string
+         if (process.env.NODE_ENV === 'development') {
+            console.log(`[dummyJsonAdapter] Full error response object for ${operationContext}:`, JSON.stringify(responseData));
+         }
+    }
+    return new Error(`${operationContext} failed: ${errorMessage}`);
+}
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -280,81 +297,67 @@ export async function fetchAllProductsSimple() {
   return data;
 }
 
-export async function login({ username, password, expiresInMins }: { username?: string; password?: string; expiresInMins?: number }) {
+export async function login({ username, password, expiresInMins }: { username?: string; password?: string; expiresInMins?: number }): Promise<AuthResponse> {
   const targetUrl = `${API_BASE_URL}/auth/login`;
   const method = 'POST';
 
-  const payloadObject: any = { // Use any for payloadObject before stringify to allow conditional property
-    username,
-    password,
-  };
-  if (expiresInMins !== undefined) {
-    payloadObject.expiresInMins = expiresInMins;
-  }
-  const payload = JSON.stringify(payloadObject);
+  const method = 'POST';
+
+  const requestBodyObject = { username, password, ...(expiresInMins !== undefined && { expiresInMins }) };
+  const requestBodyString = JSON.stringify(requestBodyObject);
 
   const requestHeaders = {
     'Content-Type': 'application/json',
   };
 
-  // Adjusted for potentially conditional expiresInMins in logging
-  const loggedPayloadObjectForDisplay = {
-    username,
-    password: password ? '********' : undefined,
-    ...(expiresInMins !== undefined && { expiresInMins }) // Conditionally add expiresInMins to log
-  };
-
-  // console.log('[dummyJsonAdapter.login] Attempting login.'); // Simplified this further
-  // console.log('[dummyJsonAdapter.login] Target URL:', targetUrl); // Removed
-  // console.log('[dummyJsonAdapter.login] Method:', method); // Removed
-  // console.log('[dummyJsonAdapter.login] Headers to be sent (minimal):', JSON.stringify(requestHeaders)); // Removed
-  // console.log('[dummyJsonAdapter.login] Payload type:', typeof payload); // Removed
-  // console.log('[dummyJsonAdapter.login] Payload slice (first 50 chars):', payload.slice(0, 50)); // Removed
-  // console.log('[dummyJsonAdapter.login] Payload object for request (masked):', JSON.stringify(loggedPayloadObjectForDisplay)); // Adjusted log
-
+  if (process.env.NODE_ENV === 'development') {
+      console.log('[dummyJsonAdapter.login] Payload type (stringified):', typeof requestBodyString);
+      console.log('[dummyJsonAdapter.login] Payload slice (stringified, first 50 chars):', requestBodyString.slice(0, 50));
+      const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, ...(expiresInMins !== undefined && { expiresInMins }) };
+      console.log('[dummyJsonAdapter.login] Payload object being sent (masked password & expiresInMins):', JSON.stringify(loggedCredentialsForDisplay));
+  }
 
   try {
     const response = await fetch(targetUrl, {
       method: method,
-      headers: requestHeaders, // Simplified headers
-      body: payload,
+      headers: requestHeaders,
+      body: requestBodyString,
     });
 
-    // console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`); // Removed
-    // console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`); // Removed
+    // Log status and headers first
+    // console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`); // Covered by dev log below
+    // console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`); // Covered by dev log below
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[dummyJsonAdapter.login] Response status: ${response.status} ${response.statusText}`);
+        console.log('[dummyJsonAdapter.login] Response Headers:');
+        response.headers.forEach((value, name) => {
+          console.log(`  ${name}: ${value}`);
+        });
+    }
 
-    // console.log('[dummyJsonAdapter.login] Response Headers:'); // Removed
-    // response.headers.forEach((value, name) => { // Removed
-    //   console.log(`  ${name}: ${value}`); // Removed
-    // }); // Removed
-
-    const responseBodyText = await response.text();
-    // console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`); // Removed
+    let responseData = null;
+    try {
+        responseData = await response.json(); // Attempt to parse JSON directly
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[dummyJsonAdapter.login] Parsed response JSON data: ${JSON.stringify(responseData)}`);
+        }
+    } catch (e) {
+        console.warn(`[dummyJsonAdapter.login] Failed to parse response body as JSON directly: ${e instanceof Error ? e.message : String(e)}`);
+        // If it failed, responseData is null. The !response.ok check or subsequent Zod parse will handle it.
+    }
 
     if (!response.ok) {
-      let errorBodyJson = { message: `Request failed with status ${response.status}: ${responseBodyText}` }; // Include raw text in default
-      try {
-        errorBodyJson = JSON.parse(responseBodyText);
-      } catch (e) {
-        console.warn('[dummyJsonAdapter.login] Failed to parse error response body as JSON (raw text used in error):', e);
-      }
-      const errorMessage = errorBodyJson.message || response.statusText || `Request failed with status ${response.status}`;
-      console.error('[dummyJsonAdapter.login] Login failed. Error details:', errorMessage);
-      throw new Error(`Login failed: ${errorMessage}`);
+      throw createErrorFromDummyJsonResponse(response, responseData, 'Login');
     }
 
-    // Parse the successful response text as JSON
-    let responseJson;
-    try {
-         responseJson = JSON.parse(responseBodyText);
-    } catch (e) {
-         console.error('[dummyJsonAdapter.login] Failed to parse successful response body as JSON:', e);
-         console.error('[dummyJsonAdapter.login] Raw body that failed parsing:', responseBodyText);
-         throw new Error('Failed to parse successful login response from DummyJSON.');
+    // If response.ok but responseData is null (JSON parsing failed for a 2xx response)
+    if (responseData === null) {
+        console.error('[dummyJsonAdapter.login] Failed to parse successful (2xx) response body as JSON.');
+        throw new Error('Failed to parse successful login response from DummyJSON (2xx but not valid JSON).');
     }
-    // console.log('[dummyJsonAdapter.login] Successfully parsed response JSON:', JSON.stringify(responseJson)); // Old log
 
-    const parsedRaw = zDummyJsonLoginSuccess.parse(responseJson); // responseJson is the already JSON.parsed body
+    // Proceed with Zod parsing of responseData
+    const parsedRaw = zDummyJsonLoginSuccess.parse(responseData);
 
     // console.log('[dummyJsonAdapter.login] Successfully parsed raw response with zDummyJsonLoginSuccess:', JSON.stringify(parsedRaw)); // Removed
 
@@ -420,10 +423,10 @@ export async function refreshAccessToken(currentRefreshToken: string): Promise<{
     'Content-Type': 'application/json',
   };
 
-  console.log('[dummyJsonAdapter.refreshAccessToken] Attempting token refresh.');
-  console.log('[dummyJsonAdapter.refreshAccessToken] Target URL:', targetUrl);
-  // Avoid logging refresh token directly in production for long term
   if (process.env.NODE_ENV === 'development') {
+    console.log('[dummyJsonAdapter.refreshAccessToken] Attempting token refresh.');
+    console.log('[dummyJsonAdapter.refreshAccessToken] Target URL:', targetUrl);
+    // Avoid logging refresh token directly in production for long term
     console.log('[dummyJsonAdapter.refreshAccessToken] Payload for refresh:', payload);
   }
 
@@ -434,26 +437,37 @@ export async function refreshAccessToken(currentRefreshToken: string): Promise<{
       body: payload,
     });
 
-    const responseBodyText = await response.text();
     if (process.env.NODE_ENV === 'development') {
-        console.log(`[dummyJsonAdapter.refreshAccessToken] Raw response body text: ${responseBodyText}`);
+        console.log(`[dummyJsonAdapter.refreshAccessToken] Response status: ${response.status} ${response.statusText}`);
+        console.log('[dummyJsonAdapter.refreshAccessToken] Response Headers:');
+        response.headers.forEach((value, name) => {
+          console.log(`  ${name}: ${value}`);
+        });
     }
 
+    let responseData = null;
+    try {
+        responseData = await response.json();
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[dummyJsonAdapter.refreshAccessToken] Parsed response JSON data: ${JSON.stringify(responseData)}`);
+        }
+    } catch (e) {
+        console.warn(`[dummyJsonAdapter.refreshAccessToken] Failed to parse response body as JSON directly: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     if (!response.ok) {
-      let errorBodyJson = { message: `Refresh token failed with status ${response.status}: ${responseBodyText}` };
-      try {
-        errorBodyJson = JSON.parse(responseBodyText);
-      } catch (e) {
-        // console.warn already done by default error message
-      }
-      const errorMessage = errorBodyJson.message || response.statusText || `Refresh token failed with status ${response.status}`;
-      console.error('[dummyJsonAdapter.refreshAccessToken] Token refresh failed. Error details:', errorMessage);
-      throw new Error(`Token refresh failed: ${errorMessage}`);
+      throw createErrorFromDummyJsonResponse(response, responseData, 'Token refresh');
     }
 
-    const parsedRaw = zDummyJsonRefreshResponse.parse(JSON.parse(responseBodyText));
-    console.log('[dummyJsonAdapter.refreshAccessToken] Successfully parsed refresh response.');
+    if (responseData === null) {
+        console.error('[dummyJsonAdapter.refreshAccessToken] Failed to parse successful (2xx) response body as JSON.');
+        throw new Error('Failed to parse successful refresh response from DummyJSON (2xx but not valid JSON).');
+    }
+
+    const parsedRaw = zDummyJsonRefreshResponse.parse(responseData);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[dummyJsonAdapter.refreshAccessToken] Successfully parsed refresh response.');
+    }
 
     // Return the new tokens and relevant user data for JWT recreation
     return {

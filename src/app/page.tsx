@@ -15,14 +15,12 @@ const categoryImagePlaceholders: Record<string, string> = {
   'smartphones': 'https://cdn.dummyjson.com/products/images/smartphones/iPhone%20X/1.png',
   'laptops': 'https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp',
   'fragrances': 'https://cdn.dummyjson.com/products/images/fragrances/Chanel%20Coco%20Noir%20Eau%20De%20Parfum/1.png',
-  'skincare': 'https://cdn.dummyjson.com/products/images/skincare/Dermalogica%20Daily%20Microfoliant/1.png',
   'groceries': 'https://cdn.dummyjson.com/products/images/groceries/Apple%20Red/1.png',
   'home-decoration': 'https://cdn.dummyjson.com/products/images/home-decoration/FamilyTreePhotoFrame/1.png',
   'furniture': 'https://cdn.dummyjson.com/products/images/furniture/Annibale%20Colombo%20Bed/1.png',
   'tops': 'https://cdn.dummyjson.com/product-images/tops/blue-frock/thumbnail.webp',
   'womens-dresses': 'https://cdn.dummyjson.com/product-images/womens-dresses/black-women\\\'s-gown/thumbnail.webp',
   'womens-shoes': 'https://cdn.dummyjson.com/product-images/womens-shoes/calvin-klein-heel-shoes/thumbnail.webp',
-  // Add more as needed or implement a default for categories not listed above
   'mens-shirts': 'https://cdn.dummyjson.com/product-images/mens-shirts/blue-&-black-check-shirt/thumbnail.webp',
   'mens-shoes': 'https://cdn.dummyjson.com/products/images/mens-shoes/Nike%20Air%20Jordan%201%20Low%20Golf%20Wolf%20Grey/1.png',
   'mens-watches': 'https://cdn.dummyjson.com/products/images/mens-watches/Rolex%20Cellini%20Moonphase%20Watch/1.png',
@@ -33,7 +31,15 @@ const categoryImagePlaceholders: Record<string, string> = {
   'automotive': 'https://cdn.dummyjson.com/products/images/automotive/Ford%20Raptor%20F-150%20Lightning%20SuperCrew/1.png',
   'motorcycle': 'https://cdn.dummyjson.com/products/images/motorcycle/Kawasaki%20Ninja%20H2R/1.png',
   'lighting': 'https://cdn.dummyjson.com/products/images/lighting/Table%20Lamp%20Night%20Light%20Bedside%20Desk%20Lamp/1.png',
-  // Default for any other categories
+  // New and updated entries
+  'beauty': 'https://cdn.dummyjson.com/product-images/beauty/eyeshadow-palette-with-mirror/thumbnail.webp',
+  'kitchen-accessories': 'https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/thumbnail.webp',
+  'mobile-accessories': 'https://cdn.dummyjson.com/product-images/mobile-accessories/apple-airpods/thumbnail.webp',
+  'skin-care': 'https://cdn.dummyjson.com/product-images/skin-care/olay-ultra-moisture-shea-butter-body-wash/thumbnail.webp',
+  'sports-accessories': 'https://cdn.dummyjson.com/product-images/sports-accessories/basketball/thumbnail.webp',
+  'tablets': 'https://cdn.dummyjson.com/product-images/tablets/ipad-mini-2021-starlight/thumbnail.webp',
+  'vehicle': 'https://cdn.dummyjson.com/product-images/vehicle/dodge-hornet-gt-plus/thumbnail.webp',
+  // Add more as needed or implement a default for categories not listed above
 };
 const defaultCategoryImage = 'https://cdn.dummyjson.com/products/images/mobile-accessories/Apple%20Airpods%20Pro%20Case%20Cover/1.png';
 

@@ -14,22 +14,40 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Added isLoading state
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
+    setIsLoading(true); // Set loading true
 
-    const result = await signIn('credentials', {
-      redirect: false,
-      username,
-      password,
-      rememberMe: rememberMe,
-    });
+    try { // Add try block
+      const result = await signIn('credentials', {
+        redirect: false, // Important: redirect:false allows us to handle result here
+        username,
+        password,
+        rememberMe: rememberMe,
+      });
 
-    if (result?.error) {
-      setError(result.error === "CredentialsSignin" ? "Invalid username or password." : result.error);
-    } else if (result?.ok) {
-      router.push(callbackUrl);
+      if (result?.error) {
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid username or password. Please try again.");
+        } else if (result.error) {
+          setError(`Login failed: ${result.error}`);
+        } else { // Should not happen if result.error is set, but as a fallback
+          setError("Login failed due to an unknown error.");
+        }
+      } else if (result?.ok) {
+        router.push(callbackUrl);
+      } else {
+        // Handle cases where result is null/undefined or ok is false without specific error
+        setError("Login attempt was not successful. Please try again.");
+      }
+    } catch (e) { // Catch any unexpected errors during signIn call itself
+      console.error("LoginForm handleSubmit unexpected error:", e);
+      setError("An unexpected error occurred during login.");
+    } finally { // Add finally block
+      setIsLoading(false); // Set loading false
     }
   };
 
@@ -95,9 +113,10 @@ export default function LoginForm() {
         <div>
           <button
             type="submit"
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            disabled={isLoading} // Disable button when loading
+            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50" // Added disabled:opacity-50
           >
-            Sign in
+            {isLoading ? 'Signing in...' : 'Sign in'} {/* Change text when loading */}
           </button>
         </div>
       </form>

@@ -22,7 +22,7 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
 };
 
 // Import GetProductsOptions type
-import { GetProductsOptions, zDummyJsonLoginSuccess } from '../types'; // Added zDummyJsonLoginSuccess
+import { GetProductsOptions, zDummyJsonLoginSuccess, zDummyJsonRefreshResponse } from '../types'; // Added zDummyJsonRefreshResponse
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -280,41 +280,37 @@ export async function fetchAllProductsSimple() {
   return data;
 }
 
-export async function login(_credentials?: { username?: string; password?: string }) {
-  // Use environment variables for credentials, with fallback to new defaults
-  const username = process.env.DUMMYJSON_USER || 'emilys';
-  const password = process.env.DUMMYJSON_PASS || 'emilyspass';
-
-  // Log which credentials are being used (source)
-  if (process.env.DUMMYJSON_USER || process.env.DUMMYJSON_PASS) {
-     console.log('[dummyJsonAdapter.login] Using credentials from environment variables.');
-  } else {
-     console.log('[dummyJsonAdapter.login] Using fallback credentials (emilys/emilyspass).');
-  }
-
+export async function login({ username, password, expiresInMins }: { username?: string; password?: string; expiresInMins?: number }) {
   const targetUrl = `${API_BASE_URL}/auth/login`;
   const method = 'POST';
 
-  const payloadObject = {
+  const payloadObject: any = { // Use any for payloadObject before stringify to allow conditional property
     username,
     password,
-    expiresInMins: 30
   };
+  if (expiresInMins !== undefined) {
+    payloadObject.expiresInMins = expiresInMins;
+  }
   const payload = JSON.stringify(payloadObject);
 
   const requestHeaders = {
     'Content-Type': 'application/json',
   };
 
-  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, expiresInMins: 30 }; // This can be removed if not used below
+  // Adjusted for potentially conditional expiresInMins in logging
+  const loggedPayloadObjectForDisplay = {
+    username,
+    password: password ? '********' : undefined,
+    ...(expiresInMins !== undefined && { expiresInMins }) // Conditionally add expiresInMins to log
+  };
 
-  // console.log('[dummyJsonAdapter.login] Attempting login (simplified headers, with expiresInMins).'); // Removed
+  // console.log('[dummyJsonAdapter.login] Attempting login.'); // Simplified this further
   // console.log('[dummyJsonAdapter.login] Target URL:', targetUrl); // Removed
   // console.log('[dummyJsonAdapter.login] Method:', method); // Removed
   // console.log('[dummyJsonAdapter.login] Headers to be sent (minimal):', JSON.stringify(requestHeaders)); // Removed
   // console.log('[dummyJsonAdapter.login] Payload type:', typeof payload); // Removed
   // console.log('[dummyJsonAdapter.login] Payload slice (first 50 chars):', payload.slice(0, 50)); // Removed
-  // console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password & expiresInMins):', JSON.stringify(loggedCredentialsForDisplay)); // Removed
+  // console.log('[dummyJsonAdapter.login] Payload object for request (masked):', JSON.stringify(loggedPayloadObjectForDisplay)); // Adjusted log
 
 
   try {
@@ -363,7 +359,7 @@ export async function login(_credentials?: { username?: string; password?: strin
     // console.log('[dummyJsonAdapter.login] Successfully parsed raw response with zDummyJsonLoginSuccess:', JSON.stringify(parsedRaw)); // Removed
 
     const normalizedResponse = {
-      id:           parsedRaw.id,
+      id:           String(parsedRaw.id), // Ensure ID is stringified
       username:     parsedRaw.username,
       email:        parsedRaw.email,
       firstName:    parsedRaw.firstName,
@@ -373,6 +369,7 @@ export async function login(_credentials?: { username?: string; password?: strin
       token:        parsedRaw.accessToken,  // Key change: accessToken -> token
       refreshToken: parsedRaw.refreshToken, // Pass through refreshToken
       name:         `${parsedRaw.firstName} ${parsedRaw.lastName}`, // Combined name
+      expiresInMins: expiresInMins !== undefined ? expiresInMins : 30, // Pass through or default
     };
 
     // console.log('[dummyJsonAdapter.login] Returning normalized response:', JSON.stringify(normalizedResponse)); // Removed
@@ -393,5 +390,89 @@ export async function login(_credentials?: { username?: string; password?: strin
     // Ensure a comprehensive error message for other types of errors
     const finalErrorMessage = error instanceof Error ? error.message : 'Unknown error during login attempt.';
     throw new Error(`Network or unexpected error during login: ${finalErrorMessage}`);
+  }
+}
+
+export async function refreshAccessToken(currentRefreshToken: string): Promise<{
+  newAccessToken: string;
+  newRefreshToken: string;
+  newExpiresInMins: number; // Assuming DummyJSON provides a new expiry or we use a default
+  id: number; // Keep id to ensure consistency for JWT
+  username: string; // Keep username for JWT name field if needed
+  email: string; // Keep email for JWT email field
+  firstName: string; // For constructing name
+  lastName: string; // For constructing name
+  image: string; // For JWT picture
+  gender: string; // If needed
+  role?: string; // If roles are part of this response or can be re-derived
+}> {
+  const targetUrl = `${API_BASE_URL}/auth/refresh`;
+  const method = 'POST';
+  const defaultExpiresInMins = 30; // Default for refreshed token, or read from env
+
+  const payloadObject = {
+    refreshToken: currentRefreshToken,
+    expiresInMins: defaultExpiresInMins // Request a new expiry
+  };
+  const payload = JSON.stringify(payloadObject);
+
+  const requestHeaders = {
+    'Content-Type': 'application/json',
+  };
+
+  console.log('[dummyJsonAdapter.refreshAccessToken] Attempting token refresh.');
+  console.log('[dummyJsonAdapter.refreshAccessToken] Target URL:', targetUrl);
+  // Avoid logging refresh token directly in production for long term
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[dummyJsonAdapter.refreshAccessToken] Payload for refresh:', payload);
+  }
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: method,
+      headers: requestHeaders,
+      body: payload,
+    });
+
+    const responseBodyText = await response.text();
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[dummyJsonAdapter.refreshAccessToken] Raw response body text: ${responseBodyText}`);
+    }
+
+
+    if (!response.ok) {
+      let errorBodyJson = { message: `Refresh token failed with status ${response.status}: ${responseBodyText}` };
+      try {
+        errorBodyJson = JSON.parse(responseBodyText);
+      } catch (e) {
+        // console.warn already done by default error message
+      }
+      const errorMessage = errorBodyJson.message || response.statusText || `Refresh token failed with status ${response.status}`;
+      console.error('[dummyJsonAdapter.refreshAccessToken] Token refresh failed. Error details:', errorMessage);
+      throw new Error(`Token refresh failed: ${errorMessage}`);
+    }
+
+    const parsedRaw = zDummyJsonRefreshResponse.parse(JSON.parse(responseBodyText));
+    console.log('[dummyJsonAdapter.refreshAccessToken] Successfully parsed refresh response.');
+
+    // Return the new tokens and relevant user data for JWT recreation
+    return {
+      newAccessToken: parsedRaw.accessToken,
+      newRefreshToken: parsedRaw.refreshToken,
+      newExpiresInMins: defaultExpiresInMins, // Or use a value from parsedRaw if API provides it (e.g. parsedRaw.expiresIn)
+      id: parsedRaw.id,
+      username: parsedRaw.username,
+      email: parsedRaw.email,
+      firstName: parsedRaw.firstName,
+      lastName: parsedRaw.lastName,
+      image: parsedRaw.image,
+      gender: parsedRaw.gender,
+      // Role might need to be re-fetched or assumed to be unchanged if not in refresh response
+    };
+
+  } catch (error) {
+    console.error('[dummyJsonAdapter.refreshAccessToken] Error during token refresh operation:', error instanceof Error ? error.message : JSON.stringify(error));
+    const finalErrorMessage = error instanceof Error ? error.message : 'Unknown error during token refresh.';
+    throw new Error(`Token refresh failed: ${finalErrorMessage}`);
   }
 }

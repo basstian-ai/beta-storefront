@@ -192,11 +192,19 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   return applyB2BPrice(productWithSlug, session);
 }
 
-export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof AuthResponseSchema>> {
+export async function login(
+  credentials: { username?: string; password?: string },
+  expiresInMins?: number // Added expiresInMins parameter
+): Promise<z.infer<typeof AuthResponseSchema>> {
   if (process.env.NODE_ENV !== 'production') {
-    console.log('BFF> login', { username: credentials.username });
+    console.log('BFF> login', { username: credentials.username, expiresInMins });
   }
-  const rawData = await dummyJsonAdapter.login(credentials);
+  // Pass username, password, and expiresInMins to the adapter
+  const rawData = await dummyJsonAdapter.login({
+    username: credentials.username,
+    password: credentials.password,
+    expiresInMins
+  });
   const validatedResponse = AuthResponseSchema.parse(rawData);
   return validatedResponse;
 }

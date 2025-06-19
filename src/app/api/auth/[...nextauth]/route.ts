@@ -29,29 +29,30 @@ if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.e
 
 import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { login as bffLogin } from '@/bff/services'; // Your BFF login service
-import { AuthResponseSchema } from '@/bff/types'; // Removed UserSchema as it's unused
+import { login as bffLogin, refreshAccessToken as bffRefreshAccessToken } from '@/bff/services'; // Your BFF login service & refresh
+import { AuthResponseSchema } from '@/bff/types';
 import { z } from 'zod';
 
 // Augment NextAuth types
 declare module 'next-auth' {
   interface Session {
     user: {
-      id?: string; // Consistent with String(id) from authorize
+      id?: string;
       role?: string;
       rememberMe?: boolean;
-      accessToken?: string; // To be exposed to client if needed
-      refreshToken?: string; // To be exposed to client if needed (consider security implications)
-      // name, email, image are often part of NextAuthUser or added by default if in token
-    } & Omit<NextAuthUser, 'id'>; // Omit default number id, use our string one
+      accessToken?: string;
+      // refreshToken?: string; // DO NOT EXPOSE REFRESH TOKEN TO CLIENT
+      expires_at?: number;  // Expose token expiry to client
+      error?: string;       // Expose potential token errors
+    } & Omit<NextAuthUser, 'id' | 'image'> & { image?: string | null }; // Keep image, Omit default id
   }
-  interface User extends NextAuthUser { // User obj from authorize
-    id: string; // authorize now ensures string id
+  interface User extends NextAuthUser {
+    id: string;
     role?: string;
     rememberMe?: boolean;
-    token?: string;        // Normalized token from bff, available in 'user' obj in 'jwt' callback
-    refreshToken?: string; // Normalized refresh token from bff, available in 'user' obj in 'jwt' callback
-    // name, email, image are part of NextAuthUser
+    token?: string;
+    refreshToken?: string;
+    expiresInMins?: number; // Added for initial expiry calculation
   }
 }
 
@@ -60,14 +61,17 @@ declare module 'next-auth/jwt' {
     id?: string;
     role?: string;
     rememberMe?: boolean;
-    accessToken?: string;  // Stored in JWT as accessToken
-    refreshToken?: string; // Stored in JWT as refreshToken
-    // name, email, picture (for image) should be here if session needs them
+    accessToken?: string;
+    refreshToken?: string;
+    expires_at?: number;   // Added for token expiry timestamp
+    error?: string;        // To signal token refresh errors
     name?: string | null;
     email?: string | null;
-    picture?: string | null; // NextAuth default maps user.image to token.picture
+    picture?: string | null;
   }
 }
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -88,11 +92,28 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Call your BFF login service (already in existing code)
-          const loginData = await bffLogin({
-            username: credentials.username,
-            password: credentials.password
-          });
+          // Determine expiresInMins based on rememberMe flag
+          const defaultTtlStr = process.env.DUMMYJSON_TOKEN_TTL_MINS || '30';
+          const rememberMeTtlStr = process.env.DUMMYJSON_REMEMBER_ME_TTL_MINS || '43200'; // 30 days
+
+          const defaultTtl = parseInt(defaultTtlStr, 10);
+          const rememberMeTtl = parseInt(rememberMeTtlStr, 10);
+
+          let expiresInMins = (Number.isNaN(defaultTtl) || defaultTtl <=0) ? 30 : defaultTtl; // Fallback to 30 if env var is invalid
+          if (credentials.rememberMe === true || credentials.rememberMe === 'true') {
+            expiresInMins = (Number.isNaN(rememberMeTtl) || rememberMeTtl <=0) ? 43200 : rememberMeTtl; // Fallback to 30 days if env var is invalid
+          }
+          // console.log(`[authorize] Determined expiresInMins: ${expiresInMins} (rememberMe: ${credentials.rememberMe})`);
+
+
+          // Call your BFF login service, now passing expiresInMins
+          const loginData = await bffLogin(
+            {
+              username: credentials.username,
+              password: credentials.password,
+            },
+            expiresInMins
+          );
 
           if (!loginData) {
             // console.warn("[authorize] BFF login service returned no data (loginData is null or undefined). Username: ", credentials.username); // Removed
@@ -126,6 +147,7 @@ export const authOptions: NextAuthOptions = {
             // Pass token and refreshToken to be available in the jwt callback via the user object
             token: parsedLoginResponse.token,
             refreshToken: parsedLoginResponse.refreshToken,
+            expiresInMins: parsedLoginResponse.expiresInMins, // Pass this through
             // rememberMe is handled by checking credentials directly
           };
 
@@ -139,26 +161,19 @@ export const authOptions: NextAuthOptions = {
           return userForNextAuth;
 
         } catch (error) {
-          console.error("[authorize] Error during authorization flow. Username: ", credentials?.username); // Added optional chaining for credentials
-          let errorMessage = "Authorization failed due to an unexpected error.";
-          if (error instanceof z.ZodError) {
-            console.error("[authorize] Zod validation error:", JSON.stringify(error.errors));
-            errorMessage = "User data validation failed after login."; // More specific than generic
-          } else if (error instanceof Error) {
-            console.error("[authorize] Caught error message:", error.message);
-            console.error("[authorize] Caught error stack:", error.stack);
-            errorMessage = error.message; // Use the actual error message from bffLogin/dummyJsonAdapter
+          console.error("[authorize] Error during authorization flow. Username: ", credentials?.username);
+          // Log details of the error
+          if (error instanceof z.ZodError) { // This would be if AuthResponseSchema parsing fails
+            console.error("[authorize] Zod validation error for AuthResponseSchema:", JSON.stringify(error.errors));
+          } else if (error instanceof Error) { // This catches errors from bffLogin/dummyJsonAdapter
+            console.error("[authorize] Caught error message from BFF/Adapter:", error.message);
+            // console.error("[authorize] Caught error stack:", error.stack); // Optional: stack might be too verbose for prod
           } else {
-            const unknownErrorStr = JSON.stringify(error);
-            console.error("[authorize] Caught unknown error:", unknownErrorStr);
-            errorMessage = `An unknown error occurred: ${unknownErrorStr.slice(0, 100)}`; // Include part of unknown error
+            console.error("[authorize] Caught unknown error:", JSON.stringify(error));
           }
-          // Instead of returning null, throw an error that NextAuth will catch.
-          // NextAuth typically creates a URL like /api/auth/error?error=Callback&message=...
-          // Or it might use a specific error code if the error message matches certain patterns.
-          // For a generic error thrown from authorize, it often results in ?error=Callback or similar.
-          // The key is that the thrown error's message might be accessible on the error page.
-          throw new Error(errorMessage);
+
+          // Return null to trigger NextAuth's standard CredentialsSignin error flow
+          return null;
         }
       },
     })
@@ -180,36 +195,83 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile }) { // Added account, profile for completeness
       // console.log("[jwt callback] Triggered. User:", JSON.stringify(user)); // Removed
       // console.log("[jwt callback] Triggered. Account:", JSON.stringify(account)); // Removed
-      // console.log("[jwt callback] Triggered. Profile:", JSON.stringify(profile)); // Removed
-      // console.log("[jwt callback] Initial token:", JSON.stringify(token)); // Removed
+      // console.log("[jwt callback] Triggered. Profile:", JSON.stringify(profile));
+      // console.log("[jwt callback] Initial token:", JSON.stringify(token));
 
-      if (user) { // User object is available on initial sign-in. `user` here is the object from `authorize` or OAuth provider.
-        token.id = user.id; // user.id is already string from authorize
+      if (account && user) { // Initial sign-in
+        // This block runs only on sign-in
+        // The user object is from the authorize callback
+        token.accessToken = user.token;       // user.token is the accessToken from authorize
+        token.refreshToken = user.refreshToken;
+        token.id = user.id;
         token.role = user.role;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+
+        // Calculate expiry time
+        // user.expiresInMins should come from authorize -> bffLogin -> dummyJsonAdapter.login
+        const expiresInMilliseconds = (user.expiresInMins || 30) * 60 * 1000; // Default to 30 mins if not provided
+        token.expires_at = Date.now() + expiresInMilliseconds;
+
         if (user.rememberMe !== undefined) {
           token.rememberMe = user.rememberMe;
         }
-        // Map from our normalized User object (from authorize) to JWT fields
-        if (user.token) { // user.token comes from authorize's userForNextAuth.token
-          token.accessToken = user.token;
-        }
-        if (user.refreshToken) { // user.refreshToken from authorize's userForNextAuth.refreshToken
-          token.refreshToken = user.refreshToken;
-        }
-        // Ensure standard fields are on the token for the session callback
-        token.name = user.name;
-        token.email = user.email;
-        token.picture = user.image; // NextAuth convention for image
+        // console.log(`[jwt callback] New token on login: ${JSON.stringify(token)}`);
+        return token;
       }
-      // console.log("[jwt callback] Returned token:", JSON.stringify(token)); // Removed
-      return token;
+
+      // On subsequent calls, token.expires_at should exist.
+      // Check if the token is expired
+      if (token.expires_at && Date.now() < (token.expires_at as number)) {
+        // Not expired, return the current token
+        // console.log("[jwt callback] Token not expired.");
+        return token;
+      }
+
+      // Token is expired or about to expire, try to refresh it
+      // console.log("[jwt callback] Token expired or needs refresh. Attempting refresh...");
+      if (!token.refreshToken) {
+        console.error("[jwt callback] No refresh token available to refresh access token.");
+        return { ...token, error: "RefreshFailure" };
+      }
+
+      try {
+        const refreshedTokenData = await bffRefreshAccessToken(token.refreshToken as string);
+        // console.log("[jwt callback] Refreshed token data:", JSON.stringify(refreshedTokenData));
+
+        // Update the token with new values from refresh
+        token.accessToken = refreshedTokenData.newAccessToken;
+        token.refreshToken = refreshedTokenData.newRefreshToken;
+
+        const newExpiresInMilliseconds = (refreshedTokenData.newExpiresInMins || 30) * 60 * 1000;
+        token.expires_at = Date.now() + newExpiresInMilliseconds;
+
+        token.id = String(refreshedTokenData.id);
+        token.name = `${refreshedTokenData.firstName} ${refreshedTokenData.lastName}`;
+        token.email = refreshedTokenData.email;
+        token.picture = refreshedTokenData.image;
+        // token.role = refreshedTokenData.role; // If available and needed
+
+        // console.log(`[jwt callback] Token refreshed: ${JSON.stringify(token)}`);
+        return token;
+
+      } catch (error) {
+        console.error("[jwt callback] Error refreshing access token:", error);
+        return {
+          ...token,
+          error: "RefreshAccessTokenError",
+          accessToken: undefined,
+          expires_at: 0
+        };
+      }
     },
     async session({ session, token }) { // token is the JWT
-      // console.log("[session callback] Triggered. JWT token:", JSON.stringify(token)); // Removed
-      // console.log("[session callback] Initial session:", JSON.stringify(session)); // Removed
+      // console.log("[session callback] Triggered. JWT token:", JSON.stringify(token));
+      // console.log("[session callback] Initial session:", JSON.stringify(session));
 
       if (session.user) {
-        session.user.id = token.id as string; // Ensure type if needed, though JWT should have string
+        session.user.id = token.id as string;
         session.user.role = token.role as string;
         if (token.rememberMe !== undefined) {
           session.user.rememberMe = token.rememberMe;
@@ -217,18 +279,19 @@ export const authOptions: NextAuthOptions = {
         if (token.accessToken) {
           session.user.accessToken = token.accessToken as string;
         }
-        if (token.refreshToken) {
-          session.user.refreshToken = token.refreshToken as string;
+        // refreshToken is intentionally not passed to the client-side session
+        if (token.expires_at) {
+          session.user.expires_at = token.expires_at as number;
         }
-        // Ensure standard fields are populated from token
         session.user.name = token.name ?? session.user.name;
         session.user.email = token.email ?? session.user.email;
         session.user.image = token.picture ?? session.user.image; // map from token.picture
+        if (token.error) {
+          session.user.error = token.error as string;
+        }
+        // Ensure refreshToken is NOT assigned to session.user
+        // delete (session.user as any).refreshToken; // Or ensure it's never added by not mapping it
       }
-
-      // if (process.env.NODE_ENV !== 'production') { // Removed
-      //    console.log('Auth: Session created/updated:', JSON.stringify(session)); // Removed
-      // } // Removed
       return session;
     }
   },
@@ -239,6 +302,22 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
   debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
+  cookies: {
+    sessionToken: {
+      name: isProduction ? `__Host-next-auth.session-token` : `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax', // Recommended default by NextAuth
+        path: '/',
+        secure: isProduction,
+        // domain: isProduction ? 'yourdomain.com' : undefined, // Only set if using custom domain and need cross-subdomain
+      }
+    },
+    // If other cookies (callbackUrl, csrfToken, pkceCodeVerifier) are explicitly defined here,
+    // they would also need similar conditional naming and `secure: isProduction`
+    // For now, only overriding sessionToken as requested.
+    // NextAuth's defaults for other cookies are generally secure.
+  },
 };
 
 // const handler = NextAuth(authOptions);

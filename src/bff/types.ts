@@ -45,7 +45,7 @@ export const UserSchema = z.object({
 });
 
 export const AuthResponseSchema = z.object({
-  id:           z.number(),
+  id:           z.string(), // Changed from z.number() to z.string()
   username:     z.string(),
   email:        z.string().email(),
   firstName:    z.string(), // Kept, as adapter passes it through
@@ -55,6 +55,7 @@ export const AuthResponseSchema = z.object({
   token:        z.string(),      // Now correctly expects 'token' (which was accessToken)
   refreshToken: z.string(),      // Added refreshToken
   name:         z.string(),      // Added combined name
+  expiresInMins:z.number().optional(), // Added for token expiry calculation
   // role is not part of dummyjson /auth/login response, will be handled by session.
   // Optional fields from original schema are now required as adapter provides them.
 });
@@ -72,6 +73,11 @@ export const zDummyJsonLoginSuccess = z.object({
   refreshToken: z.string(),
 });
 export type DummyJsonLoginSuccess = z.infer<typeof zDummyJsonLoginSuccess>;
+
+// Schema for the raw successful token refresh response from DummyJSON API
+// It's often similar to the login success response.
+export const zDummyJsonRefreshResponse = zDummyJsonLoginSuccess.extend({});
+export type DummyJsonRefreshResponse = z.infer<typeof zDummyJsonRefreshResponse>;
 
 // Type for getProducts response
 export const PaginatedProductsSchema = z.object({

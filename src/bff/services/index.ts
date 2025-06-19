@@ -133,11 +133,14 @@ export async function getProducts(
   });
 }
 
-export async function searchProducts(query: string): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
+export async function searchProducts(
+  query: string,
+  sort: 'relevance' | 'price-asc' | 'price-desc' = 'relevance'
+): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('BFF> searchProducts (slug enhancement pass)', { query });
+      console.log('BFF> searchProducts (slug enhancement pass)', { query, sort });
     }
-    const rawData = await dummyJsonAdapter.searchProducts(query);
+    const rawData = await dummyJsonAdapter.searchProducts(query, sort);
     const parsedData = PaginatedProductsSchema.parse(rawData);
     const session = await getSimulatedSession();
 

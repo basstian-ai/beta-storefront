@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const term = searchParams.get('term');
+  const sort = (searchParams.get('sort') as 'relevance' | 'price-asc' | 'price-desc') ?? 'relevance';
 
   if (!term || term.length < 3) {
     return NextResponse.json(
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // The searchProducts service already handles B2B pricing and Zod validation
-    const results = await searchProducts(term);
+    const results = await searchProducts(term, sort);
     return NextResponse.json(results);
   } catch (error) {
     console.error('Search API error:', error);

@@ -14,6 +14,6 @@ export default defineConfig({
     globals: true, // Use Vitest global APIs without importing them
     environment: 'jsdom', // Simulate a browser environment for tests
     setupFiles: './vitest.setup.ts', // Optional: for global test setup
-    include: ['src/**/*.test.{ts,tsx}'], // Pattern to find test files
+    include: ['src/**/*.{test,spec}.{ts,tsx}'], // Pattern to find test files
   },
 });

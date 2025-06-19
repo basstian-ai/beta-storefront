@@ -184,8 +184,9 @@ export async function fetchProductById(id: number | string) {
   return product;
 }
 
-export async function searchProducts(query: string) {
-  const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
+export async function searchProducts(query: string, sort?: string) {
+  const sortParam = sort && sort !== 'relevance' ? `&sort=${sort}` : '';
+  const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}${sortParam}`);
   if (!response.ok) {
     throw new Error(`Failed to search products with query "${query}": ${response.statusText}`);
   }

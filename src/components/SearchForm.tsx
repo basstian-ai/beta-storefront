@@ -1,0 +1,56 @@
+'use client';
+
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+
+interface SearchFormProps {
+  initialQuery?: string;
+  initialSort?: string;
+}
+
+export default function SearchForm({ initialQuery = '', initialSort = 'relevance' }: SearchFormProps) {
+  const [term, setTerm] = useState(initialQuery);
+  const [sort, setSort] = useState(initialSort);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    if (term.trim()) {
+      params.set('q', term.trim());
+    } else {
+      params.delete('q');
+    }
+    if (sort && sort !== 'relevance') {
+      params.set('sort', sort);
+    } else {
+      params.delete('sort');
+    }
+    router.push(`/search?${params.toString()}`);
+  };
+
+  return (
+    <form onSubmit={onSubmit} role="search" className="flex gap-2">
+      <input
+        type="text"
+        value={term}
+        onChange={e => setTerm(e.target.value)}
+        placeholder="Search..."
+        className="flex-grow border rounded px-3 py-2"
+      />
+      <select
+        value={sort}
+        onChange={e => setSort(e.target.value)}
+        className="border rounded px-2"
+      >
+        <option value="relevance">Relevance</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+        Search
+      </button>
+    </form>
+  );
+}

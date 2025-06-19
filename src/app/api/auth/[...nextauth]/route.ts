@@ -19,14 +19,13 @@ if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.e
 }
 
 // After imports
-// Log environment variables for debugging, especially during startup/initialization
-console.log("[NextAuth Env Check]", {
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL || "Not Set",
-  NEXTAUTH_SECRET_EXISTS: !!process.env.NEXTAUTH_SECRET,
-  NODE_ENV: process.env.NODE_ENV || "Not Set",
-  VERCEL_URL: process.env.VERCEL_URL || "Not Set", // Useful for Vercel context
-  AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST || "Not Set" // From previous discussions
-});
+// console.log("[NextAuth Env Check]", { // Removed
+//   NEXTAUTH_URL: process.env.NEXTAUTH_URL || "Not Set", // Removed
+//   NEXTAUTH_SECRET_EXISTS: !!process.env.NEXTAUTH_SECRET, // Removed
+//   NODE_ENV: process.env.NODE_ENV || "Not Set", // Removed
+//   VERCEL_URL: process.env.VERCEL_URL || "Not Set", // Removed
+//   AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST || "Not Set" // Removed
+// }); // Removed
 
 import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -34,28 +33,39 @@ import { login as bffLogin } from '@/bff/services'; // Your BFF login service
 import { AuthResponseSchema } from '@/bff/types'; // Removed UserSchema as it's unused
 import { z } from 'zod';
 
-// Augment NextAuth types to include 'role' and 'id' on user and session
+// Augment NextAuth types
 declare module 'next-auth' {
   interface Session {
     user: {
-      id?: string | number; // Or just number if your ID is always number
+      id?: string; // Consistent with String(id) from authorize
       role?: string;
-      rememberMe?: boolean; // Add this
-    } & NextAuthUser; // Keep existing fields like name, email, image
+      rememberMe?: boolean;
+      accessToken?: string; // To be exposed to client if needed
+      refreshToken?: string; // To be exposed to client if needed (consider security implications)
+      // name, email, image are often part of NextAuthUser or added by default if in token
+    } & Omit<NextAuthUser, 'id'>; // Omit default number id, use our string one
   }
-  interface User extends NextAuthUser {
-    id?: string | number;
+  interface User extends NextAuthUser { // User obj from authorize
+    id: string; // authorize now ensures string id
     role?: string;
-    rememberMe?: boolean; // Add this
+    rememberMe?: boolean;
+    token?: string;        // Normalized token from bff, available in 'user' obj in 'jwt' callback
+    refreshToken?: string; // Normalized refresh token from bff, available in 'user' obj in 'jwt' callback
+    // name, email, image are part of NextAuthUser
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    id?: string | number;
+    id?: string;
     role?: string;
-    rememberMe?: boolean; // Add this
-    // picture?: string | null; // if using image from profile
+    rememberMe?: boolean;
+    accessToken?: string;  // Stored in JWT as accessToken
+    refreshToken?: string; // Stored in JWT as refreshToken
+    // name, email, picture (for image) should be here if session needs them
+    name?: string | null;
+    email?: string | null;
+    picture?: string | null; // NextAuth default maps user.image to token.picture
   }
 }
 
@@ -69,12 +79,12 @@ export const authOptions: NextAuthOptions = {
         rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
       async authorize(credentials, _req) { // Changed req to _req
-        // console.log("[authorize] Raw request (if needed):", _req); // Example if full req needed
-        console.log("[authorize] Inbound credentials:", credentials ? JSON.stringify(credentials) : "undefined");
+        // console.log("[authorize] Raw request (if needed):", _req);
+        // console.log("[authorize] Inbound credentials:", credentials ? JSON.stringify(credentials) : "undefined"); // Removed
 
         if (!credentials?.username || !credentials?.password) {
-          console.warn('[authorize] Missing username or password in credentials');
-          return null;
+          // console.warn('[authorize] Missing username or password in credentials'); // Removed
+          return null; // Keep this direct return for missing credentials
         }
 
         try {
@@ -85,38 +95,47 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!loginData) {
-            console.warn("[authorize] BFF login service returned no data (loginData is null or undefined). Username: ", credentials.username);
+            // console.warn("[authorize] BFF login service returned no data (loginData is null or undefined). Username: ", credentials.username); // Removed
             return null; // Explicitly return null if loginData is null/undefined
           }
-          console.log("[authorize] Data received from bffLogin:", JSON.stringify(loginData));
+          // console.log("[authorize] Data received from bffLogin:", JSON.stringify(loginData)); // Removed
 
           // Validate response with Zod (already in existing code)
           const parsedLoginResponse = AuthResponseSchema.parse(loginData);
-          console.log("[authorize] Parsed login response from Zod:", JSON.stringify(parsedLoginResponse));
+          // console.log("[authorize] Parsed login response from Zod:", JSON.stringify(parsedLoginResponse)); // Removed
 
-          // Determine role (already in existing code)
-          let userRole = "customer";
-          if (parsedLoginResponse.username === "kminchelle") {
+          // Determine role
+          let userRole = "customer"; // Default role
+          // Example: Assign 'b2b' role if username is specific, otherwise 'customer'
+          if (parsedLoginResponse.username === "emilys") { // Updated to new default user
+            userRole = "customer"; // Explicitly customer, or apply specific logic
+          } else if (parsedLoginResponse.username === "kminchelle") { // Keep if kminchelle might still be used
             userRole = "b2b";
           }
-          console.log("[authorize] Determined user role:", userRole);
+          // Add other role logic as needed
+          // console.log("[authorize] Determined user role:", userRole); // Removed
 
-          // Construct the user object for NextAuth (already in existing code)
-          const userForNextAuth: User = { // Use the augmented User type
-            id: String(parsedLoginResponse.id), // Ensure ID is string
-            name: parsedLoginResponse.username,
+          // Construct the user object for NextAuth
+          // The augmented 'User' type will be updated in the next step to include token/refreshToken
+          const userForNextAuth: User = { // This will be typed as 'User' from NextAuth augmentation implicitly or explicitly
+            id: String(parsedLoginResponse.id),    // Ensure ID is string
+            name: parsedLoginResponse.name,        // Use combined name from normalized response
             email: parsedLoginResponse.email,
             image: parsedLoginResponse.image,
             role: userRole,
-            // rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // rememberMe is part of credentials, not usually part of the user object model itself unless specifically needed elsewhere
+            // Pass token and refreshToken to be available in the jwt callback via the user object
+            token: parsedLoginResponse.token,
+            refreshToken: parsedLoginResponse.refreshToken,
+            // rememberMe is handled by checking credentials directly
           };
-          // Add rememberMe to the user object if it's part of your augmented User type and you need it in the JWT/session
+
+          // Add rememberMe if present in credentials (this part of existing logic is fine)
           if (credentials.rememberMe) {
               userForNextAuth.rememberMe = credentials.rememberMe === 'true' || credentials.rememberMe === true;
           }
 
 
-          console.log("[authorize] Successfully constructed user object for NextAuth:", JSON.stringify(userForNextAuth));
+          // console.log("[authorize] Successfully constructed user object for NextAuth:", JSON.stringify(userForNextAuth)); // Removed
           return userForNextAuth;
 
         } catch (error) {
@@ -150,41 +169,66 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
-      console.log("[signIn callback] Triggered.");
-      console.log("[signIn callback] User:", user ? JSON.stringify(user) : "undefined");
-      console.log("[signIn callback] Account:", account ? JSON.stringify(account) : "undefined");
-      console.log("[signIn callback] Profile:", profile ? JSON.stringify(profile) : "undefined");
-      console.log("[signIn callback] Email:", email ? JSON.stringify(email) : "undefined");
-      console.log("[signIn callback] Credentials:", credentials ? JSON.stringify(credentials) : "undefined");
+      // console.log("[signIn callback] Triggered."); // Removed
+      // console.log("[signIn callback] User:", user ? JSON.stringify(user) : "undefined"); // Removed
+      // console.log("[signIn callback] Account:", account ? JSON.stringify(account) : "undefined"); // Removed
+      // console.log("[signIn callback] Profile:", profile ? JSON.stringify(profile) : "undefined"); // Removed
+      // console.log("[signIn callback] Email:", email ? JSON.stringify(email) : "undefined"); // Removed
+      // console.log("[signIn callback] Credentials:", credentials ? JSON.stringify(credentials) : "undefined"); // Removed
       return true;
     },
-    async jwt({ token, user }) { // user here is the user object from authorize or OAuth provider
-      // Persist 'id' and 'role' to the JWT right after signin
-      if (user) { // User object is only passed on first call (signin)
-        token.id = user.id;
+    async jwt({ token, user, account, profile }) { // Added account, profile for completeness
+      // console.log("[jwt callback] Triggered. User:", JSON.stringify(user)); // Removed
+      // console.log("[jwt callback] Triggered. Account:", JSON.stringify(account)); // Removed
+      // console.log("[jwt callback] Triggered. Profile:", JSON.stringify(profile)); // Removed
+      // console.log("[jwt callback] Initial token:", JSON.stringify(token)); // Removed
+
+      if (user) { // User object is available on initial sign-in. `user` here is the object from `authorize` or OAuth provider.
+        token.id = user.id; // user.id is already string from authorize
         token.role = user.role;
-        // If 'rememberMe' is part of your augmented User type and set in 'authorize'
-        if (user.rememberMe !== undefined) { // Removed 'as any'
-           token.rememberMe = user.rememberMe;
+        if (user.rememberMe !== undefined) {
+          token.rememberMe = user.rememberMe;
         }
+        // Map from our normalized User object (from authorize) to JWT fields
+        if (user.token) { // user.token comes from authorize's userForNextAuth.token
+          token.accessToken = user.token;
+        }
+        if (user.refreshToken) { // user.refreshToken from authorize's userForNextAuth.refreshToken
+          token.refreshToken = user.refreshToken;
+        }
+        // Ensure standard fields are on the token for the session callback
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image; // NextAuth convention for image
       }
-      // console.log('[jwt callback] Token:', JSON.stringify(token)); // Optional: for deeper debugging
+      // console.log("[jwt callback] Returned token:", JSON.stringify(token)); // Removed
       return token;
     },
-    async session({ session, token }) { // token here is the JWT
-      if (token.id && session.user) {
-        session.user.id = token.id;
-      }
-      if (token.role && session.user) {
+    async session({ session, token }) { // token is the JWT
+      // console.log("[session callback] Triggered. JWT token:", JSON.stringify(token)); // Removed
+      // console.log("[session callback] Initial session:", JSON.stringify(session)); // Removed
+
+      if (session.user) {
+        session.user.id = token.id as string; // Ensure type if needed, though JWT should have string
         session.user.role = token.role as string;
+        if (token.rememberMe !== undefined) {
+          session.user.rememberMe = token.rememberMe;
+        }
+        if (token.accessToken) {
+          session.user.accessToken = token.accessToken as string;
+        }
+        if (token.refreshToken) {
+          session.user.refreshToken = token.refreshToken as string;
+        }
+        // Ensure standard fields are populated from token
+        session.user.name = token.name ?? session.user.name;
+        session.user.email = token.email ?? session.user.email;
+        session.user.image = token.picture ?? session.user.image; // map from token.picture
       }
-      if (token.rememberMe !== undefined && session.user) {
-        session.user.rememberMe = token.rememberMe;
-      }
-      // console.log('[session callback] Session:', JSON.stringify(session)); // Optional: for deeper debugging
-      if (process.env.NODE_ENV !== 'production') { // Keep existing session log for dev
-        console.log('Auth: Session created/updated:', JSON.stringify(session));
-      }
+
+      // if (process.env.NODE_ENV !== 'production') { // Removed
+      //    console.log('Auth: Session created/updated:', JSON.stringify(session)); // Removed
+      // } // Removed
       return session;
     }
   },

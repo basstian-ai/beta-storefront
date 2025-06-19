@@ -45,16 +45,33 @@ export const UserSchema = z.object({
 });
 
 export const AuthResponseSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  email: z.string().email(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  gender: z.string().optional(),
-  image: z.string().url().optional(),
-  token: z.string(),
-  // role is not part of dummyjson /auth/login response, will be handled by session
+  id:           z.number(),
+  username:     z.string(),
+  email:        z.string().email(),
+  firstName:    z.string(), // Kept, as adapter passes it through
+  lastName:     z.string(), // Kept, as adapter passes it through
+  gender:       z.string(),
+  image:        z.string().url(),
+  token:        z.string(),      // Now correctly expects 'token' (which was accessToken)
+  refreshToken: z.string(),      // Added refreshToken
+  name:         z.string(),      // Added combined name
+  // role is not part of dummyjson /auth/login response, will be handled by session.
+  // Optional fields from original schema are now required as adapter provides them.
 });
+
+// Schema for the raw successful login response from DummyJSON API
+export const zDummyJsonLoginSuccess = z.object({
+  id:           z.number(),
+  username:     z.string(),
+  email:        z.string().email(),
+  firstName:    z.string(),
+  lastName:     z.string(),
+  gender:       z.string(),
+  image:        z.string().url(),
+  accessToken:  z.string(),
+  refreshToken: z.string(),
+});
+export type DummyJsonLoginSuccess = z.infer<typeof zDummyJsonLoginSuccess>;
 
 // Type for getProducts response
 export const PaginatedProductsSchema = z.object({

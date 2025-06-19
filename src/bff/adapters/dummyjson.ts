@@ -22,7 +22,7 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
 };
 
 // Import GetProductsOptions type
-import { GetProductsOptions } from '../types';
+import { GetProductsOptions, zDummyJsonLoginSuccess } from '../types'; // Added zDummyJsonLoginSuccess
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -306,15 +306,16 @@ export async function login(_credentials?: { username?: string; password?: strin
     'Content-Type': 'application/json',
   };
 
-  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, expiresInMins: 30 };
+  const loggedCredentialsForDisplay = { username, password: password ? '********' : undefined, expiresInMins: 30 }; // This can be removed if not used below
 
-  console.log('[dummyJsonAdapter.login] Attempting login (simplified headers, with expiresInMins).');
-  console.log('[dummyJsonAdapter.login] Target URL:', targetUrl);
-  console.log('[dummyJsonAdapter.login] Method:', method);
-  console.log('[dummyJsonAdapter.login] Headers to be sent (minimal):', JSON.stringify(requestHeaders));
-  console.log('[dummyJsonAdapter.login] Payload type:', typeof payload);
-  console.log('[dummyJsonAdapter.login] Payload slice (first 50 chars):', payload.slice(0, 50)); // Increased slice slightly
-  console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password & expiresInMins):', JSON.stringify(loggedCredentialsForDisplay));
+  // console.log('[dummyJsonAdapter.login] Attempting login (simplified headers, with expiresInMins).'); // Removed
+  // console.log('[dummyJsonAdapter.login] Target URL:', targetUrl); // Removed
+  // console.log('[dummyJsonAdapter.login] Method:', method); // Removed
+  // console.log('[dummyJsonAdapter.login] Headers to be sent (minimal):', JSON.stringify(requestHeaders)); // Removed
+  // console.log('[dummyJsonAdapter.login] Payload type:', typeof payload); // Removed
+  // console.log('[dummyJsonAdapter.login] Payload slice (first 50 chars):', payload.slice(0, 50)); // Removed
+  // console.log('[dummyJsonAdapter.login] Payload object (credentials with masked password & expiresInMins):', JSON.stringify(loggedCredentialsForDisplay)); // Removed
+
 
   try {
     const response = await fetch(targetUrl, {
@@ -323,16 +324,16 @@ export async function login(_credentials?: { username?: string; password?: strin
       body: payload,
     });
 
-    console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`);
-    console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`);
+    // console.log(`[dummyJsonAdapter.login] Response status: ${response.status}`); // Removed
+    // console.log(`[dummyJsonAdapter.login] Response status text: ${response.statusText}`); // Removed
 
-    console.log('[dummyJsonAdapter.login] Response Headers:');
-    response.headers.forEach((value, name) => {
-      console.log(`  ${name}: ${value}`);
-    });
+    // console.log('[dummyJsonAdapter.login] Response Headers:'); // Removed
+    // response.headers.forEach((value, name) => { // Removed
+    //   console.log(`  ${name}: ${value}`); // Removed
+    // }); // Removed
 
     const responseBodyText = await response.text();
-    console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`);
+    // console.log(`[dummyJsonAdapter.login] Raw response body text: ${responseBodyText}`); // Removed
 
     if (!response.ok) {
       let errorBodyJson = { message: `Request failed with status ${response.status}: ${responseBodyText}` }; // Include raw text in default
@@ -355,8 +356,27 @@ export async function login(_credentials?: { username?: string; password?: strin
          console.error('[dummyJsonAdapter.login] Raw body that failed parsing:', responseBodyText);
          throw new Error('Failed to parse successful login response from DummyJSON.');
     }
-    console.log('[dummyJsonAdapter.login] Successfully parsed response JSON:', JSON.stringify(responseJson));
-    return responseJson;
+    // console.log('[dummyJsonAdapter.login] Successfully parsed response JSON:', JSON.stringify(responseJson)); // Old log
+
+    const parsedRaw = zDummyJsonLoginSuccess.parse(responseJson); // responseJson is the already JSON.parsed body
+
+    // console.log('[dummyJsonAdapter.login] Successfully parsed raw response with zDummyJsonLoginSuccess:', JSON.stringify(parsedRaw)); // Removed
+
+    const normalizedResponse = {
+      id:           parsedRaw.id,
+      username:     parsedRaw.username,
+      email:        parsedRaw.email,
+      firstName:    parsedRaw.firstName,
+      lastName:     parsedRaw.lastName,
+      gender:       parsedRaw.gender,
+      image:        parsedRaw.image,
+      token:        parsedRaw.accessToken,  // Key change: accessToken -> token
+      refreshToken: parsedRaw.refreshToken, // Pass through refreshToken
+      name:         `${parsedRaw.firstName} ${parsedRaw.lastName}`, // Combined name
+    };
+
+    // console.log('[dummyJsonAdapter.login] Returning normalized response:', JSON.stringify(normalizedResponse)); // Removed
+    return normalizedResponse;
 
   } catch (error) {
     console.error('[dummyJsonAdapter.login] Error during fetch operation or response processing:', error instanceof Error ? error.message : JSON.stringify(error));

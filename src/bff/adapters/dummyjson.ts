@@ -299,9 +299,7 @@ export async function fetchAllProductsSimple() {
 
 export async function login({ username, password, expiresInMins }: { username?: string; password?: string; expiresInMins?: number }): Promise<AuthResponse> {
   const targetUrl = `${API_BASE_URL}/auth/login`;
-  const method = 'POST';
-
-  const method = 'POST';
+  const httpMethod = 'POST'; // Renamed and kept single instance
 
   const requestBodyObject = { username, password, ...(expiresInMins !== undefined && { expiresInMins }) };
   const requestBodyString = JSON.stringify(requestBodyObject);
@@ -319,7 +317,7 @@ export async function login({ username, password, expiresInMins }: { username?: 
 
   try {
     const response = await fetch(targetUrl, {
-      method: method,
+      method: httpMethod, // Updated to httpMethod
       headers: requestHeaders,
       body: requestBodyString,
     });
@@ -410,7 +408,7 @@ export async function refreshAccessToken(currentRefreshToken: string): Promise<{
   role?: string; // If roles are part of this response or can be re-derived
 }> {
   const targetUrl = `${API_BASE_URL}/auth/refresh`;
-  const method = 'POST';
+  const httpMethod = 'POST'; // Renamed for consistency
   const defaultExpiresInMins = 30; // Default for refreshed token, or read from env
 
   const payloadObject = {
@@ -432,7 +430,7 @@ export async function refreshAccessToken(currentRefreshToken: string): Promise<{
 
   try {
     const response = await fetch(targetUrl, {
-      method: method,
+      method: httpMethod, // Updated to httpMethod
       headers: requestHeaders,
       body: payload,
     });

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from './ProductCard';
+import SearchResultsSkeleton from './SearchResultsSkeleton';
 import { fetchJSON } from '@/utils/fetchJSON';
 import { mergeQueryString } from '@/utils/mergeQuery';
-import SearchPager from './SearchPager';
 
 export type SortKey = 'relevance' | 'price-asc' | 'price-desc';
 
@@ -36,51 +36,61 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
   const [count, setCount] = useState(total);
   const [pageSkip, setPageSkip] = useState(skip);
   const [pageLimit, setPageLimit] = useState(limit);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // update local pagination state when URL changes
+  // Reset state when props change (navigating to new search)
   useEffect(() => {
-    const nextSkip = Number(searchParams.get('skip') ?? '0');
-    const nextLimit = Number(searchParams.get('limit') ?? String(pageLimit));
-    if (!Number.isNaN(nextSkip) && nextSkip !== pageSkip) {
-      setPageSkip(nextSkip);
-    }
-    if (!Number.isNaN(nextLimit) && nextLimit !== pageLimit) {
-      setPageLimit(nextLimit);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.toString()]);
+    setItems(initial);
+    setCount(total);
+    setPageSkip(skip);
+    setPageLimit(limit);
+  }, [initial, total, skip, limit]);
 
-  // refetch when query, sort or page changes
-  useEffect(() => {
-    let ignore = false;
-    async function load() {
-      if (!q || q.length < 3) {
-        setItems([]);
-        setCount(0);
-        return;
-      }
-      try {
-        const data = await fetchJSON<{
-          items: SearchResult[];
-          total: number;
-          skip: number;
-          limit: number;
-        }>(`/api/search?term=${encodeURIComponent(q)}&sort=${sort}&skip=${pageSkip}&limit=${pageLimit}`);
-        if (!ignore) {
-          setItems(data.items);
-          setCount(data.total);
-          setPageSkip(data.skip);
-          setPageLimit(data.limit);
-        }
-      } catch (e) {
-        console.error('search fetch failed', e);
-      }
+  const fetchMore = useCallback(async () => {
+    if (isLoadingMore) return;
+    const nextSkip = pageSkip + pageLimit;
+    if (nextSkip >= count) return;
+    setIsLoadingMore(true);
+    try {
+      const data = await fetchJSON<{
+        items: SearchResult[];
+        total: number;
+        skip: number;
+        limit: number;
+      }>(`/api/search?term=${encodeURIComponent(q)}&sort=${sort}&skip=${nextSkip}&limit=${pageLimit}`);
+      setItems(prev => [...prev, ...data.items]);
+      setCount(data.total);
+      setPageSkip(data.skip);
+      setPageLimit(data.limit);
+    } catch (e) {
+      console.error('search fetch failed', e);
+    } finally {
+      setIsLoadingMore(false);
     }
-    load();
-    return () => {
-      ignore = true;
+  }, [isLoadingMore, pageSkip, pageLimit, q, sort, count]);
+
+  function debounce<A extends unknown[]>(fn: (...args: A) => void, delay: number) {
+    let t: ReturnType<typeof setTimeout> | undefined;
+    return (...args: A) => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
     };
-  }, [q, sort, pageSkip, pageLimit]);
+  }
+
+  const debouncedFetchMore = useMemo(() => debounce(fetchMore, 200), [fetchMore]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        debouncedFetchMore();
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [debouncedFetchMore]);
 
   const mergeQuery = (next: Record<string, string | number>) => {
     return mergeQueryString(searchParams.toString(), next);
@@ -115,7 +125,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
       </div>
       <ol
         role="list"
-        start={pageSkip + 1}
+        start={1}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         aria-live="polite"
       >
@@ -125,7 +135,19 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
           </li>
         ))}
       </ol>
-      <SearchPager total={count} skip={pageSkip} limit={pageLimit} />
+      {isLoadingMore && <SearchResultsSkeleton rows={pageLimit} />}
+      {items.length < count ? (
+        <div ref={sentinelRef} className="mt-4 text-center">
+          <button
+            onClick={fetchMore}
+            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Load more
+          </button>
+        </div>
+      ) : (
+        <p className="mt-4 text-center text-sm text-gray-500">You’ve reached the end</p>
+      )}
     </div>
   );
 }

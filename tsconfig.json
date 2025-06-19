@@ -15,7 +15,8 @@
     "incremental": true,
     "baseUrl": ".", // Added
     "paths": {
-      "@/*": ["src/*"] // Updated path
+      "@/*": ["src/*"],
+      "@/lib/*": ["src/lib/*"]
     },
     "types": ["node"], // Removed "jest"
     "forceConsistentCasingInFileNames": true, // Added

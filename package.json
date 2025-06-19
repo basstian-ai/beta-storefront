@@ -18,6 +18,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "*",
+    "debug": "^4.3.4",
     "zod": "*",
     "zustand": "^4.0.0"
   },
@@ -26,6 +27,7 @@
     "@tailwindcss/typography": "*",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.4.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

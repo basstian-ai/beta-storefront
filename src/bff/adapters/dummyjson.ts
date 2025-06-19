@@ -1,9 +1,8 @@
 // src/bff/adapters/dummyjson.ts
 import debug from 'debug';
-const log = debug('bff:adapter:dummyjson');
+const log = debug('storefront:bff:adapter:dummyjson');
 // import { Buffer } from 'buffer'; // No longer needed as Content-Length is removed
 
-// const API_BASE_URL = 'https://dummyjson.com'; // No longer used directly by fetch calls
 import { httpClient } from '../httpClient'; // Import httpClient
 
 // Helper to transform a category slug string into a Category-like object (name/slug)
@@ -61,7 +60,7 @@ interface DummyJsonResponse {
 
 export async function fetchProducts(options: GetProductsOptions = {}) {
   const { category, limit, skip, sort, brands, minPrice, maxPrice } = options;
-  let url = `${API_BASE_URL}/products`;
+  let endpoint = '/products';
 
   // Determine if we need to fetch all products for client-side filtering/pagination
   let fetchAllForManualFiltering = false;
@@ -78,7 +77,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
   // So, the 'sort' option from GetProductsOptions will not be passed as a query param to DummyJSON.
 
   if (category) {
-    url = `${API_BASE_URL}/products/category/${category}`;
+    endpoint = `/products/category/${category}`;
     if (fetchAllForManualFiltering || sort && sort !== 'relevance') { // Also fetch all if manual sort is needed
       fetchLimit = 0; // Fetch all for this category for manual filtering/sorting
       fetchSkip = undefined;

@@ -1,28 +1,29 @@
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth, { type NextAuthOptions, User as NextAuthUser, logger } from 'next-auth'; // Moved logger import up
+import NextAuth, { type NextAuthOptions, User as NextAuthUser } from 'next-auth';
+import debug from 'debug';
+const log = debug('storefront:nextauth');
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { login as bffLogin, refreshAccessToken as bffRefreshAccessToken } from '@/bff/services';
 import { AuthResponseSchema } from '@/bff/types';
 import { z } from 'zod';
 
-// Note: isProduction is defined further down, but logger usage here is fine.
-// These logs will appear during module load time if conditions are met.
-// If isProduction were needed here, it would need to be hoisted or condition repeated.
+// Note: isProduction is defined further down. Logs will appear during module
+// load time if conditions are met.
 if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV !== 'production') {
-  logger.warn(
-    `NEXTAUTH_URL environment variable is not set. ` +
-    `This can lead to issues, especially in production and build environments. ` +
-    `Please ensure it is set (e.g., http://localhost:3000 for local development).`
+  log(
+    'WARN: NEXTAUTH_URL environment variable is not set. ' +
+      'This can lead to issues, especially in production and build environments. ' +
+      'Please ensure it is set (e.g., http://localhost:3000 for local development).'
   );
 }
 
 // Also check for AUTH_URL as mentioned by the user, in case it's used by a specific helper
 if (!process.env.AUTH_URL && process.env.NODE_ENV !== 'production' && !process.env.NEXTAUTH_URL) {
-    // Only warn about AUTH_URL if NEXTAUTH_URL is also not set, as NEXTAUTH_URL is the primary one.
-  logger.warn(
-    `AUTH_URL environment variable is not set. ` +
-    `Consider setting this if NEXTAUTH_URL is not resolving all URL construction issues, ` +
-    `though NEXTAUTH_URL is the primary variable for NextAuth v5.`
+  // Only warn about AUTH_URL if NEXTAUTH_URL is also not set, as NEXTAUTH_URL is the primary one.
+  log(
+    'WARN: AUTH_URL environment variable is not set. ' +
+      'Consider setting this if NEXTAUTH_URL is not resolving all URL construction issues, ' +
+      'though NEXTAUTH_URL is the primary variable for NextAuth v5.'
   );
 }
 
@@ -105,8 +106,8 @@ export const authOptions: NextAuthOptions = {
           if (credentials.rememberMe === true || credentials.rememberMe === 'true') {
             expiresInMins = (Number.isNaN(rememberMeTtl) || rememberMeTtl <=0) ? 43200 : rememberMeTtl; // Fallback to 30 days if env var is invalid
           }
-          if (process.env.NODE_ENV === 'development') { // Or if (!isProduction)
-            logger.debug(`[authorize] Determined expiresInMins: ${expiresInMins} (rememberMe: ${credentials.rememberMe})`);
+          if (process.env.NODE_ENV === 'development') {
+            log(`DEBUG: [authorize] Determined expiresInMins: ${expiresInMins} (rememberMe: ${credentials.rememberMe})`);
           }
 
 
@@ -165,15 +166,15 @@ export const authOptions: NextAuthOptions = {
           return userForNextAuth;
 
         } catch (error) {
-          logger.error("[authorize] Error during authorization flow. Username: ", credentials?.username);
+          log('ERROR: [authorize] Error during authorization flow. Username: ', credentials?.username);
           // Log details of the error
           if (error instanceof z.ZodError) { // This would be if AuthResponseSchema parsing fails
-            logger.error("[authorize] Zod validation error for AuthResponseSchema:", JSON.stringify(error.errors));
+            log('ERROR: [authorize] Zod validation error for AuthResponseSchema:', JSON.stringify(error.errors));
           } else if (error instanceof Error) { // This catches errors from bffLogin/dummyJsonAdapter
-            logger.error("[authorize] Caught error message from BFF/Adapter:", error.message);
-            // logger.error("[authorize] Caught error stack:", error.stack); // Optional: stack might be too verbose for prod
+            log('ERROR: [authorize] Caught error message from BFF/Adapter:', error.message);
+            // console.error("[authorize] Caught error stack:", error.stack); // Optional: stack might be too verbose for prod
           } else {
-            logger.error("[authorize] Caught unknown error:", JSON.stringify(error));
+            log('ERROR: [authorize] Caught unknown error:', JSON.stringify(error));
           }
 
           // Return null to trigger NextAuth's standard CredentialsSignin error flow
@@ -236,7 +237,7 @@ export const authOptions: NextAuthOptions = {
       // Token is expired or about to expire, try to refresh it
       // console.log("[jwt callback] Token expired or needs refresh. Attempting refresh...");
       if (!token.refreshToken) {
-        logger.warn("[jwt callback] No refresh token available to refresh access token."); // Changed to logger.warn
+        log('WARN: [jwt callback] No refresh token available to refresh access token.');
         return { ...token, error: "RefreshFailure" };
       }
 
@@ -262,9 +263,9 @@ export const authOptions: NextAuthOptions = {
 
       } catch (error) {
         if (error instanceof Error) {
-          logger.error("[jwt callback] Error refreshing access token:", error.message);
+          log('ERROR: [jwt callback] Error refreshing access token:', error.message);
         } else {
-          logger.error("[jwt callback] Error refreshing access token (non-Error object):", JSON.stringify(error));
+          log('ERROR: [jwt callback] Error refreshing access token (non-Error object):', JSON.stringify(error));
         }
         return {
           ...token,

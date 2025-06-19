@@ -137,7 +137,8 @@ export const fetchCategoryWithProducts = async (
 
 export async function fetchCategories(): Promise<ImportedCategory[]> {
   // TODO: Replace with actual BFF endpoint later
-  const res = await fetch('https://dummyjson.com/products/categories');
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://dummyjson.com';
+  const res = await fetch(`${API_BASE}/products/categories`);
   if (!res.ok) {
     // Log the error for server-side visibility
     console.error('Failed to fetch categories:', res.status, await res.text());

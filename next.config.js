@@ -26,7 +26,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   env: {
-    API_BASE_URL: process.env.API_BASE_URL || process.env.DUMMYJSON_API_BASE || 'https://dummyjson.com',
+    NEXT_PUBLIC_API_BASE_URL:
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.DUMMYJSON_API_BASE ||
+      'https://dummyjson.com',
   },
 };
 

@@ -63,6 +63,10 @@ To run this project effectively and enable all features, you will need to set up
     -   **Example**: `NEXT_PUBLIC_CMS_BASE_URL=https://your-cms-instance.com/api`
     -   If not set, the application will default to using `https://dummyjson.com` for placeholder content for some features like the Hero Banner.
 
+### API Configuration
+-   `NEXT_PUBLIC_API_BASE_URL`: Base URL for your backend API (defaults to `https://dummyjson.com`).
+    Use this to point the storefront BFF to your real API when available.
+
 ### DummyJSON Demo Credentials
 
 The application uses a demo user from [DummyJSON](https://dummyjson.com) for its sample login functionality. These credentials can occasionally change.

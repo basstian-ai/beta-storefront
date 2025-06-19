@@ -42,7 +42,8 @@ describe('fetchCategories', () => {
       json: async () => mockData,
     });
     const categories = await fetchCategories();
-    expect(fetch).toHaveBeenCalledWith('https://dummyjson.com/products/categories');
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://dummyjson.com';
+    expect(fetch).toHaveBeenCalledWith(`${base}/products/categories`);
     expect(categories).toEqual([
       { id: 'electronics', name: 'electronics', slug: 'electronics' },
       { id: 'jewelery', name: 'jewelery', slug: 'jewelery' },
@@ -191,7 +192,8 @@ describe('fetchSearchResults', () => {
       }),
     });
     const results = await fetchSearchResults('laptop');
-    expect(fetch).toHaveBeenCalledWith('https://dummyjson.com/products/search?q=laptop');
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://dummyjson.com';
+    expect(fetch).toHaveBeenCalledWith(`${base}/products/search?q=laptop`);
     expect(results).toEqual([
       {
         id: '1',

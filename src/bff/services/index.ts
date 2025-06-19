@@ -209,13 +209,6 @@ export async function login(
   return validatedResponse;
 }
 
-export async function refreshAccessToken(currentToken: string) {
-  // Potentially add service-level logging or logic here in the future
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('BFF> refreshAccessToken service called');
-  }
-  return dummyJsonAdapter.refreshAccessToken(currentToken);
-}
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions
   if (process.env.NODE_ENV !== 'production') {
@@ -268,3 +261,6 @@ async function check() {
   }
 }
 */
+
+// Re-export for convenience
+export { refreshAccessToken } from '../adapters/dummyjson';

@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { useSearchStatus } from '@/context/SearchStatusContext';
+import { useDebouncedCallback } from 'use-debounce';
 import { mergeQueryString } from '@/utils/mergeQuery';
 
 interface SearchFormProps {
@@ -14,9 +16,33 @@ export default function SearchForm({ initialQuery = '', initialSort = 'relevance
   const [sort, setSort] = useState(initialSort);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setMessage } = useSearchStatus();
+
+  const pushQuery = useDebouncedCallback(
+    (value: string) => {
+      setMessage('Searching…');
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      if (value.trim()) {
+        params.set('q', value.trim());
+      } else {
+        params.delete('q');
+      }
+      if (sort && sort !== 'relevance') {
+        params.set('sort', sort);
+      } else {
+        params.delete('sort');
+      }
+      const merged = mergeQueryString(params.toString(), { skip: 0 });
+      router.push(`/search?${merged}`);
+    },
+    300
+  );
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage('Searching…');
+    pushQuery.flush();
+    pushQuery.cancel();
     const params = new URLSearchParams(Array.from(searchParams.entries()));
     if (term.trim()) {
       params.set('q', term.trim());
@@ -37,7 +63,10 @@ export default function SearchForm({ initialQuery = '', initialSort = 'relevance
       <input
         type="text"
         value={term}
-        onChange={e => setTerm(e.target.value)}
+        onChange={e => {
+          setTerm(e.target.value);
+          pushQuery(e.target.value);
+        }}
         placeholder="Search..."
         aria-label="Search query"
         className="flex-grow border rounded px-3 py-2"

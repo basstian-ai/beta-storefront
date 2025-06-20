@@ -5,7 +5,7 @@
   ],
   "overrides": [
     {
-      "files": ["**/*.test.ts?(x)", "tests/utils.ts"],
+      "files": ["**/*.test.ts?(x)", "tests/utils.tsx"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
       }

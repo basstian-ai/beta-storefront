@@ -101,9 +101,6 @@ export default function LoginForm() {
           </button>
         </div>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-500">
-        Test user: kminchelle / 0lelplR (B2B)
-      </p>
     </div>
   );
 }

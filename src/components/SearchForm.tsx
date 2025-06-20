@@ -37,6 +37,7 @@ export default function SearchForm({ initialQuery = '', initialSort = 'relevance
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    pushQuery.flush();
     pushQuery.cancel();
     const params = new URLSearchParams(Array.from(searchParams.entries()));
     if (term.trim()) {

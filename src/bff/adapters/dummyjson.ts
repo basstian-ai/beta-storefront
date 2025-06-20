@@ -84,11 +84,19 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
     console.log(`[Adapter.fetchProducts] Fetching URL: ${url}`);
   }
 
-  const response = await fetch(url);
-  if (!response.ok) {
+  let data: DummyJsonResponse;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
+    }
+    data = await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchProducts] Network error', err);
+    }
     return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
-  const data: DummyJsonResponse = await response.json();
 
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
@@ -172,11 +180,19 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 }
 
 export async function fetchProductById(id: number | string) {
-  const response = await fetch(`${API_BASE_URL}/products/${id}`);
-  if (!response.ok) {
+  let product: DummyJsonProductRaw | undefined;
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`);
+    if (!response.ok) {
+      return undefined;
+    }
+    product = await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchProductById] Network error', err);
+    }
     return undefined;
   }
-  const product = await response.json();
   // Transform category string to object
   if (product && product.category) {
     product.category = transformCategoryStringToObject(product.category);
@@ -187,11 +203,19 @@ export async function fetchProductById(id: number | string) {
 export async function searchProducts(query: string, sort?: string, skip = 0, limit = 20) {
   const params = new URLSearchParams({ q: query, skip: String(skip), limit: String(limit) });
   if (sort && sort !== 'relevance') params.append('sort', sort);
-  const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`);
-  if (!response.ok) {
+  let data: DummyJsonResponse;
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`);
+    if (!response.ok) {
+      return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
+    }
+    data = await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.searchProducts] Network error', err);
+    }
     return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
-  const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
     // Type products from API before Zod parsing
@@ -204,12 +228,19 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
 }
 
 export async function fetchCategories(fetchOptions?: RequestInit) {
-  const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
-  if (!response.ok) {
+  let rawResponseJson: unknown;
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
+    if (!response.ok) {
+      return [];
+    }
+    rawResponseJson = await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchCategories] Network error', err);
+    }
     return [];
   }
-
-  const rawResponseJson = await response.json();
   if (process.env.NODE_ENV !== 'production') {
     console.log('[Adapter.fetchCategories] Raw JSON response from API:', JSON.stringify(rawResponseJson));
   }
@@ -259,11 +290,19 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
 }
 
 export async function fetchAllProductsSimple() {
-  const response = await fetch(`${API_BASE_URL}/products?limit=0`);
-  if (!response.ok) {
+  let data: DummyJsonResponse;
+  try {
+    const response = await fetch(`${API_BASE_URL}/products?limit=0`);
+    if (!response.ok) {
+      return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
+    }
+    data = await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchAllProductsSimple] Network error', err);
+    }
     return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
-  const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product
   if (data.products && Array.isArray(data.products)) {
     // Type products from API before Zod parsing
@@ -276,14 +315,21 @@ export async function fetchAllProductsSimple() {
 }
 
 export async function login(credentials: { username?: string; password?: string }) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(`Login failed: ${errorBody.message || response.statusText}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(`Login failed: ${errorBody.message || response.statusText}`);
+    }
+    return response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.login] Network error', err);
+    }
+    throw new Error('Login failed');
   }
-  return response.json();
 }

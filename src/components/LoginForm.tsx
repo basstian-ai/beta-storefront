@@ -27,7 +27,11 @@ export default function LoginForm() {
     });
 
     if (result?.error) {
-      setError(result.error === "CredentialsSignin" ? "Invalid username or password." : result.error);
+      setError(
+        result.error === 'CredentialsSignin'
+          ? 'Invalid username or password.'
+          : 'Sorry, something went wrong—please try again later.'
+      );
     } else if (result?.ok) {
       router.push(callbackUrl);
     }

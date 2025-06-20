@@ -1,23 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { renderWithProviders as render } from '../../tests/renderWithProviders';
+import { renderWithProviders as render, flushSpy } from '../../tests/utils';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import SearchBar from './SearchBar';
 
 import type { Mock } from 'vitest';
-
-let flushSpy: Mock | undefined;
-
-vi.mock('use-debounce', () => ({
-  useDebouncedCallback: <T extends unknown[]>(fn: (...args: T) => void) => {
-    const wrapped = (...args: T) => fn(...args);
-    flushSpy = vi.fn();
-    (wrapped as typeof wrapped & { flush: Mock; cancel: Mock }).flush = flushSpy;
-    (wrapped as typeof wrapped & { flush: Mock; cancel: Mock }).cancel = vi.fn();
-    return wrapped as typeof wrapped & { flush: Mock; cancel: Mock };
-  },
-}));
 
 const push = vi.fn();
 
@@ -48,5 +36,15 @@ describe('SearchBar', () => {
     await userEvent.type(input, 'phone');
     fireEvent.submit(input.closest('form')!);
     expect(flushSpy).toHaveBeenCalled();
+  });
+
+  it('debounces rapid input', async () => {
+    vi.useFakeTimers();
+    render(<SearchBar />);
+    const input = screen.getByPlaceholderText('Search products…');
+    await userEvent.type(input, 'phone');
+    vi.advanceTimersByTime(300);
+    expect(flushSpy).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
   });
 });

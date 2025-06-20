@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { useSearchStatus } from '@/context/SearchStatusContext';
 import { useDebouncedCallback } from 'use-debounce';
 import { mergeQueryString } from '@/utils/mergeQuery';
 
@@ -15,9 +16,11 @@ export default function SearchForm({ initialQuery = '', initialSort = 'relevance
   const [sort, setSort] = useState(initialSort);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setMessage } = useSearchStatus();
 
   const pushQuery = useDebouncedCallback(
     (value: string) => {
+      setMessage('Searching…');
       const params = new URLSearchParams(Array.from(searchParams.entries()));
       if (value.trim()) {
         params.set('q', value.trim());
@@ -37,6 +40,7 @@ export default function SearchForm({ initialQuery = '', initialSort = 'relevance
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage('Searching…');
     pushQuery.flush();
     pushQuery.cancel();
     const params = new URLSearchParams(Array.from(searchParams.entries()));

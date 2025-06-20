@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useSearchStatus } from '@/context/SearchStatusContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from './ProductCard';
 import SearchResultsSkeleton from './SearchResultsSkeleton';
@@ -38,6 +39,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
   const [pageLimit, setPageLimit] = useState(limit);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { setMessage } = useSearchStatus();
 
   // Reset state when props change (navigating to new search)
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     setCount(total);
     setPageSkip(skip);
     setPageLimit(limit);
+    setMessage(total ? `${total} results` : 'No results');
   }, [initial, total, skip, limit]);
 
   const fetchMore = useCallback(async () => {
@@ -63,6 +66,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
       setCount(data.total);
       setPageSkip(data.skip);
       setPageLimit(data.limit);
+      setMessage(data.total ? `${data.total} results` : 'No results');
     } catch (e) {
       console.error('search fetch failed', e);
     } finally {

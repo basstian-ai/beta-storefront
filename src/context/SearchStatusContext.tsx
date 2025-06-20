@@ -23,8 +23,5 @@ export function SearchStatusProvider({ children }: { children: React.ReactNode }
 
 export function useSearchStatus() {
   const ctx = useContext(SearchStatusContext);
-  if (!ctx) {
-    throw new Error('useSearchStatus must be used within SearchStatusProvider');
-  }
-  return ctx;
+  return ctx ?? { message: '', setMessage: () => {} };
 }

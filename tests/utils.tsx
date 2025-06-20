@@ -9,9 +9,9 @@ export const flushSpy = vi.fn();
 import { SearchStatusProvider } from '@/context/SearchStatusContext';
 
 const AllProviders = ({ children }: { children: React.ReactNode }) => (
-  <SessionProvider session={null}>
-    <SearchStatusProvider>{children}</SearchStatusProvider>
-  </SessionProvider>
+  <SearchStatusProvider>
+    <SessionProvider session={null}>{children}</SessionProvider>
+  </SearchStatusProvider>
 );
 
 export function renderWithProviders(ui: ReactElement, options?: RenderOptions) {

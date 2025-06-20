@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 // import { unstable_noStore as noStore } from 'next/cache'; // Remove if using revalidate
 import { Toaster } from 'react-hot-toast'; // Import Toaster
 import AuthSessionProvider from '@/components/AuthSessionProvider'; // Import
+import { SearchStatusProvider } from '@/context/SearchStatusContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -47,16 +48,18 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthSessionProvider> {/* Wrap with SessionProvider */}
-          <Toaster position="top-center" reverseOrder={false} />
-          <Suspense fallback={null}>
-            <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
-          </Suspense>
-          <Breadcrumbs />
-          <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
-            {children}
-          </main>
-        </AuthSessionProvider>
+        <SearchStatusProvider>
+          <AuthSessionProvider> {/* Wrap with SessionProvider */}
+            <Toaster position="top-center" reverseOrder={false} />
+            <Suspense fallback={null}>
+              <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
+            </Suspense>
+            <Breadcrumbs />
+            <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
+              {children}
+            </main>
+          </AuthSessionProvider>
+        </SearchStatusProvider>
       </body>
     </html>
   );

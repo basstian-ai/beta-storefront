@@ -1,18 +1,21 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithProviders as render } from '../../tests/renderWithProviders';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import SearchBar from './SearchBar';
 
-let flushSpy: any;
+import type { Mock } from 'vitest';
+
+let flushSpy: Mock | undefined;
 
 vi.mock('use-debounce', () => ({
-  useDebouncedCallback: (fn: any) => {
-    const wrapped = (...args: any[]) => fn(...args);
+  useDebouncedCallback: <T extends unknown[]>(fn: (...args: T) => void) => {
+    const wrapped = (...args: T) => fn(...args);
     flushSpy = vi.fn();
-    wrapped.flush = flushSpy;
-    wrapped.cancel = vi.fn();
-    return wrapped;
+    (wrapped as typeof wrapped & { flush: Mock; cancel: Mock }).flush = flushSpy;
+    (wrapped as typeof wrapped & { flush: Mock; cancel: Mock }).cancel = vi.fn();
+    return wrapped as typeof wrapped & { flush: Mock; cancel: Mock };
   },
 }));
 

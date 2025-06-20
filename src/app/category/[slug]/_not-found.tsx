@@ -1,16 +1,11 @@
-import { Suspense } from 'react';
-import SearchBar from '@/components/SearchBar';
+import Link from 'next/link';
 
 export default function CategoryNotFound() {
   return (
-    <div className="container mx-auto px-4 py-12 text-center">
-      <h1 className="text-2xl font-bold mb-4">Category not found</h1>
-      <p className="mb-6">We couldn&rsquo;t find that category.</p>
-      <Suspense fallback={null}>
-        <div className="max-w-sm mx-auto">
-          <SearchBar />
-        </div>
-      </Suspense>
+    <div className="mx-auto mt-24 text-center space-y-4">
+      <h1 className="text-2xl font-semibold">Category not found</h1>
+      <p className="text-gray-600">We couldn’t find that category.</p>
+      <Link href="/" className="btn-primary">Go home</Link>
     </div>
   );
 }

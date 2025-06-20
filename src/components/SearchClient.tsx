@@ -56,12 +56,15 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     if (nextSkip >= count) return;
     setIsLoadingMore(true);
     try {
-      const data = await fetchJSON<{
+      const { data, error } = await fetchJSON<{
         items: SearchResult[];
         total: number;
         skip: number;
         limit: number;
       }>(`/api/search?term=${encodeURIComponent(q)}&sort=${sort}&skip=${nextSkip}&limit=${pageLimit}`);
+      if (error || !data) {
+        throw error;
+      }
       setItems(prev => [...prev, ...data.items]);
       setCount(data.total);
       setPageSkip(data.skip);

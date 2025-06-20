@@ -86,7 +86,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch products from ${url}: ${response.statusText}`);
+    return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
   const data: DummyJsonResponse = await response.json();
 
@@ -174,7 +174,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 export async function fetchProductById(id: number | string) {
   const response = await fetch(`${API_BASE_URL}/products/${id}`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch product by id ${id}: ${response.statusText}`);
+    return undefined;
   }
   const product = await response.json();
   // Transform category string to object
@@ -189,7 +189,7 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
   if (sort && sort !== 'relevance') params.append('sort', sort);
   const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`);
   if (!response.ok) {
-    throw new Error(`Failed to search products with query "${query}": ${response.statusText}`);
+    return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
   const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product
@@ -206,13 +206,7 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
 export async function fetchCategories(fetchOptions?: RequestInit) {
   const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
   if (!response.ok) {
-    const errorBody = await response.text();
-    // This error is critical for operation, so it might be useful in prod if not handled elsewhere.
-    // However, following the general instruction to gate most logs for this task.
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(`Failed to fetch categories. Status: ${response.status}. Body: ${errorBody}`);
-    }
-    throw new Error(`Failed to fetch categories: ${response.statusText} - ${errorBody}`);
+    return [];
   }
 
   const rawResponseJson = await response.json();
@@ -267,7 +261,7 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
 export async function fetchAllProductsSimple() {
   const response = await fetch(`${API_BASE_URL}/products?limit=0`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch all products: ${response.statusText}`);
+    return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
   }
   const data: DummyJsonResponse = await response.json();
   // Transform category string to object for each product

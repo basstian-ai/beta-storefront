@@ -2,12 +2,19 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export default function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [term, setTerm] = useState(searchParams.get('q') ?? '');
+  const pushQuery = useDebouncedCallback((value: string) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    }
+  }, 300);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,6 +34,7 @@ export default function SearchBar() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    pushQuery.cancel();
     const formData = new FormData(e.currentTarget);
     const q = (formData.get('q') as string | null)?.trim() ?? '';
     if (q) {
@@ -47,7 +55,10 @@ export default function SearchBar() {
         className="w-full rounded-md border border-gray-300 bg-white bg-opacity-20 px-2 py-1 text-sm text-white placeholder-gray-300 focus:bg-opacity-100 focus:text-gray-900 focus:outline-none"
         placeholder="Search products…"
         value={term}
-        onChange={e => setTerm(e.target.value)}
+        onChange={e => {
+          setTerm(e.target.value);
+          pushQuery(e.target.value);
+        }}
       />
       <button
         type="submit"

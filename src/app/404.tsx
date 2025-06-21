@@ -1,16 +1,12 @@
-import { Suspense } from 'react';
-import SearchBar from '@/components/SearchBar';
+'use client';
+import Link from 'next/link';
 
 export default function NotFound404() {
   return (
-    <div className="container mx-auto px-4 py-12 text-center">
-      <h1 className="text-3xl font-bold mb-4">Page not found</h1>
-      <p className="mb-6">Sorry, we couldn&rsquo;t find what you were looking for.</p>
-      <Suspense fallback={null}>
-        <div className="max-w-sm mx-auto">
-          <SearchBar />
-        </div>
-      </Suspense>
+    <div className="mx-auto mt-24 text-center space-y-4">
+      <h1 className="text-3xl font-semibold">Page not found</h1>
+      <p className="text-gray-600">The page you’re looking for doesn’t exist.</p>
+      <Link href="/" className="btn-primary">Go home</Link>
     </div>
   );
 }

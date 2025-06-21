@@ -28,6 +28,15 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+### Linting and tests
+
+Run ESLint and the test suite with:
+
+```bash
+pnpm run lint
+pnpm exec vitest run
+```
+
 ## Environment Variables
 
 To run this project effectively and enable all features, you will need to set up the following environment variables. You can create a `.env.local` file in the root of the project to store these variables locally for development.

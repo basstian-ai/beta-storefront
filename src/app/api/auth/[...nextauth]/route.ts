@@ -13,12 +13,16 @@ declare module 'next-auth' {
       id?: string | number; // Or just number if your ID is always number
       role?: string;
       rememberMe?: boolean; // Add this
+      accessToken?: string;
+      refreshToken?: string;
     } & NextAuthUser; // Keep existing fields like name, email, image
   }
   interface User extends NextAuthUser {
     id?: string | number;
     role?: string;
     rememberMe?: boolean; // Add this
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 
@@ -27,13 +31,15 @@ declare module 'next-auth/jwt' {
     id?: string | number;
     role?: string;
     rememberMe?: boolean; // Add this
+    accessToken?: string;
+    refreshToken?: string;
+    username?: string;
     // picture?: string | null; // if using image from profile
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
+const credentialsProvider = () =>
+  CredentialsProvider({
       name: 'Credentials',
       credentials: {
         username: { label: "Username", type: "text", placeholder: "jsmith" },
@@ -57,7 +63,7 @@ export const authOptions: NextAuthOptions = {
           // Validate response with Zod (AuthResponseSchema includes token and user details)
           const parsedLoginResponse = AuthResponseSchema.parse(loginData);
 
-          // DummyJSON returns a user object with 'id', 'username', 'email', 'firstName', 'lastName', 'gender', 'image', 'token'
+          // DummyJSON returns a user object with 'id', 'username', 'email', ... and access/refresh tokens
           // We need to map this to what NextAuth expects for its User object.
           // The 'role' for "b2b" needs to be determined. dummyjson doesn't provide it.
           // For testing, let's assume 'kminchelle' is a b2b user.
@@ -68,13 +74,15 @@ export const authOptions: NextAuthOptions = {
 
           // The user object returned by authorize will be stored in the JWT
           // Ensure the id property here matches what you declared in the User interface augmentation
-          const user: User = { // Use the augmented User type
+          const user: User = {
             id: parsedLoginResponse.id,
             name: parsedLoginResponse.username,
             email: parsedLoginResponse.email,
             image: parsedLoginResponse.image,
             role: userRole,
-            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // Add this
+            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true,
+            accessToken: parsedLoginResponse.accessToken,
+            refreshToken: parsedLoginResponse.refreshToken,
           };
           if (process.env.NODE_ENV !== 'production') {
             console.log('Auth: User authorized:', user);
@@ -96,8 +104,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
       }
-    })
-  ],
+    });
+
+export const authOptions: NextAuthOptions = {
+  providers: [credentialsProvider],
   session: {
     strategy: "jwt", // Using JWT for session strategy
     maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
@@ -109,6 +119,9 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.rememberMe = user.rememberMe; // Removed 'as any'
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.username = user.name ?? undefined;
         // token.picture = user.image;
       }
       return token;
@@ -123,6 +136,15 @@ export const authOptions: NextAuthOptions = {
       }
       if (token.rememberMe !== undefined && session.user) {
         session.user.rememberMe = token.rememberMe; // Removed 'as any'
+      }
+      if (token.accessToken && session.user) {
+        session.user.accessToken = token.accessToken;
+      }
+      if (token.refreshToken && session.user) {
+        session.user.refreshToken = token.refreshToken;
+      }
+      if (token.username && session.user) {
+        session.user.name = token.username;
       }
       // session.user.image = token.picture ?? session.user.image;
       if (process.env.NODE_ENV !== 'production') {
@@ -139,6 +161,15 @@ export const authOptions: NextAuthOptions = {
   // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
   // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 };
+
+if (process.env.NODE_ENV !== "production") {
+  console.log("Auth options types", {
+    provider: typeof authOptions.providers[0],
+    authorize: typeof credentialsProvider().authorize,
+    jwt: typeof authOptions.callbacks?.jwt,
+    session: typeof authOptions.callbacks?.session,
+  });
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

@@ -23,13 +23,18 @@ export default function LoginForm() {
       redirect: false,
       username,
       password,
-      rememberMe: rememberMe,
+      callbackUrl,
+      rememberMe,
     });
 
     if (result?.error) {
-      setError(result.error === "CredentialsSignin" ? "Invalid username or password." : result.error);
+      setError(
+        result.error === 'CredentialsSignin'
+          ? 'Invalid username or password.'
+          : 'Sorry, something went wrong—please try again later.'
+      );
     } else if (result?.ok) {
-      router.push(callbackUrl);
+      router.push(result.url ?? callbackUrl);
     }
   };
 
@@ -101,9 +106,6 @@ export default function LoginForm() {
           </button>
         </div>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-500">
-        Test user: kminchelle / 0lelplR (B2B)
-      </p>
     </div>
   );
 }

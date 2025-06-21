@@ -319,11 +319,20 @@ export async function login(credentials: { username?: string; password?: string 
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
+      credentials: 'include',
+      body: JSON.stringify({
+        username: credentials.username,
+        password: credentials.password,
+        expiresInMins: 30,
+      }),
     });
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ message: response.statusText }));
-      throw new Error(`Login failed: ${errorBody.message || response.statusText}`);
+      const errorBody = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(
+        `Login failed: ${errorBody.message || response.statusText}`
+      );
     }
     return response.json();
   } catch (err) {

@@ -52,8 +52,9 @@ export const AuthResponseSchema = z.object({
   lastName: z.string().optional(),
   gender: z.string().optional(),
   image: z.string().url().optional(),
-  token: z.string(),
-  // role is not part of dummyjson /auth/login response, will be handled by session
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  // role is not part of dummyjson /auth/login response
 });
 
 // Type for getProducts response

@@ -186,6 +186,9 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   }
 
   const rawData = await dummyJsonAdapter.fetchProductById(productId);
+  if (!rawData) {
+    throw new Error(`Product with id ${productId} not found.`);
+  }
   // Parse raw product data first (it won't have a slug from the API)
   // Ensure ProductSchema used here doesn't strictly require slug, or omit slug for this parse
   const tempProductSchema = ProductSchema.omit({ slug: true, effectivePrice: true }); // effectivePrice is also added by our logic

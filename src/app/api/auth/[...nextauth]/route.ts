@@ -13,12 +13,16 @@ declare module 'next-auth' {
       id?: string | number; // Or just number if your ID is always number
       role?: string;
       rememberMe?: boolean; // Add this
+      accessToken?: string;
+      refreshToken?: string;
     } & NextAuthUser; // Keep existing fields like name, email, image
   }
   interface User extends NextAuthUser {
     id?: string | number;
     role?: string;
     rememberMe?: boolean; // Add this
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 
@@ -27,20 +31,21 @@ declare module 'next-auth/jwt' {
     id?: string | number;
     role?: string;
     rememberMe?: boolean; // Add this
+    accessToken?: string;
+    refreshToken?: string;
+    username?: string;
     // picture?: string | null; // if using image from profile
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
+const credentialsProvider = () =>
+  CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
-        rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
-      async authorize(credentials) { // Removed _req
+      async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
           if (process.env.NODE_ENV !== 'production') {
             logError('Auth: Missing username or password in credentials');
@@ -48,34 +53,19 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
         try {
-          // Call your BFF login service
-          const loginData = await bffLogin({
-            username: credentials.username,
-            password: credentials.password
-          });
+          const json = AuthResponseSchema.parse(
+            await bffLogin({ username: credentials.username, password: credentials.password })
+          );
 
-          // Validate response with Zod (AuthResponseSchema includes token and user details)
-          const parsedLoginResponse = AuthResponseSchema.parse(loginData);
-
-          // DummyJSON returns a user object with 'id', 'username', 'email', 'firstName', 'lastName', 'gender', 'image', 'token'
-          // We need to map this to what NextAuth expects for its User object.
-          // The 'role' for "b2b" needs to be determined. dummyjson doesn't provide it.
-          // For testing, let's assume 'kminchelle' is a b2b user.
-          let userRole = "customer"; // Default role
-          if (parsedLoginResponse.username === "kminchelle") {
-            userRole = "b2b";
-          }
-
-          // The user object returned by authorize will be stored in the JWT
-          // Ensure the id property here matches what you declared in the User interface augmentation
-          const user: User = { // Use the augmented User type
-            id: parsedLoginResponse.id,
-            name: parsedLoginResponse.username,
-            email: parsedLoginResponse.email,
-            image: parsedLoginResponse.image,
-            role: userRole,
-            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // Add this
+          const user: User = {
+            id: String(json.id),
+            name: [json.firstName, json.lastName].filter(Boolean).join(' ') || json.username,
+            email: json.email,
+            image: json.image,
+            accessToken: json.accessToken,
+            refreshToken: json.refreshToken,
           };
+
           if (process.env.NODE_ENV !== 'production') {
             console.log('Auth: User authorized:', user);
           }
@@ -96,33 +86,30 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
       }
-    })
-  ],
+    });
+
+export const authOptions: NextAuthOptions = {
+  providers: [credentialsProvider],
   session: {
     strategy: "jwt", // Using JWT for session strategy
     maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
   },
   callbacks: {
     async jwt({ token, user }) { // Removed _account, _profile
-      // Persist 'id' and 'role' to the JWT right after signin
-      if (user) { // User object is only passed on first call (signin)
+      if (user) {
         token.id = user.id;
-        token.role = user.role;
-        token.rememberMe = user.rememberMe; // Removed 'as any'
-        // token.picture = user.image;
+        token.name = user.name;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
       }
       return token;
     },
     async session({ session, token }) { // Removed _user
-      // Send properties to the client, like an access_token and user id from a provider.
-      if (token.id && session.user) {
-        session.user.id = token.id;
-      }
-      if (token.role && session.user) {
-        session.user.role = token.role as string;
-      }
-      if (token.rememberMe !== undefined && session.user) {
-        session.user.rememberMe = token.rememberMe; // Removed 'as any'
+      if (session.user) {
+        session.user.id = token.id as string | undefined;
+        session.user.name = token.name ?? session.user.name;
+        session.user.accessToken = token.accessToken as string | undefined;
+        session.user.refreshToken = token.refreshToken as string | undefined;
       }
       // session.user.image = token.picture ?? session.user.image;
       if (process.env.NODE_ENV !== 'production') {
@@ -137,8 +124,17 @@ export const authOptions: NextAuthOptions = {
     // signOut: '/auth/signout' // (optional)
   },
   // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
-  // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
+  debug: true,
 };
+
+if (process.env.NODE_ENV !== "production") {
+  console.log("Auth options types", {
+    provider: typeof authOptions.providers[0],
+    authorize: typeof credentialsProvider().authorize,
+    jwt: typeof authOptions.callbacks?.jwt,
+    session: typeof authOptions.callbacks?.session,
+  });
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

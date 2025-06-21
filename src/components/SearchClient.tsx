@@ -48,7 +48,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     setPageSkip(skip);
     setPageLimit(limit);
     setMessage(total ? `${total} results` : 'No results');
-  }, [initial, total, skip, limit]);
+  }, [initial, total, skip, limit, setMessage]);
 
   const fetchMore = useCallback(async () => {
     if (isLoadingMore) return;
@@ -56,12 +56,15 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     if (nextSkip >= count) return;
     setIsLoadingMore(true);
     try {
-      const data = await fetchJSON<{
+      const { data, error } = await fetchJSON<{
         items: SearchResult[];
         total: number;
         skip: number;
         limit: number;
       }>(`/api/search?term=${encodeURIComponent(q)}&sort=${sort}&skip=${nextSkip}&limit=${pageLimit}`);
+      if (error || !data) {
+        throw error;
+      }
       setItems(prev => [...prev, ...data.items]);
       setCount(data.total);
       setPageSkip(data.skip);
@@ -72,7 +75,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, pageSkip, pageLimit, q, sort, count]);
+  }, [isLoadingMore, pageSkip, pageLimit, q, sort, count, setMessage]);
 
   function debounce<A extends unknown[]>(fn: (...args: A) => void, delay: number) {
     let t: ReturnType<typeof setTimeout> | undefined;

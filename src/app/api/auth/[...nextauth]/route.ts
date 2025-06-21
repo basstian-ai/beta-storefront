@@ -38,9 +38,8 @@ declare module 'next-auth/jwt' {
   }
 }
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
+const credentialsProvider = () =>
+  CredentialsProvider({
       name: 'Credentials',
       credentials: {
         username: { label: "Username", type: "text", placeholder: "jsmith" },
@@ -105,8 +104,10 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
       }
-    })
-  ],
+    });
+
+export const authOptions: NextAuthOptions = {
+  providers: [credentialsProvider],
   session: {
     strategy: "jwt", // Using JWT for session strategy
     maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
@@ -160,6 +161,15 @@ export const authOptions: NextAuthOptions = {
   // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
   // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
 };
+
+if (process.env.NODE_ENV !== "production") {
+  console.log("Auth options types", {
+    provider: typeof authOptions.providers[0],
+    authorize: typeof credentialsProvider().authorize,
+    jwt: typeof authOptions.callbacks?.jwt,
+    session: typeof authOptions.callbacks?.session,
+  });
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

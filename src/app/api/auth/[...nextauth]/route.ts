@@ -14,7 +14,7 @@ declare module 'next-auth' {
       role?: string;
       rememberMe?: boolean; // Add this
       accessToken?: string;
-      refreshToken?: string;
+      // refreshToken?: string; // Removed
     } & NextAuthUser; // Keep existing fields like name, email, image
   }
   interface User extends NextAuthUser {
@@ -22,7 +22,7 @@ declare module 'next-auth' {
     role?: string;
     rememberMe?: boolean; // Add this
     accessToken?: string;
-    refreshToken?: string;
+    // refreshToken?: string; // Removed
   }
 }
 
@@ -32,7 +32,7 @@ declare module 'next-auth/jwt' {
     role?: string;
     rememberMe?: boolean; // Add this
     accessToken?: string;
-    refreshToken?: string;
+    // refreshToken?: string; // Removed
     username?: string;
     // picture?: string | null; // if using image from profile
   }
@@ -62,8 +62,8 @@ const credentialsProvider = () =>
             name: [json.firstName, json.lastName].filter(Boolean).join(' ') || json.username,
             email: json.email,
             image: json.image,
-            accessToken: json.accessToken,
-            refreshToken: json.refreshToken,
+            accessToken: json.token, // Changed from json.accessToken
+            // refreshToken: json.refreshToken, // Removed as DummyJSON provides a single token
           };
 
           if (process.env.NODE_ENV !== 'production') {
@@ -99,8 +99,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
+        token.accessToken = user.accessToken; // This now holds the single token from DummyJSON
+        // token.refreshToken = user.refreshToken; // Removed
       }
       return token;
     },
@@ -108,8 +108,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string | undefined;
         session.user.name = token.name ?? session.user.name;
-        session.user.accessToken = token.accessToken as string | undefined;
-        session.user.refreshToken = token.refreshToken as string | undefined;
+        session.user.accessToken = token.accessToken as string | undefined; // Token is passed here
+        // session.user.refreshToken = token.refreshToken as string | undefined; // Removed
       }
       // session.user.image = token.picture ?? session.user.image;
       if (process.env.NODE_ENV !== 'production') {

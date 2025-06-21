@@ -52,8 +52,7 @@ export const AuthResponseSchema = z.object({
   lastName: z.string().optional(),
   gender: z.string().optional(),
   image: z.string().url().optional(),
-  accessToken: z.string(),
-  refreshToken: z.string(),
+  token: z.string(), // Changed from accessToken, removed refreshToken
   // role is not part of dummyjson /auth/login response
 });
 

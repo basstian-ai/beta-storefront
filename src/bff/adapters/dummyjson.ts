@@ -354,7 +354,7 @@ export async function login(credentials: { username?: string; password?: string 
       let errorData;
       try {
         errorData = await response.json();
-      } catch (e) {
+      } catch { // 'e' removed as it's unused
         // Ignore if response is not JSON
       }
       const errorMessage = errorData?.message || response.statusText;

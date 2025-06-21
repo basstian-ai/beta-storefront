@@ -1,4 +1,5 @@
 // components/FeaturedCategories.tsx
+import Image from 'next/image';
 import styles from '../styles/FeaturedCategories.module.css';
 
 type Category = {
@@ -19,7 +20,15 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
       <div className={styles.categoryGrid}>
         {categories.map(cat => (
           <a key={cat.id} href={`/category/${cat.slug}`} className={styles.categoryCard}>
-            {cat.imageUrl && <img src={cat.imageUrl} alt={cat.name} />}
+            {cat.imageUrl && (
+              <Image
+                src={cat.imageUrl}
+                alt={cat.name}
+                width={200} // Placeholder width, adjust as needed
+                height={200} // Placeholder height, adjust as needed
+                className={styles.categoryImage} // Add a class for styling if needed
+              />
+            )}
             <h3>{cat.name}</h3>
           </a>
         ))}

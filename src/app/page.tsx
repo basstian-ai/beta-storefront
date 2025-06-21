@@ -1,4 +1,5 @@
 // src/app/page.tsx
+import Image from 'next/image';
 import { getCategories } from '@/bff/services';
 import Link from 'next/link';
 // import { slugify } from '@/lib/utils'; // Not needed for category slugs if fetched as objects
@@ -97,13 +98,16 @@ export default async function HomePage() {
               {categoriesToDisplay.map((category) => (
                 <Link key={category.slug} href={`/category/${category.slug}`} legacyBehavior>
                   <a className="group block bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
-                    <div className="aspect-w-1 aspect-h-1 w-full">
-                      {/* Using simple img tag for external URLs in placeholders for now */}
-                      <img
-                        src={category.imageUrl}
-                        alt={category.name}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
+                    <div className="aspect-w-1 aspect-h-1 w-full relative"> {/* Added relative positioning for Image fill */}
+                      {category.imageUrl && (
+                        <Image
+                          src={category.imageUrl}
+                          alt={category.name}
+                          layout="fill" // Use fill to cover the div, ensure parent has position relative and dimensions
+                          objectFit="cover" // Replaces object-cover utility
+                          className="transition-transform duration-300 group-hover:scale-105"
+                        />
+                      )}
                     </div>
                     <div className="p-4 text-center">
                       <h3 className="text-md sm:text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">

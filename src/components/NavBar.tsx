@@ -1,6 +1,7 @@
 // src/components/NavBar.tsx
 'use client';
 
+import Image from 'next/image';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon, UserCircleIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'; // Keep outline or solid consistently
 import SearchBar from './SearchBar';
@@ -156,7 +157,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                       <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="sr-only">Open user menu</span>
                         {session.user?.image ? (
-                          <img className="h-8 w-8 rounded-full" src={session.user.image} alt="User avatar" />
+                          <Image className="h-8 w-8 rounded-full" src={session.user.image} alt="User avatar" width={32} height={32} />
                         ) : (
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-600">
                             <span className="text-sm font-medium leading-none text-white">

@@ -10,9 +10,7 @@ interface SearchStatusContextType {
 const SearchStatusContext = createContext<SearchStatusContextType | undefined>(undefined);
 
 export function SearchStatusProvider({ children }: { children: React.ReactNode }) {
-  const isClient = typeof window !== 'undefined';
   const [message, setMessage] = useState('');
-  if (!isClient) return <>{children}</>;
   return (
     <SearchStatusContext.Provider value={{ message, setMessage }}>
       {children}

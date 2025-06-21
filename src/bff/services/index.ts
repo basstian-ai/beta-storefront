@@ -4,7 +4,7 @@ import {
   ProductSchema,
   CategorySchema,
   // UserSchema, // Removed as unused
-  AuthResponseSchema,
+  // AuthResponseSchema, // No longer used for login from services, schema is in adapter
   PriceSchema,
   PaginatedProductsSchema,
   ServiceProductsResponseSchema,
@@ -202,13 +202,18 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   return applyB2BPrice(productWithSlug, session);
 }
 
-export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof AuthResponseSchema>> {
+export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof dummyJsonAdapter.AdapterLoginResponseSchema>> {
   if (process.env.NODE_ENV !== 'production') {
-    console.log('BFF> login', { username: credentials.username });
+    console.log('BFF> login service: Called with username:', credentials.username);
   }
-  const rawData = await dummyJsonAdapter.login(credentials);
-  const validatedResponse = AuthResponseSchema.parse(rawData);
-  return validatedResponse;
+  // The adapter's login function now handles fetching, parsing with ApiLoginResponseSchema,
+  // and then transforming and validating against AdapterLoginResponseSchema.
+  // So, the data returned here is already validated and shaped correctly (with accessToken).
+  const adapterResponse = await dummyJsonAdapter.login(credentials);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> login service: Response from adapter:', adapterResponse);
+  }
+  return adapterResponse;
 }
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions

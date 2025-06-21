@@ -20,8 +20,27 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
   };
 };
 
+import { z } from 'zod';
 // Import GetProductsOptions type
 import { GetProductsOptions } from '../types';
+
+// Schema for DummyJSON /auth/login API actual response
+const ApiLoginResponseSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  email: z.string().email(),
+  firstName: z.string(),
+  lastName: z.string(),
+  gender: z.enum(["male", "female"]), // DummyJSON user data shows male/female
+  image: z.string().url(),
+  token: z.string(), // Actual field from DummyJSON /auth/login
+});
+
+// This will be the type returned by our adapter's login function
+export const AdapterLoginResponseSchema = ApiLoginResponseSchema.extend({
+  accessToken: z.string(), // We will map 'token' to 'accessToken'
+}).omit({ token: true }); // Remove original 'token' field after mapping
+
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -315,30 +334,57 @@ export async function fetchAllProductsSimple() {
 }
 
 export async function login(credentials: { username?: string; password?: string }) {
+  if (!credentials.username || !credentials.password) {
+    throw new Error('Username and password are required.');
+  }
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      // credentials: 'include', // Not typically needed for token-based auth like this
       body: JSON.stringify({
         username: credentials.username,
         password: credentials.password,
-        expiresInMins: 30,
+        // expiresInMins: 30, // Removed as per instructions
       }),
     });
+
     if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `Login failed: ${errorBody.message || response.statusText}`
-      );
+      // Try to parse error message from DummyJSON, otherwise use statusText
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        // Ignore if response is not JSON
+      }
+      const errorMessage = errorData?.message || response.statusText;
+      console.error(`[Adapter.login] Login failed: ${response.status} ${errorMessage}`);
+      throw new Error(`Login failed: ${errorMessage}`);
     }
-    return response.json();
+
+    const jsonData = await response.json();
+    const parsedApiData = ApiLoginResponseSchema.parse(jsonData);
+
+    // Map API's 'token' to 'accessToken' for the object returned by this adapter function
+    const adapterResponseData = {
+      ...parsedApiData,
+      accessToken: parsedApiData.token,
+    };
+    // Ensure the final object matches the AdapterLoginResponseSchema (which omits 'token')
+    return AdapterLoginResponseSchema.parse(adapterResponseData);
+
   } catch (err) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('[Adapter.login] Network error', err);
+    if (err instanceof z.ZodError) {
+      console.error('[Adapter.login] Zod validation error:', err.errors);
+      throw new Error('Login response validation failed.');
     }
-    throw new Error('Login failed');
+    // Log other errors if not already logged by the conditional block above
+    if (!(err instanceof Error && err.message.startsWith('Login failed:'))) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.error('[Adapter.login] Network or other error', err);
+        }
+    }
+    // Re-throw the original error if it's already specific, or a generic one
+    throw err instanceof Error ? err : new Error('Login failed due to an unexpected error.');
   }
 }

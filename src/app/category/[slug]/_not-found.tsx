@@ -1,16 +1,16 @@
-import { Suspense } from 'react';
-import SearchBar from '@/components/SearchBar';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Category not found',
+};
 
 export default function CategoryNotFound() {
   return (
-    <div className="container mx-auto px-4 py-12 text-center">
+    <section className="mx-auto max-w-md py-24 text-center">
       <h1 className="text-2xl font-bold mb-4">Category not found</h1>
-      <p className="mb-6">We couldn&rsquo;t find that category.</p>
-      <Suspense fallback={null}>
-        <div className="max-w-sm mx-auto">
-          <SearchBar />
-        </div>
-      </Suspense>
-    </div>
+      <p className="mb-6">We couldn&apos;t find that category.</p>
+      <Link href="/" className="btn-primary">Back to home</Link>
+    </section>
   );
 }

@@ -1,16 +1,16 @@
-import { Suspense } from 'react';
-import SearchBar from '@/components/SearchBar';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Page not found',
+};
 
 export default function NotFound404() {
   return (
-    <div className="container mx-auto px-4 py-12 text-center">
-      <h1 className="text-3xl font-bold mb-4">Page not found</h1>
-      <p className="mb-6">Sorry, we couldn&rsquo;t find what you were looking for.</p>
-      <Suspense fallback={null}>
-        <div className="max-w-sm mx-auto">
-          <SearchBar />
-        </div>
-      </Suspense>
-    </div>
+    <section className="mx-auto max-w-md py-24 text-center">
+      <h1 className="text-3xl font-bold mb-4">404 – Not found</h1>
+      <p className="mb-6">Sorry, we couldn&rsquo;t find that page.</p>
+      <Link href="/" className="btn-primary">Back to home</Link>
+    </section>
   );
 }

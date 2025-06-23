@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image'; // For better image handling
 import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import React from 'react';
 
 export default function CartPage() {
   // Subscribe to cart store state and actions
@@ -37,6 +38,32 @@ export default function CartPage() {
     // Stub handler for now
     toast.info('"Request Quote" feature coming soon!');
     // In a real app, this might clear the cart and redirect to a quote form or confirmation page.
+  };
+
+  const [checkingOut, setCheckingOut] = React.useState(false);
+
+  const handleCheckout = async () => {
+    setCheckingOut(true);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
+        }),
+      });
+      const data = await response.json();
+      if (response.ok && data.url) {
+        window.location.href = data.url as string;
+      } else {
+        toast.error('Checkout failed');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Checkout failed');
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   return (
@@ -171,6 +198,18 @@ export default function CartPage() {
                   Request Quote (Stub)
                 </button>
               </div>
+              {items.length > 0 && (
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={handleCheckout}
+                    disabled={checkingOut}
+                    className="w-full rounded-md border border-transparent bg-green-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-50 disabled:opacity-50"
+                  >
+                    {checkingOut ? 'Processing…' : 'Checkout'}
+                  </button>
+                </div>
+              )}
               <div className="mt-4">
                  <button
                     type="button"

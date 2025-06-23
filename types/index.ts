@@ -23,3 +23,5 @@ export type Product = {
   imageUrl: string;
   createdAt: string;
 };
+
+export type { CartItem, CheckoutSession } from './order';

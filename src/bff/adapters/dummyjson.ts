@@ -25,7 +25,7 @@ import { z } from 'zod';
 import { GetProductsOptions } from '../types';
 
 // Schema for DummyJSON /auth/login API actual response
-export const DummyJsonLoginResponseSchema = z.object({
+const DummyJsonApiSchema = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string().email(),
@@ -34,6 +34,12 @@ export const DummyJsonLoginResponseSchema = z.object({
   gender: z.enum(["male", "female"]), // DummyJSON user data shows male/female
   image: z.string().url(),
   token: z.string(), // Actual field from DummyJSON /auth/login
+});
+
+// Schema for the object returned by this adapter's login function
+// It includes all fields from the API plus an 'accessToken' alias for 'token'.
+export const AdapterLoginResponseSchema = DummyJsonApiSchema.extend({
+  accessToken: z.string(),
 });
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
@@ -357,9 +363,18 @@ export async function login(credentials: { username?: string; password?: string 
     }
 
     const jsonData = await response.json();
-    // Parse with the direct API response schema and return it.
-    // The 'token' field will be present in the returned object.
-    return DummyJsonLoginResponseSchema.parse(jsonData);
+    const parsedApiData = DummyJsonApiSchema.parse(jsonData);
+
+    // Construct the object to be returned by the adapter:
+    // includes all original fields (like 'token') AND 'accessToken'.
+    const adapterResponseData = {
+      ...parsedApiData,
+      accessToken: parsedApiData.token, // Add accessToken as an alias for token
+    };
+
+    // Optionally, validate the final shape if AdapterLoginResponseSchema is defined for it
+    // This step ensures the object we return matches the exported schema.
+    return AdapterLoginResponseSchema.parse(adapterResponseData);
 
   } catch (err) {
     if (err instanceof z.ZodError) {

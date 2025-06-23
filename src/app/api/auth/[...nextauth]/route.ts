@@ -73,8 +73,9 @@ export const authOptions: NextAuthOptions = {
               name: [userFromBff.firstName, userFromBff.lastName].filter(Boolean).join(' ') || userFromBff.username,
               email: userFromBff.email,
               image: userFromBff.image,
-              accessToken: userFromBff.token, // Changed from userFromBff.accessToken to userFromBff.token
+              accessToken: userFromBff.accessToken, // Correctly use accessToken from userFromBff
               // Pass through other user details from bffLogin if needed by JWT/session
+              // userFromBff also contains userFromBff.token if needed for other purposes
               username: userFromBff.username,
               firstName: userFromBff.firstName,
               lastName: userFromBff.lastName,

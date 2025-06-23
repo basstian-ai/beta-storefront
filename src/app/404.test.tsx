@@ -8,4 +8,5 @@ test('404 page renders without crash', () => {
   const link = screen.getByRole('link', { name: /back to home/i });
   expect(link).toBeInTheDocument();
   expect(link).toHaveAttribute('href', '/');
+
 });

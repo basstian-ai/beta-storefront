@@ -17,8 +17,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cdn.dummyjson.com',
-        // port: '', // if needed
-        // pathname: '/image/upload/**', // if specific path needed
+        // port: '',
+        // pathname: '/**', // Allow all paths for this hostname
+      },
+      {
+        protocol: 'https',
+        hostname: 'robohash.org',
+        // port: '',
+        // pathname: '/**', // Allow all paths for this hostname
       },
     ],
   },

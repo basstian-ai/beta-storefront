@@ -4,7 +4,6 @@ import {
   ProductSchema,
   CategorySchema,
   // UserSchema, // Removed as unused
-  AuthResponseSchema,
   PriceSchema,
   PaginatedProductsSchema,
   ServiceProductsResponseSchema,
@@ -186,6 +185,9 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   }
 
   const rawData = await dummyJsonAdapter.fetchProductById(productId);
+  if (!rawData) {
+    throw new Error(`Product with id ${productId} not found.`);
+  }
   // Parse raw product data first (it won't have a slug from the API)
   // Ensure ProductSchema used here doesn't strictly require slug, or omit slug for this parse
   const tempProductSchema = ProductSchema.omit({ slug: true, effectivePrice: true }); // effectivePrice is also added by our logic
@@ -199,13 +201,17 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   return applyB2BPrice(productWithSlug, session);
 }
 
-export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof AuthResponseSchema>> {
+export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof dummyJsonAdapter.DummyJsonLoginApiSchema>> {
   if (process.env.NODE_ENV !== 'production') {
-    console.log('BFF> login', { username: credentials.username });
+    console.log('BFF> login service: Called with username:', credentials.username);
   }
-  const rawData = await dummyJsonAdapter.login(credentials);
-  const validatedResponse = AuthResponseSchema.parse(rawData);
-  return validatedResponse;
+  // The adapter's login function now returns an object matching DummyJsonLoginApiSchema
+  // (i.e., with accessToken and refreshToken from the API).
+  const apiResponse = await dummyJsonAdapter.login(credentials);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BFF> login service: Response from adapter (contains accessToken, refreshToken):', apiResponse);
+  }
+  return apiResponse;
 }
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions

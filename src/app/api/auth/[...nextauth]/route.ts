@@ -1,143 +1,134 @@
 // src/app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions, User as NextAuthUser } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { login as bffLogin } from '@/bff/services'; // Your BFF login service
-import { AuthResponseSchema } from '@/bff/types'; // Removed UserSchema as it's unused
-import { z } from 'zod';
-import { error as logError } from "@/lib/logger";
+import NextAuth, { NextAuthOptions, User as NextAuthUser } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+// Corrected import: login service from bff/services which then calls the adapter
+import { login as bffLogin } from '@/bff/services';
+import { error as logError } from "@/lib/logger"; // Assuming logger is still wanted
 
-// Augment NextAuth types to include 'role' and 'id' on user and session
-declare module 'next-auth' {
+// Augment NextAuth types for v4
+// These declarations should ideally be in a *.d.ts file (e.g., next-auth.d.ts)
+// For simplicity here, keeping them in the route file.
+declare module "next-auth" {
   interface Session {
+    accessToken?: string; // To store the access token from DummyJSON
     user: {
-      id?: string | number; // Or just number if your ID is always number
-      role?: string;
-      rememberMe?: boolean; // Add this
-    } & NextAuthUser; // Keep existing fields like name, email, image
+      id?: string | number; // Keep id on user object in session
+    } & NextAuthUser; // Retain other default user fields (name, email, image)
   }
+
+  // The User object returned by the authorize callback
   interface User extends NextAuthUser {
-    id?: string | number;
-    role?: string;
-    rememberMe?: boolean; // Add this
+    id: string | number; // id is essential
+    accessToken?: string; // This will hold the token from DummyJSON response
+    // Include other fields from DummyJSON that you want on the NextAuth User object
+    username?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    image?: string;
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
+  // JWT token stored by NextAuth
   interface JWT {
     id?: string | number;
-    role?: string;
-    rememberMe?: boolean; // Add this
-    // picture?: string | null; // if using image from profile
+    accessToken?: string; // To store the access token from DummyJSON
+    // name, email, picture are standard JWT claims NextAuth might add
   }
 }
 
 export const authOptions: NextAuthOptions = {
+  session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "DummyJSON", // Provider name
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        username: { label: "Username", type: "text", placeholder: "kminchelle" },
         password: { label: "Password", type: "password" },
-        rememberMe: { label: "Remember me", type: "checkbox" } // Add this
       },
-      async authorize(credentials) { // Removed _req
+      async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
-          if (process.env.NODE_ENV !== 'production') {
-            logError('Auth: Missing username or password in credentials');
-          }
-          return null;
+          logError('Auth: Missing username or password in credentials');
+          return null; // Return null for missing credentials
         }
+
         try {
-          // Call your BFF login service
-          const loginData = await bffLogin({
+          // bffLogin now calls the adapter, which returns an object with 'accessToken'
+          // and other user fields (id, username, email, etc.)
+          const userFromBff = await bffLogin({
             username: credentials.username,
             password: credentials.password
           });
 
-          // Validate response with Zod (AuthResponseSchema includes token and user details)
-          const parsedLoginResponse = AuthResponseSchema.parse(loginData);
-
-          // DummyJSON returns a user object with 'id', 'username', 'email', 'firstName', 'lastName', 'gender', 'image', 'token'
-          // We need to map this to what NextAuth expects for its User object.
-          // The 'role' for "b2b" needs to be determined. dummyjson doesn't provide it.
-          // For testing, let's assume 'kminchelle' is a b2b user.
-          let userRole = "customer"; // Default role
-          if (parsedLoginResponse.username === "kminchelle") {
-            userRole = "b2b";
+          if (userFromBff && userFromBff.accessToken) {
+            // The object returned here becomes the `user` parameter in the `jwt` callback
+            // Ensure it includes all necessary fields for the JWT and session
+            // The 'id' field is crucial.
+            // The structure should match the augmented `User` type.
+            console.log('Auth: User authorized by BFF:', userFromBff);
+            return {
+              id: String(userFromBff.id), // Ensure id is a string if consistently used as such
+              name: [userFromBff.firstName, userFromBff.lastName].filter(Boolean).join(' ') || userFromBff.username,
+              email: userFromBff.email,
+              image: userFromBff.image,
+              accessToken: userFromBff.accessToken, // Correctly use accessToken from userFromBff
+              // Pass through other user details from bffLogin if needed by JWT/session
+              // userFromBff also contains userFromBff.token if needed for other purposes
+              username: userFromBff.username,
+              firstName: userFromBff.firstName,
+              lastName: userFromBff.lastName,
+              gender: userFromBff.gender,
+            };
+          } else {
+            logError('Auth: BFF login failed or did not return accessToken', { userFromBff });
+            return null; // Failed login
           }
-
-          // The user object returned by authorize will be stored in the JWT
-          // Ensure the id property here matches what you declared in the User interface augmentation
-          const user: User = { // Use the augmented User type
-            id: parsedLoginResponse.id,
-            name: parsedLoginResponse.username,
-            email: parsedLoginResponse.email,
-            image: parsedLoginResponse.image,
-            role: userRole,
-            rememberMe: credentials.rememberMe === 'true' || credentials.rememberMe === true, // Add this
-          };
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('Auth: User authorized:', user);
-          }
-          return user;
-
-        } catch (error: unknown) { // Changed error type to unknown
-          if (process.env.NODE_ENV !== 'production') {
-            if (error instanceof z.ZodError) {
-              logError('Auth: Zod validation error in authorize callback:', error.errors);
-            } else if (error instanceof Error) { // Check if error is an instance of Error
-              logError('Auth: Error in authorize callback:', error.message);
-            } else {
-              logError('Auth: Unknown error in authorize callback:', error);
-            }
-          }
-          // Regardless of error type, return null for auth failure
-          // Return null if authentication fails
-          return null;
+        } catch (error) {
+          logError('Auth: Error in authorize callback:', error);
+          return null; // Failed login due to error
         }
-      }
-    })
+      },
+    }),
   ],
-  session: {
-    strategy: "jwt", // Using JWT for session strategy
-    maxAge: 30 * 24 * 60 * 60, // 30 days (default longer duration)
-  },
   callbacks: {
-    async jwt({ token, user }) { // Removed _account, _profile
-      // Persist 'id' and 'role' to the JWT right after signin
-      if (user) { // User object is only passed on first call (signin)
+    async jwt({ token, user }) {
+      // `user` is only passed on initial sign-in.
+      // Persist the accessToken and user ID from the `user` object (from `authorize`) into the JWT
+      if (user) {
+        token.accessToken = user.accessToken; // user.accessToken comes from authorize
         token.id = user.id;
-        token.role = user.role;
-        token.rememberMe = user.rememberMe; // Removed 'as any'
-        // token.picture = user.image;
+        // token.name = user.name; // Optional: if you want name in JWT
+        // token.email = user.email; // Optional: if you want email in JWT
+        // token.picture = user.image; // Optional: if you want picture in JWT
       }
       return token;
     },
-    async session({ session, token }) { // Removed _user
-      // Send properties to the client, like an access_token and user id from a provider.
-      if (token.id && session.user) {
-        session.user.id = token.id;
+    async session({ session, token }) {
+      // Send properties to the client, like an access_token and user ID from the JWT.
+      if (token?.accessToken) {
+        session.accessToken = token.accessToken as string;
       }
-      if (token.role && session.user) {
-        session.user.role = token.role as string;
+      if (token?.id) {
+        // If session.user is not automatically populated with name, email, image
+        // from standard JWT claims, ensure they are set if needed.
+        // For v4, session.user is typically already partially filled.
+        // We just need to add our custom fields like id.
+        if (session.user) {
+            session.user.id = token.id as string | number;
+        }
       }
-      if (token.rememberMe !== undefined && session.user) {
-        session.user.rememberMe = token.rememberMe; // Removed 'as any'
-      }
-      // session.user.image = token.picture ?? session.user.image;
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Auth: Session created/updated:', session);
-      }
+      // console.log("Auth: Session created/updated:", session);
       return session;
-    }
+    },
   },
   pages: {
-    signIn: '/login', // Redirect users to /login page for sign-in
-    error: '/auth/error', // Custom error page
-    // signOut: '/auth/signout' // (optional)
+    signIn: '/login', // Custom login page
+    error: '/auth/error', // Custom error page for auth errors (e.g., OAuth errors)
   },
-  // secret: process.env.NEXTAUTH_SECRET, // Essential for production! Add to .env.local
-  // debug: process.env.NODE_ENV === 'development', // Enable debug messages in development
+  // secret: process.env.NEXTAUTH_SECRET, // IMPORTANT: Set this in .env.local for production
+  debug: process.env.NODE_ENV !== 'production', // Enable debug messages in development
 };
 
 const handler = NextAuth(authOptions);

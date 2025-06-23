@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from '../styles/HeroBanner.module.css';
 import type { HeroContent } from '../types'; // Adjust path if necessary
 
@@ -18,7 +19,15 @@ export default function HeroBanner({ title, description, ctaText, ctaLink, image
           Example: <Image src={imageUrl} alt={imageAlt} width={600} height={400} layout="responsive" />
           (adjust width, height, and layout props as needed)
         */}
-        <img src={imageUrl} alt={imageAlt} />
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt={imageAlt || "Hero image"}
+            width={600} // Placeholder width
+            height={400} // Placeholder height
+            className={styles.heroImage} // Add a class for styling
+          />
+        )}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 // src/components/Gallery.tsx
 'use client'; // This component now needs client-side interaction
 
+import Image from 'next/image';
 import { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -46,14 +47,18 @@ export default function Gallery({ images, title }: GalleryProps) {
       {/* Main Image Display with Navigation */}
       <div className="relative w-full max-w-2xl mb-4">
         <div
-          className="aspect-[4/3] overflow-hidden rounded-lg shadow-lg cursor-pointer group bg-gray-100"
+          className="aspect-[4/3] overflow-hidden rounded-lg shadow-lg cursor-pointer group bg-gray-100 relative" // Added relative
           onClick={() => openModal(currentIndex)}
         >
-          <img
-            src={activeImage}
-            alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-full object-contain transition-transform duration-300 ease-in-out group-hover:scale-105"
-          />
+          {activeImage && (
+            <Image
+              src={activeImage}
+              alt={`${title} - Image ${currentIndex + 1}`}
+              layout="fill"
+              objectFit="contain"
+              className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+            />
+          )}
            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 flex items-center justify-center">
             <p className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-lg">View Larger</p>
           </div>
@@ -89,15 +94,18 @@ export default function Gallery({ images, title }: GalleryProps) {
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2
+              className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 relative
                           ${index === currentIndex ? 'border-blue-500 ring-2 ring-blue-500' : 'border-transparent hover:border-gray-400'}
                           focus:outline-none focus:ring-2 focus:ring-blue-400`}
             >
-              <img
-                src={image}
-                alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
+              {image && (
+                <Image
+                  src={image}
+                  alt={`Thumbnail ${index + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                />
+              )}
             </button>
           ))}
         </div>
@@ -129,12 +137,18 @@ export default function Gallery({ images, title }: GalleryProps) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="relative w-full max-w-3xl max-h-[80vh] transform overflow-hidden rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all">
-                  <img
-                    src={activeImage} // Show current selected image in modal
-                    alt={`${title} - Image ${currentIndex + 1} (Full screen)`}
-                    className="w-full h-full object-contain"
-                  />
+                <Dialog.Panel className="relative w-full max-w-3xl max-h-[80vh] transform overflow-hidden rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all flex items-center justify-center"> {/* Added flex for centering image */}
+                  {activeImage && (
+                    <Image
+                      src={activeImage} // Show current selected image in modal
+                      alt={`${title} - Image ${currentIndex + 1} (Full screen)`}
+                      layout="intrinsic" // Use intrinsic to respect image dimensions up to container size
+                      width={1200} // Provide a large base width (adjust as needed)
+                      height={900} // Provide a large base height (adjust as needed)
+                      objectFit="contain"
+                      className="max-w-full max-h-full" // Ensure it doesn't overflow panel
+                    />
+                  )}
                   <button
                     onClick={closeModal}
                     className="absolute top-2 right-2 bg-white bg-opacity-70 text-gray-700 p-1.5 rounded-full hover:bg-opacity-100 focus:outline-none"

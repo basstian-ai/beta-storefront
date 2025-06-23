@@ -44,17 +44,9 @@ export const UserSchema = z.object({
   // dummyjson token is just a string, not part of user object from /auth/login
 });
 
-export const AuthResponseSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  email: z.string().email(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  gender: z.string().optional(),
-  image: z.string().url().optional(),
-  token: z.string(),
-  // role is not part of dummyjson /auth/login response, will be handled by session
-});
+// AuthResponseSchema is removed as the login response schema is now
+// managed by the dummyJsonAdapter (AdapterLoginResponseSchema)
+// and the bffLogin service directly returns the type inferred from that.
 
 // Type for getProducts response
 export const PaginatedProductsSchema = z.object({

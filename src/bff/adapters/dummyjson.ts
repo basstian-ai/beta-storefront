@@ -25,7 +25,7 @@ import { z } from 'zod';
 import { GetProductsOptions } from '../types';
 
 // Schema for DummyJSON /auth/login API actual response
-const ApiLoginResponseSchema = z.object({
+export const DummyJsonLoginResponseSchema = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string().email(),
@@ -35,12 +35,6 @@ const ApiLoginResponseSchema = z.object({
   image: z.string().url(),
   token: z.string(), // Actual field from DummyJSON /auth/login
 });
-
-// This will be the type returned by our adapter's login function
-export const AdapterLoginResponseSchema = ApiLoginResponseSchema.extend({
-  accessToken: z.string(), // We will map 'token' to 'accessToken'
-}).omit({ token: true }); // Remove original 'token' field after mapping
-
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -363,15 +357,9 @@ export async function login(credentials: { username?: string; password?: string 
     }
 
     const jsonData = await response.json();
-    const parsedApiData = ApiLoginResponseSchema.parse(jsonData);
-
-    // Map API's 'token' to 'accessToken' for the object returned by this adapter function
-    const adapterResponseData = {
-      ...parsedApiData,
-      accessToken: parsedApiData.token,
-    };
-    // Ensure the final object matches the AdapterLoginResponseSchema (which omits 'token')
-    return AdapterLoginResponseSchema.parse(adapterResponseData);
+    // Parse with the direct API response schema and return it.
+    // The 'token' field will be present in the returned object.
+    return DummyJsonLoginResponseSchema.parse(jsonData);
 
   } catch (err) {
     if (err instanceof z.ZodError) {

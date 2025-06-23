@@ -1,11 +1,16 @@
-// src/app/not-found.tsx
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Page not found',
+};
+
 export default function NotFound() {
   return (
-    <div className="mx-auto max-w-7xl py-20 text-center">
-      <h1 className="text-3xl font-bold">404 – Nothing to see here</h1>
-      <p className="mt-2 text-gray-500">
-        The page you&apos;re looking for doesn&apos;t exist.
-      </p>
-    </div>
+    <section className="mx-auto max-w-md py-24 text-center">
+      <h1 className="text-3xl font-bold mb-4">404 – Not found</h1>
+      <p className="mb-6">Sorry, we couldn&apos;t find that page.</p>
+      <Link href="/" className="btn-primary">Back to home</Link>
+    </section>
   );
 }

@@ -25,22 +25,18 @@ import { z } from 'zod';
 import { GetProductsOptions } from '../types';
 
 // Schema for DummyJSON /auth/login API actual response
-const DummyJsonApiSchema = z.object({
+// This schema now reflects the actual API response including accessToken and refreshToken
+export const DummyJsonLoginApiSchema = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string().email(),
   firstName: z.string(),
   lastName: z.string(),
-  gender: z.enum(["male", "female"]), // DummyJSON user data shows male/female
+  gender: z.string(), // Per docs, can be 'male', 'female', etc.
   image: z.string().url(),
-  token: z.string(), // Actual field from DummyJSON /auth/login
-});
-
-// Schema for the object returned by this adapter's login function
-// It includes all fields from the API plus an 'accessToken' alias for 'token'.
-export const AdapterLoginResponseSchema = DummyJsonApiSchema.extend({
-  accessToken: z.string(),
-});
+  accessToken: z.string(), // DummyJSON provides accessToken
+  refreshToken: z.string(), // DummyJSON provides refreshToken
+}).passthrough(); // Allow other fields from DummyJSON without error
 
 // Minimal interface for raw product data from DummyJSON before Zod parsing
 interface DummyJsonProductRaw {
@@ -363,18 +359,9 @@ export async function login(credentials: { username?: string; password?: string 
     }
 
     const jsonData = await response.json();
-    const parsedApiData = DummyJsonApiSchema.parse(jsonData);
-
-    // Construct the object to be returned by the adapter:
-    // includes all original fields (like 'token') AND 'accessToken'.
-    const adapterResponseData = {
-      ...parsedApiData,
-      accessToken: parsedApiData.token, // Add accessToken as an alias for token
-    };
-
-    // Optionally, validate the final shape if AdapterLoginResponseSchema is defined for it
-    // This step ensures the object we return matches the exported schema.
-    return AdapterLoginResponseSchema.parse(adapterResponseData);
+    // Parse with the direct API response schema (which expects accessToken and refreshToken)
+    // and return it directly.
+    return DummyJsonLoginApiSchema.parse(jsonData);
 
   } catch (err) {
     if (err instanceof z.ZodError) {

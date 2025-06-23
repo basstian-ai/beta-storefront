@@ -1,7 +1,6 @@
 // src/bff/adapters/dummyjson.test.ts
-import { vi, describe, it, expect, beforeEach } from 'vitest'; // Removed afterEach
-import { login, AdapterLoginResponseSchema } from './dummyjson'; // Assuming AdapterLoginResponseSchema is exported
-// import { z } from 'zod'; // Removed z as it's not directly used in this test file's assertions
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { login, DummyJsonLoginApiSchema } from './dummyjson'; // Updated import
 
 // Mock the global fetch function
 global.fetch = vi.fn();
@@ -18,9 +17,10 @@ describe('dummyJsonAdapter.login', () => {
     email: 'testuser@example.com',
     firstName: 'Test',
     lastName: 'User',
-    gender: 'male', // Ensure this matches enum in schema
+    gender: 'male',
     image: 'https://example.com/avatar.png',
-    token: 'fake-jwt-token',
+    accessToken: 'fake-access-token', // Updated from token to accessToken
+    refreshToken: 'fake-refresh-token', // Added refreshToken
   };
 
   it('should call fetch with correct URL, method, headers, and body', async () => {
@@ -53,11 +53,11 @@ describe('dummyJsonAdapter.login', () => {
     expect(result).toBeDefined();
     expect(result.id).toBe(mockApiResponse.id);
     expect(result.username).toBe(mockApiResponse.username);
-    expect(result.token).toBe(mockApiResponse.token);
-    expect(result.accessToken).toBe(mockApiResponse.token); // accessToken should be alias of token
+    expect(result.accessToken).toBe(mockApiResponse.accessToken);
+    expect(result.refreshToken).toBe(mockApiResponse.refreshToken);
 
-    // Validate against the exported schema if possible
-    expect(() => AdapterLoginResponseSchema.parse(result)).not.toThrow();
+    // Validate against the exported schema
+    expect(() => DummyJsonLoginApiSchema.parse(result)).not.toThrow();
   });
 
   it('should throw an error if login request fails (response not ok)', async () => {
@@ -83,7 +83,11 @@ describe('dummyJsonAdapter.login', () => {
   });
 
   it('should throw a Zod validation error if API response has unexpected structure', async () => {
-    const malformedApiResponse = { ...mockApiResponse, token: undefined }; // Missing token
+    // Simulate API response missing accessToken
+    const malformedApiResponse = {
+      ...mockApiResponse,
+      accessToken: undefined
+    };
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => malformedApiResponse,

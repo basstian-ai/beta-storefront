@@ -201,16 +201,17 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   return applyB2BPrice(productWithSlug, session);
 }
 
-export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof dummyJsonAdapter.AdapterLoginResponseSchema>> {
+export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof dummyJsonAdapter.DummyJsonLoginApiSchema>> {
   if (process.env.NODE_ENV !== 'production') {
     console.log('BFF> login service: Called with username:', credentials.username);
   }
-  // The adapter's login function now returns an object containing both 'token' and 'accessToken'.
-  const adapterResponse = await dummyJsonAdapter.login(credentials);
+  // The adapter's login function now returns an object matching DummyJsonLoginApiSchema
+  // (i.e., with accessToken and refreshToken from the API).
+  const apiResponse = await dummyJsonAdapter.login(credentials);
   if (process.env.NODE_ENV !== 'production') {
-    console.log('BFF> login service: Response from adapter (contains token and accessToken):', adapterResponse);
+    console.log('BFF> login service: Response from adapter (contains accessToken, refreshToken):', apiResponse);
   }
-  return adapterResponse;
+  return apiResponse;
 }
 
 export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer<typeof CategorySchema>[]> { // Added fetchOptions

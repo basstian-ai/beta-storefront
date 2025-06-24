@@ -18,15 +18,19 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
     <section className={styles.featuredCategories}>
       <h2>Featured Categories</h2>
       <div className={styles.categoryGrid}>
-        {categories.map(cat => (
+        {categories.map((cat, index) => (
           <a key={cat.id} href={`/category/${cat.slug}`} className={styles.categoryCard}>
             {cat.imageUrl && (
               <Image
                 src={cat.imageUrl}
                 alt={cat.name}
-                width={200} // Placeholder width, adjust as needed
-                height={200} // Placeholder height, adjust as needed
-                className={styles.categoryImage} // Add a class for styling if needed
+                width={400}
+                height={400}
+                className={styles.categoryImage}
+                priority={index < 2}
+                sizes="(max-width:768px) 100vw, 33vw"
+                placeholder="blur"
+                blurDataURL="/img/placeholder.svg"
               />
             )}
             <h3>{cat.name}</h3>

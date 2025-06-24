@@ -23,9 +23,13 @@ export default function HeroBanner({ title, description, ctaText, ctaLink, image
           <Image
             src={imageUrl}
             alt={imageAlt || "Hero image"}
-            width={600} // Placeholder width
-            height={400} // Placeholder height
-            className={styles.heroImage} // Add a class for styling
+            width={600}
+            height={400}
+            className={styles.heroImage}
+            priority
+            sizes="(max-width:768px) 100vw, 33vw"
+            placeholder="blur"
+            blurDataURL="/img/placeholder.svg"
           />
         )}
       </div>

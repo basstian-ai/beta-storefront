@@ -54,9 +54,12 @@ export default function Gallery({ images, title }: GalleryProps) {
             <Image
               src={activeImage}
               alt={`${title} - Image ${currentIndex + 1}`}
-              layout="fill"
-              objectFit="contain"
+              fill
+              sizes="(max-width:768px) 100vw, 33vw"
               className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+              priority
+              placeholder="blur"
+              blurDataURL="/img/placeholder.svg"
             />
           )}
            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 flex items-center justify-center">
@@ -102,8 +105,11 @@ export default function Gallery({ images, title }: GalleryProps) {
                 <Image
                   src={image}
                   alt={`Thumbnail ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  sizes="(max-width:768px) 100vw, 33vw"
+                  className="object-cover"
+                  placeholder="blur"
+                  blurDataURL="/img/placeholder.svg"
                 />
               )}
             </button>
@@ -140,13 +146,14 @@ export default function Gallery({ images, title }: GalleryProps) {
                 <Dialog.Panel className="relative w-full max-w-3xl max-h-[80vh] transform overflow-hidden rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all flex items-center justify-center"> {/* Added flex for centering image */}
                   {activeImage && (
                     <Image
-                      src={activeImage} // Show current selected image in modal
+                      src={activeImage}
                       alt={`${title} - Image ${currentIndex + 1} (Full screen)`}
-                      layout="intrinsic" // Use intrinsic to respect image dimensions up to container size
-                      width={1200} // Provide a large base width (adjust as needed)
-                      height={900} // Provide a large base height (adjust as needed)
-                      objectFit="contain"
-                      className="max-w-full max-h-full" // Ensure it doesn't overflow panel
+                      width={1200}
+                      height={900}
+                      className="max-w-full max-h-full"
+                      priority
+                      placeholder="blur"
+                      blurDataURL="/img/placeholder.svg"
                     />
                   )}
                   <button

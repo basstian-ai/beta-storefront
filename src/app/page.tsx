@@ -95,7 +95,7 @@ export default async function HomePage() {
           )}
           {categoriesToDisplay.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
-              {categoriesToDisplay.map((category) => (
+              {categoriesToDisplay.map((category, index) => (
                 <Link key={category.slug} href={`/category/${category.slug}`} legacyBehavior>
                   <a className="group block bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
                     <div className="aspect-w-1 aspect-h-1 w-full relative"> {/* Added relative positioning for Image fill */}
@@ -103,9 +103,12 @@ export default async function HomePage() {
                         <Image
                           src={category.imageUrl}
                           alt={category.name}
-                          layout="fill" // Use fill to cover the div, ensure parent has position relative and dimensions
-                          objectFit="cover" // Replaces object-cover utility
-                          className="transition-transform duration-300 group-hover:scale-105"
+                          fill
+                          sizes="(max-width:768px) 100vw, 33vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          priority={index < 2}
+                          placeholder="blur"
+                          blurDataURL="/img/placeholder.svg"
                         />
                       )}
                     </div>

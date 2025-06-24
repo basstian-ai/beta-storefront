@@ -157,7 +157,16 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                       <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="sr-only">Open user menu</span>
                         {session.user?.image ? (
-                          <Image className="h-8 w-8 rounded-full" src={session.user.image} alt="User avatar" width={32} height={32} />
+                          <Image
+                            className="h-8 w-8 rounded-full"
+                            src={session.user.image}
+                            alt="User avatar"
+                            width={32}
+                            height={32}
+                            sizes="32px"
+                            placeholder="blur"
+                            blurDataURL="/img/placeholder.svg"
+                          />
                         ) : (
                           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-600">
                             <span className="text-sm font-medium leading-none text-white">

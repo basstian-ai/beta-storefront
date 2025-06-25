@@ -1,16 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import OrderHistory from '@/components/OrderHistory';
 
-it('renders rows for orders', async () => {
-  vi.mock('@/lib/fetchUserCarts', () => ({
-    fetchUserCarts: () =>
-      Promise.resolve([
-        { id: 1, total: 50, totalProducts: 2, totalQuantity: 2, date: '2024-01-01' },
-        { id: 2, total: 75, totalProducts: 1, totalQuantity: 1, date: '2024-02-01' },
-      ]),
-  }));
+global.fetch = vi.fn();
 
-  render(<OrderHistory userId="5" />);
+it('renders rows for orders', async () => {
+  (fetch as any).mockResolvedValueOnce({
+    ok: true,
+    json: async () => [
+      { id: 1, total: 50, createdAt: '2024-01-01T00:00:00Z' },
+      { id: 2, total: 75, createdAt: '2024-02-01T00:00:00Z' },
+    ],
+  });
+
+  render(<OrderHistory />);
   const rows = await screen.findAllByRole('row');
   expect(rows).toHaveLength(3); // header + 2 rows
 });
+

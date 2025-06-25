@@ -1,14 +1,23 @@
+'use client';
+import useSWR from 'swr';
 import Link from 'next/link';
-import { fetchUserCarts } from '@/lib/fetchUserCarts';
 
-interface OrderHistoryProps {
-  userId: string | number;
+interface Order {
+  id: number;
+  total: number;
+  createdAt: string;
 }
 
-export default async function OrderHistory({ userId }: OrderHistoryProps) {
-  const carts = await fetchUserCarts(userId);
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-  if (!carts.length) {
+export default function OrderHistory() {
+  const { data, isLoading } = useSWR<Order[]>('/api/orders', fetcher);
+
+  if (isLoading) {
+    return <p>Loading orders…</p>;
+  }
+
+  if (!data || data.length === 0) {
     return <p className="text-gray-500">You haven’t placed any orders yet.</p>;
   }
 
@@ -18,26 +27,22 @@ export default async function OrderHistory({ userId }: OrderHistoryProps) {
         <thead className="bg-gray-50">
           <tr>
             <th className="px-4 py-2 text-left font-medium">Date</th>
+            <th className="px-4 py-2 text-left font-medium">Order #</th>
             <th className="px-4 py-2 text-left font-medium">Total</th>
-            <th className="px-4 py-2 text-left font-medium">Items</th>
-            <th className="px-4 py-2 text-left font-medium">Status</th>
+            <th className="px-4 py-2 text-left font-medium">View</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {carts.map(cart => (
-            <tr key={cart.id} className="hover:bg-gray-50 focus-within:bg-gray-50">
+          {data.map(order => (
+            <tr key={order.id} className="hover:bg-gray-50 focus-within:bg-gray-50">
               <td className="px-4 py-2">
-                <Link
-                  href={`/account/orders/${cart.id}`}
-                  className="block focus:outline-none"
-                  aria-label={`View order ${cart.id}`}
-                >
-                  <time dateTime={cart.date}>{cart.date}</time>
-                </Link>
+                <time dateTime={order.createdAt}>{new Date(order.createdAt).toLocaleDateString()}</time>
               </td>
-              <td className="px-4 py-2">${cart.total.toFixed(2)}</td>
-              <td className="px-4 py-2">{cart.totalProducts}</td>
-              <td className="px-4 py-2">Delivered</td>
+              <td className="px-4 py-2">{order.id}</td>
+              <td className="px-4 py-2">${order.total.toFixed(2)}</td>
+              <td className="px-4 py-2">
+                <Link href={`/account/orders/${order.id}`} className="text-blue-600 hover:underline" aria-label={`View order ${order.id}`}>View</Link>
+              </td>
             </tr>
           ))}
         </tbody>

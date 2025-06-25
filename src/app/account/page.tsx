@@ -4,8 +4,10 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import OrderHistory from '@/components/OrderHistory';
+import dynamic from 'next/dynamic';
 import React from 'react';
+
+const OrderHistory = dynamic(() => import('@/components/OrderHistory'), { ssr: false });
 
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
@@ -33,7 +35,7 @@ export default async function AccountPage() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Order History</h3>
         <React.Suspense fallback={<p>Loading orders…</p>}>
-          <OrderHistory userId={user.id} />
+          <OrderHistory />
         </React.Suspense>
       </div>
     </div>

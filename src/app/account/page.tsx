@@ -1,31 +1,41 @@
 // src/app/account/page.tsx
-import AuthGuard from '@/components/AuthGuard'; // Import the guard
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { redirect } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
+import OrderHistoryClient from '@/components/OrderHistoryClient';
 
-// This page will be protected by AuthGuard
-// Actual account content will be built in Epic 6 (Quick My Page Shell)
+export default async function AccountPage() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    redirect('/login?callbackUrl=/account');
+  }
+  const user = session.user!;
 
-export default function AccountPage() {
   return (
-    <AuthGuard> {/* Wrap content with AuthGuard */}
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">My Account</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Placeholder Widgets */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
-            <p className="text-gray-700">(0) - Order history TBD</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-2">Quotes</h2>
-            <p className="text-gray-700">(0) - Quotes TBD</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-2">Profile</h2>
-            <p className="text-gray-700">Profile details TBD</p>
-          </div>
+    <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="flex items-center space-x-4 bg-white p-6 rounded-lg shadow">
+        <Image
+          src={user.image || '/placeholder-image.webp'}
+          alt="User avatar"
+          width={64}
+          height={64}
+          className="rounded-full"
+        />
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold">{user.name}</h2>
+          <p className="text-sm text-gray-500">{user.email}</p>
         </div>
+        <Link href="#" className="text-sm text-blue-600 hover:underline">Edit profile</Link>
       </div>
-    </AuthGuard>
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold mb-4">Order History</h3>
+        <React.Suspense fallback={<p>Loading…</p>}>
+          <OrderHistoryClient userId={String(user.id)} />
+        </React.Suspense>
+      </div>
+    </div>
   );
 }

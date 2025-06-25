@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { fetchProductById } from '@/bff/adapters/dummyjson';
 import type Stripe from 'stripe';
+import { stripe } from '@/lib/getStripe';
+
+export const dynamic = 'force-dynamic';
 
 interface Item {
   productId: number;
@@ -20,10 +23,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'No items' }, { status: 400 });
   }
 
-  const { default: Stripe } = await import('stripe');
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-    apiVersion: '2024-04-10',
-  });
 
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   for (const item of items) {

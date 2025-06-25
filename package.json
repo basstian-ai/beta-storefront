@@ -19,6 +19,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "*",
+    "stripe": "^18.2.1",
     "use-debounce": "^10.0.5",
     "zod": "*",
     "zustand": "^4.0.0"

@@ -5,6 +5,7 @@ export interface PopularProduct {
   discountPercentage: number;
   thumbnail: string;
   rating: number;
+  blurDataURL: string;
 }
 
 export async function getPopularProducts(): Promise<PopularProduct[]> {
@@ -18,8 +19,24 @@ export async function getPopularProducts(): Promise<PopularProduct[]> {
     throw new Error('Failed to fetch popular products');
   }
   const data = await res.json();
-  const products: PopularProduct[] = Array.isArray(data.products)
+  const products: Omit<PopularProduct, 'blurDataURL'>[] = Array.isArray(
+    data.products
+  )
     ? data.products
     : [];
-  return products.sort((a, b) => b.rating - a.rating);
+
+  const addBlur = (p: Omit<PopularProduct, 'blurDataURL'>): PopularProduct => ({
+    ...p,
+    blurDataURL: generateTinyBlur(p.id),
+  });
+
+  return products
+    .map(addBlur)
+    .sort((a, b) => b.rating - a.rating);
+}
+
+function generateTinyBlur(id: number): string {
+  const shade = 220 + (id * 5) % 20; // light gray variation
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><rect width='8' height='8' fill='rgb(${shade},${shade},${shade})'/></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }

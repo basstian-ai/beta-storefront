@@ -8,7 +8,7 @@ export type Product = z.infer<typeof ProductSchema>;
 import { highlight } from '@/utils/highlight';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { blurDataURL?: string };
   highlightTerm?: string;
 }
 
@@ -25,6 +25,8 @@ export default function ProductCard({ product, highlightTerm }: ProductCardProps
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                 className="object-cover object-center group-hover:opacity-75"
+                placeholder="blur"
+                blurDataURL={product.blurDataURL}
               />
             </div>
           )}

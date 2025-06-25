@@ -1,27 +1,47 @@
-'use client';
-import { use } from 'react';
-import { getOrderHistory } from '@/lib/orders';
+import Link from 'next/link';
+import { fetchUserCarts } from '@/lib/fetchUserCarts';
 
-export default function OrderHistory() {
-  const orders = use(getOrderHistory());
+interface OrderHistoryProps {
+  userId: string | number;
+}
 
-  if (!orders.length) {
+export default async function OrderHistory({ userId }: OrderHistoryProps) {
+  const carts = await fetchUserCarts(userId);
+
+  if (!carts.length) {
     return <p className="text-gray-500">You haven’t placed any orders yet.</p>;
   }
 
   return (
-    <section className="divide-y divide-gray-200 border rounded-md">
-      {orders.map(order => (
-        <article key={order.id} className="p-4 flex flex-col gap-2">
-          <header className="flex justify-between items-center">
-            <span className="font-medium">#{order.id}</span>
-            <time dateTime={order.date}>{order.date}</time>
-          </header>
-          <div className="text-sm text-gray-600">
-            {order.items} items • ${order.total}
-          </div>
-        </article>
-      ))}
-    </section>
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-4 py-2 text-left font-medium">Date</th>
+            <th className="px-4 py-2 text-left font-medium">Total</th>
+            <th className="px-4 py-2 text-left font-medium">Items</th>
+            <th className="px-4 py-2 text-left font-medium">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {carts.map(cart => (
+            <tr key={cart.id} className="hover:bg-gray-50 focus-within:bg-gray-50">
+              <td className="px-4 py-2">
+                <Link
+                  href={`/account/orders/${cart.id}`}
+                  className="block focus:outline-none"
+                  aria-label={`View order ${cart.id}`}
+                >
+                  <time dateTime={cart.date}>{cart.date}</time>
+                </Link>
+              </td>
+              <td className="px-4 py-2">${cart.total.toFixed(2)}</td>
+              <td className="px-4 py-2">{cart.totalProducts}</td>
+              <td className="px-4 py-2">Delivered</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

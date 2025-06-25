@@ -29,9 +29,9 @@ export default async function OrderDetailPage({ params }: { params: { cartId: st
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-semibold">Order {params.cartId}</h1>
-      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+          <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-2 text-left font-semibold">Product</th>
               <th className="px-4 py-2 text-left font-semibold">Qty</th>

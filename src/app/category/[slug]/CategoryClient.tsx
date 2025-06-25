@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { ProductSchema } from '@/bff/types';
 import { useProductFilters } from '@/store/productFilters';
@@ -57,25 +56,6 @@ export default function CategoryClient({ products, brands, categoryName }: { pro
   const [display, setDisplay] = useState<Product[]>(products);
   const [loading, setLoading] = useState(false);
   const state = useProductFilters();
-  const params = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // init from query on mount
-  useEffect(() => {
-    state.initializeFromQuery(params);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // update URL when state changes
-  useEffect(() => {
-    const p = new URLSearchParams();
-    state.brands.forEach(b => p.append('brand', b));
-    if (state.min !== null) p.set('min', String(state.min));
-    if (state.max !== null) p.set('max', String(state.max));
-    if (state.rating !== null) p.set('rating', String(state.rating));
-    if (state.sort && state.sort !== 'relevance') p.set('sort', state.sort);
-    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
-  }, [state.brands, state.min, state.max, state.rating, state.sort, pathname, router]);
 
   // recompute products when filters change
   useEffect(() => {

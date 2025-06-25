@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, highlightTerm }: ProductCardProps) {
   return (
-    <div className="border p-4 rounded-lg shadow hover:shadow-xl transition-shadow flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-800 shadow-md p-4 rounded-lg flex flex-col justify-between">
       <div>
         <Link href={`/product/${product.slug}`} className="group">
           {product.thumbnail && (

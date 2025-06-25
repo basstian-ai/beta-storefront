@@ -1,17 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import CategoryClient from './CategoryClient';
-import { ProductSchema } from '@/bff/types';
-import { z } from 'zod';
-
-const params = new URLSearchParams();
-const replace = vi.fn();
-vi.mock('next/navigation', () => ({
-  useSearchParams: () => params,
-  useRouter: () => ({ replace }),
-  usePathname: () => '/category/test',
-}));
+import { describe, it, expect, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import CategoryClient from './CategoryClient'
+import { ProductSchema } from '@/bff/types'
+import { z } from 'zod'
+import { useProductFilters } from '@/store/productFilters'
 
 type Product = z.infer<typeof ProductSchema>;
 
@@ -21,6 +14,10 @@ const products: Product[] = [
 ];
 
 const brands = ['Apple','Samsung'];
+
+beforeEach(() => {
+  useProductFilters.getState().reset()
+})
 
 describe('CategoryClient', () => {
   it('sorts products when selection changes', async () => {

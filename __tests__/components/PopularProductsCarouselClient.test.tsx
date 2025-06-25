@@ -15,13 +15,14 @@ const mockProducts: PopularProduct[] = Array.from({ length: 5 }).map((_, i) => (
 describe('PopularProductsCarouselClient', () => {
   it('renders five product links', () => {
     render(<PopularProductsCarouselClient products={mockProducts} />);
-    const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(5);
     mockProducts.forEach(p => {
-      expect(screen.getByRole('link', { name: p.title })).toHaveAttribute(
+      const link = screen.getByRole('link', { name: p.title });
+      expect(link).toHaveAttribute(
         'href',
-        `/product/${p.id}`
+        `/product/${p.title.toLowerCase().replace(/\s+/g, '-')}`
       );
     });
+    const titleLinks = screen.getAllByRole('link', { name: /Product/ });
+    expect(titleLinks).toHaveLength(5);
   });
 });

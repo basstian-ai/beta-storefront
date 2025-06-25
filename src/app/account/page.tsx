@@ -4,8 +4,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchUserCarts } from '@/lib/fetchUserCarts';
 import OrderHistory from '@/components/OrderHistory';
+import React from 'react';
 
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,6 @@ export default async function AccountPage() {
     redirect('/login?callbackUrl=/account');
   }
   const user = session.user!;
-  const carts = await fetchUserCarts(user.id as string | number);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -33,7 +32,9 @@ export default async function AccountPage() {
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Order History</h3>
-        <OrderHistory carts={carts} />
+        <React.Suspense fallback={<p>Loading orders…</p>}>
+          <OrderHistory />
+        </React.Suspense>
       </div>
     </div>
   );

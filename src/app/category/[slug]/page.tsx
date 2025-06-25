@@ -3,6 +3,8 @@ import { getProducts, getCategories } from '@/bff/services';
 // ProductSchema will be used by the client component
 // Link will be used by client component
 // z will be used by client component
+import { Suspense } from 'react';
+import CategoryFilters from '@/components/CategoryFilters';
 import CategoryProductsClient from '@/components/CategoryProductsClient';
 import Link from 'next/link'; // Keep for fallback link
 
@@ -106,10 +108,22 @@ export default async function CategoryPage({
   }
 
   return (
-    <CategoryProductsClient
-      products={initialProducts}
-      brands={availableBrands}
-      categoryName={humanReadableCategoryName}
-    />
+    <>
+      <Suspense fallback={null}>
+        <CategoryFilters
+          sortOptions={[
+            { value: '', label: 'Default' },
+            { value: 'price_asc', label: 'Price: Low to High' },
+            { value: 'price_desc', label: 'Price: High to Low' },
+            { value: 'newest', label: 'Newest' },
+          ]}
+        />
+      </Suspense>
+      <CategoryProductsClient
+        products={initialProducts}
+        brands={availableBrands}
+        categoryName={humanReadableCategoryName}
+      />
+    </>
   );
 }

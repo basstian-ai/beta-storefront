@@ -10,6 +10,7 @@ import { useParams } from 'next/navigation'; // useParams for client component
 import ProductGallery from '@/components/ProductGallery'; // Changed from Gallery to ProductGallery
 import PriceBox from '@/components/PriceBox';
 import CopyLinkButton from '@/components/CopyLinkButton';
+import WishlistButton from '@/components/WishlistButton';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
 import toast from 'react-hot-toast'; // For feedback
 import { useEffect, useState } from 'react'; // For client-side data fetching
@@ -149,6 +150,7 @@ export default function ProductPage() {
             >
               {product.stock && product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
+            <WishlistButton product={product} />
             <CopyLinkButton />
           </div>
         </div>

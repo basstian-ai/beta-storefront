@@ -18,7 +18,7 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
     <section className={styles.featuredCategories}>
       <h2>Featured Categories</h2>
       <div className={styles.categoryGrid}>
-        {categories.map((cat, index) => (
+        {categories.map((cat) => (
           <a key={cat.id} href={`/category/${cat.slug}`} className={styles.categoryCard}>
             {cat.imageUrl && (
               <Image
@@ -27,7 +27,6 @@ export default function FeaturedCategories({ categories }: FeaturedCategoriesPro
                 width={400}
                 height={400}
                 className={styles.categoryImage}
-                priority={index < 2}
                 sizes="(max-width:768px) 100vw, 33vw"
                 placeholder="blur"
                 blurDataURL="/img/placeholder.svg"

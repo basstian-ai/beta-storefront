@@ -78,7 +78,7 @@ describe('HeroBanner Component', () => {
       description: 'Another Description',
       ctaText: 'Go Somewhere Else',
       ctaLink: '/another-link',
-      imageUrl: 'another-image.png',
+      imageUrl: 'another-image.webp',
       imageAlt: 'Another Alt Text',
     };
     render(<HeroBanner {...newProps} />);

@@ -12,7 +12,7 @@ export default function FeaturedProductsCarousel({ products }: Props) {
     <section className={styles.featuredProductsCarousel}>
       <h2>Featured Products</h2>
       <div className={styles.carousel}>
-        {products.map((product, index) => (
+        {products.map((product) => (
           <a key={product.id} href={`/product/${product.slug}`} className={styles.productCard}>
             {product.imageUrl && (
               <Image
@@ -21,7 +21,6 @@ export default function FeaturedProductsCarousel({ products }: Props) {
                 width={400}
                 height={400}
                 className={styles.productImage}
-                priority={index < 2}
                 sizes="(max-width:768px) 100vw, 33vw"
                 placeholder="blur"
                 blurDataURL="/img/placeholder.svg"

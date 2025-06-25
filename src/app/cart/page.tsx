@@ -64,7 +64,7 @@ export default function CartPage() {
                   <li key={item.product.id} className="flex py-6">
                     <div className="flex-shrink-0">
                       <Image
-                        src={item.product.thumbnail || '/placeholder-image.png'} // Fallback image
+                        src={item.product.thumbnail || '/placeholder-image.webp'} // Fallback image
                         alt={item.product.title}
                         width={96} // 6rem
                         height={96} // 6rem

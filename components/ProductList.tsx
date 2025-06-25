@@ -22,7 +22,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
           <a className={styles.productCard}> {/* Use CSS module class */}
             <div className={styles.imageWrapper}> {/* Use CSS module class */}
               <Image
-                src={product.imageUrl || '/placeholder-image.png'}
+                src={product.imageUrl || '/placeholder-image.webp'}
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

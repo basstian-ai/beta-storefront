@@ -11,11 +11,11 @@ interface ProductGalleryProps {
 
 export default function ProductGallery({ images, thumbnail, productTitle }: ProductGalleryProps) {
   // Initialize mainImage with the thumbnail. If thumbnail is somehow missing, provide a fallback.
-  const [mainImage, setMainImage] = useState(thumbnail || '/placeholder-image.png');
+  const [mainImage, setMainImage] = useState(thumbnail || '/placeholder-image.webp');
 
   // Effect to update mainImage if the thumbnail prop changes (e.g., on navigating to a new product page)
   useEffect(() => {
-    setMainImage(thumbnail || '/placeholder-image.png');
+    setMainImage(thumbnail || '/placeholder-image.webp');
   }, [thumbnail]);
 
   const allDisplayableImages = [thumbnail, ...(images || [])].filter(Boolean) as string[];
@@ -69,7 +69,6 @@ export default function ProductGallery({ images, thumbnail, productTitle }: Prod
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Basic responsive sizes
           className="object-cover object-center"
-          priority // Prioritize loading the main image
         />
       </div>
 

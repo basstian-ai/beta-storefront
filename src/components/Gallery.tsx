@@ -11,6 +11,36 @@ interface GalleryProps {
   title: string;
 }
 
+interface GalleryItemProps {
+  image: string;
+  index: number;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function GalleryItem({ image, index, isActive, onClick }: GalleryItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 relative ${
+        isActive ? 'border-blue-500 ring-2 ring-blue-500' : 'border-transparent hover:border-gray-400'
+      } focus:outline-none focus:ring-2 focus:ring-blue-400`}
+    >
+      {image && (
+        <Image
+          src={image}
+          alt={`Thumbnail ${index + 1}`}
+          fill
+          sizes="(max-width:768px) 100vw, 33vw"
+          className="object-cover"
+          placeholder="blur"
+          blurDataURL="/img/placeholder.svg"
+        />
+      )}
+    </button>
+  );
+}
+
 export default function Gallery({ images, title }: GalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,7 +87,6 @@ export default function Gallery({ images, title }: GalleryProps) {
               fill
               sizes="(max-width:768px) 100vw, 33vw"
               className="transition-transform duration-300 ease-in-out group-hover:scale-105"
-              priority
               placeholder="blur"
               blurDataURL="/img/placeholder.svg"
             />
@@ -94,25 +123,13 @@ export default function Gallery({ images, title }: GalleryProps) {
       {images.length > 1 && (
         <div className="flex space-x-2 overflow-x-auto py-2 w-full justify-center max-w-2xl">
           {images.map((image, index) => (
-            <button
+            <GalleryItem
               key={index}
+              image={image}
+              index={index}
+              isActive={index === currentIndex}
               onClick={() => setCurrentIndex(index)}
-              className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 relative
-                          ${index === currentIndex ? 'border-blue-500 ring-2 ring-blue-500' : 'border-transparent hover:border-gray-400'}
-                          focus:outline-none focus:ring-2 focus:ring-blue-400`}
-            >
-              {image && (
-                <Image
-                  src={image}
-                  alt={`Thumbnail ${index + 1}`}
-                  fill
-                  sizes="(max-width:768px) 100vw, 33vw"
-                  className="object-cover"
-                  placeholder="blur"
-                  blurDataURL="/img/placeholder.svg"
-                />
-              )}
-            </button>
+            />
           ))}
         </div>
       )}
@@ -151,7 +168,6 @@ export default function Gallery({ images, title }: GalleryProps) {
                       width={1200}
                       height={900}
                       className="max-w-full max-h-full"
-                      priority
                       placeholder="blur"
                       blurDataURL="/img/placeholder.svg"
                     />

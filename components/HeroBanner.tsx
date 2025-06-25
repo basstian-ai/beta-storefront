@@ -22,7 +22,7 @@ export default function HeroBanner({ title, description, ctaText, ctaLink, image
             priority
             sizes="(max-width:768px) 100vw, 33vw"
             placeholder="blur"
-            blurDataURL="/img/placeholder.svg"
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NkYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
           />
         )}
       </div>

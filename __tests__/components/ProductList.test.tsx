@@ -100,7 +100,7 @@ describe('ProductList Component', () => {
     ];
     render(<ProductList products={productsWithMissingImage} />);
     const image = screen.getByRole('img') as HTMLImageElement;
-    expect(image.src).toContain('/placeholder-image.png'); // Check if src contains the placeholder path
+    expect(image.src).toContain('/placeholder-image.webp'); // Check if src contains the placeholder path
     expect(image.alt).toBe('Keyboard Basic');
   });
 });

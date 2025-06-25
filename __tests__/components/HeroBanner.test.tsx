@@ -40,6 +40,7 @@ describe('HeroBanner Component', () => {
     // Check for image
     expect(screen.getByAltText(defaultProps.imageAlt as string)).toBeInTheDocument(); // Added 'as string' for type safety
     expect(screen.getByAltText(defaultProps.imageAlt as string)).toHaveAttribute('src', defaultProps.imageUrl);
+    expect(screen.getByAltText(defaultProps.imageAlt as string)).toHaveAttribute('sizes');
   });
 
   it('applies correct CSS module classes (mocked)', () => {
@@ -77,7 +78,7 @@ describe('HeroBanner Component', () => {
       description: 'Another Description',
       ctaText: 'Go Somewhere Else',
       ctaLink: '/another-link',
-      imageUrl: 'another-image.png',
+      imageUrl: 'another-image.webp',
       imageAlt: 'Another Alt Text',
     };
     render(<HeroBanner {...newProps} />);
@@ -90,5 +91,6 @@ describe('HeroBanner Component', () => {
     const image = screen.getByAltText(newProps.imageAlt as string); // Added 'as string'
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', newProps.imageUrl);
+    expect(image).toHaveAttribute('sizes');
   });
 });

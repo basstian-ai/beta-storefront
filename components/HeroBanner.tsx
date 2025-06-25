@@ -12,20 +12,17 @@ export default function HeroBanner({ title, description, ctaText, ctaLink, image
         <a href={ctaLink} className={styles.ctaButton}>{ctaText}</a>
       </div>
       <div className={styles.imageContent}>
-        {/*
-          TODO: Consider using Next.js <Image> component for automatic image optimization
-          once real image sources from a CMS are integrated.
-          This will help improve performance and Lighthouse scores.
-          Example: <Image src={imageUrl} alt={imageAlt} width={600} height={400} layout="responsive" />
-          (adjust width, height, and layout props as needed)
-        */}
         {imageUrl && (
           <Image
             src={imageUrl}
             alt={imageAlt || "Hero image"}
-            width={600} // Placeholder width
-            height={400} // Placeholder height
-            className={styles.heroImage} // Add a class for styling
+            width={600}
+            height={400}
+            className={styles.heroImage}
+            priority
+            sizes="(max-width:768px) 100vw, 33vw"
+            placeholder="blur"
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NkYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
           />
         )}
       </div>

@@ -12,19 +12,20 @@ const nextConfig = {
     config.resolve.alias['@'] = path.join(__dirname, 'src');
     return config;
   },
-  images: { // Add this section for external image domains
+  images: {
+    domains: ['i.dummyjson.com', 'dummyjson.com'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'cdn.dummyjson.com',
-        // port: '',
-        // pathname: '/**', // Allow all paths for this hostname
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.dummyjson.com',
       },
       {
         protocol: 'https',
         hostname: 'robohash.org',
-        // port: '',
-        // pathname: '/**', // Allow all paths for this hostname
       },
     ],
   },

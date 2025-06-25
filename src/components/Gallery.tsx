@@ -11,6 +11,36 @@ interface GalleryProps {
   title: string;
 }
 
+interface GalleryItemProps {
+  image: string;
+  index: number;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function GalleryItem({ image, index, isActive, onClick }: GalleryItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 relative ${
+        isActive ? 'border-blue-500 ring-2 ring-blue-500' : 'border-transparent hover:border-gray-400'
+      } focus:outline-none focus:ring-2 focus:ring-blue-400`}
+    >
+      {image && (
+        <Image
+          src={image}
+          alt={`Thumbnail ${index + 1}`}
+          fill
+          sizes="(max-width:768px) 100vw, 33vw"
+          className="object-cover"
+          placeholder="blur"
+          blurDataURL="/img/placeholder.svg"
+        />
+      )}
+    </button>
+  );
+}
+
 export default function Gallery({ images, title }: GalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,9 +84,11 @@ export default function Gallery({ images, title }: GalleryProps) {
             <Image
               src={activeImage}
               alt={`${title} - Image ${currentIndex + 1}`}
-              layout="fill"
-              objectFit="contain"
+              fill
+              sizes="(max-width:768px) 100vw, 33vw"
               className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+              placeholder="blur"
+              blurDataURL="/img/placeholder.svg"
             />
           )}
            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 flex items-center justify-center">
@@ -91,22 +123,13 @@ export default function Gallery({ images, title }: GalleryProps) {
       {images.length > 1 && (
         <div className="flex space-x-2 overflow-x-auto py-2 w-full justify-center max-w-2xl">
           {images.map((image, index) => (
-            <button
+            <GalleryItem
               key={index}
+              image={image}
+              index={index}
+              isActive={index === currentIndex}
               onClick={() => setCurrentIndex(index)}
-              className={`w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 relative
-                          ${index === currentIndex ? 'border-blue-500 ring-2 ring-blue-500' : 'border-transparent hover:border-gray-400'}
-                          focus:outline-none focus:ring-2 focus:ring-blue-400`}
-            >
-              {image && (
-                <Image
-                  src={image}
-                  alt={`Thumbnail ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
-                />
-              )}
-            </button>
+            />
           ))}
         </div>
       )}
@@ -140,13 +163,13 @@ export default function Gallery({ images, title }: GalleryProps) {
                 <Dialog.Panel className="relative w-full max-w-3xl max-h-[80vh] transform overflow-hidden rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all flex items-center justify-center"> {/* Added flex for centering image */}
                   {activeImage && (
                     <Image
-                      src={activeImage} // Show current selected image in modal
+                      src={activeImage}
                       alt={`${title} - Image ${currentIndex + 1} (Full screen)`}
-                      layout="intrinsic" // Use intrinsic to respect image dimensions up to container size
-                      width={1200} // Provide a large base width (adjust as needed)
-                      height={900} // Provide a large base height (adjust as needed)
-                      objectFit="contain"
-                      className="max-w-full max-h-full" // Ensure it doesn't overflow panel
+                      width={1200}
+                      height={900}
+                      className="max-w-full max-h-full"
+                      placeholder="blur"
+                      blurDataURL="/img/placeholder.svg"
                     />
                   )}
                   <button

@@ -18,9 +18,12 @@ export default function FeaturedProductsCarousel({ products }: Props) {
               <Image
                 src={product.imageUrl}
                 alt={product.name}
-                width={300} // Placeholder width
-                height={300} // Placeholder height
-                className={styles.productImage} // Add a class for styling
+                width={400}
+                height={400}
+                className={styles.productImage}
+                sizes="(max-width:768px) 100vw, 33vw"
+                placeholder="blur"
+                blurDataURL="/img/placeholder.svg"
               />
             )}
             <h3>{product.name}</h3>

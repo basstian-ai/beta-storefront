@@ -283,7 +283,7 @@ export async function fetchHeroBanner(): Promise<HeroContent> {
     description: product.description || 'Check out this incredible offer.',
     ctaText: 'Learn More',
     ctaLink: `/products/${product.id}`, // Example CTA link
-    imageUrl: product.thumbnail || 'https://via.placeholder.com/600x400.png?text=Hero+Image', // Fallback placeholder
+    imageUrl: product.thumbnail || 'https://via.placeholder.com/600x400.webp?text=Hero+Image', // Fallback placeholder
     imageAlt: product.title ? `Image for ${product.title}` : undefined // Ensure it aligns with optional imageAlt
   };
   return heroData;

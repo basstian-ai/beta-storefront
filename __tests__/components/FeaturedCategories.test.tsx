@@ -25,6 +25,7 @@ describe('FeaturedCategories Component', () => {
         const img = screen.getByAltText(cat.name);
         expect(img).toBeInTheDocument();
         expect(img).toHaveAttribute('src', cat.imageUrl);
+        expect(img).toHaveAttribute('sizes');
       } else {
         // Check that no image is rendered for this category if imageUrl is not provided
         const linkElement = screen.getByRole('link', { name: cat.name });

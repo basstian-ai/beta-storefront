@@ -11,7 +11,7 @@ const mockProducts: Product[] = [
     slug: 'product-1',
     createdAt: '2023-09-10T00:00:00Z',
     price: 10.99,
-    imageUrl: 'https://via.placeholder.com/150/product1.png',
+    imageUrl: 'https://via.placeholder.com/150/product1.webp',
   },
   {
     id: '2',
@@ -19,7 +19,7 @@ const mockProducts: Product[] = [
     slug: 'product-2',
     createdAt: '2023-09-11T00:00:00Z',
     price: 25.50,
-    imageUrl: 'https://via.placeholder.com/150/product2.png',
+    imageUrl: 'https://via.placeholder.com/150/product2.webp',
   },
   {
     id: '3',
@@ -27,7 +27,7 @@ const mockProducts: Product[] = [
     slug: 'product-3-special',
     createdAt: '2023-09-12T00:00:00Z',
     price: 5.00,
-    imageUrl: 'https://via.placeholder.com/150/product3.png',
+    imageUrl: 'https://via.placeholder.com/150/product3.webp',
   },
 ];
 
@@ -56,6 +56,7 @@ describe('FeaturedProductsCarousel', () => {
       const imageElement = screen.getByAltText(product.name);
       expect(imageElement).toBeInTheDocument();
       expect(imageElement).toHaveAttribute('src', product.imageUrl);
+      expect(imageElement).toHaveAttribute('sizes');
     });
   });
 

@@ -233,7 +233,7 @@ describe('HomePage Integration', () => {
           description: 'We are currently unable to load the latest offers. Please check back soon.',
           ctaText: 'Explore Products',
           ctaLink: '/products',
-          imageUrl: 'https://via.placeholder.com/1200x400.png?text=Our+Store',
+         imageUrl: 'https://via.placeholder.com/1200x400.webp?text=Our+Store',
           imageAlt: 'Default hero image'
         };
 

@@ -4,12 +4,14 @@
 import Image from 'next/image';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon, UserCircleIcon, ShoppingCartIcon } from '@heroicons/react/24/outline'; // Keep outline or solid consistently
+import { Heart } from 'lucide-react';
 import SearchBar from './SearchBar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Fragment } from 'react';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
+import { useWishlistStore } from '@/store/wishlist';
 import { useHasMounted } from '@/hooks/useHasMounted'; // Import useHasMounted
 
 interface CategoryNavItem {
@@ -33,6 +35,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
 
   // Get total items from cart store for the badge
   const totalCartItems = useCartStore((state) => state.getTotalItems());
+  const wishlistCount = Object.keys(useWishlistStore((s) => s.items)).length;
 
   const MAX_VISIBLE_CATEGORIES = 5;
 
@@ -144,6 +147,15 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                   {hasMounted && totalCartItems > 0 && (
                     <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                       {totalCartItems}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/wishlist" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="View Wishlist">
+                  <span className="sr-only">View Wishlist</span>
+                  <Heart className="h-6 w-6" aria-hidden="true" />
+                  {hasMounted && wishlistCount > 0 && (
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                      {wishlistCount}
                     </span>
                   )}
                 </Link>

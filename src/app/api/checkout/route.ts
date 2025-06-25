@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchProductById } from '@/bff/adapters/dummyjson';
 import type Stripe from 'stripe';
-import { stripe } from '@/lib/getStripe';
+import { getStripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +16,17 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ message: 'Invalid JSON' }, { status: 400 });
+  }
+
+  let stripe: Stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    console.error('[checkout] Stripe config error', err);
+    return NextResponse.json(
+      { error: 'Stripe not configured' },
+      { status: 500 },
+    );
   }
 
   const items = body.items;

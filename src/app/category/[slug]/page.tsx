@@ -3,7 +3,7 @@ import { getProducts, getCategories } from '@/bff/services';
 // ProductSchema will be used by the client component
 // Link will be used by client component
 // z will be used by client component
-import CategoryFilterableProducts from '@/components/CategoryFilterableProducts'; // Import the new client component
+import CategoryProductsClient from '@/components/CategoryProductsClient';
 import Link from 'next/link'; // Keep for fallback link
 
 // ProductCard component will be moved to CategoryFilterableProducts.tsx or a shared components directory
@@ -89,11 +89,8 @@ export default async function CategoryPage({
     )
   );
 
-  // Pass all products for client-side filtering initially, until BFF is updated for multi-brand.
-  // This is not ideal for large categories but fulfills the current structure.
-  // totalInitialProducts will be the total for the category.
+  // Pass all products for client-side filtering initially.
   const initialProducts = allProductsData.items;
-  const totalInitialProducts = allProductsData.total;
 
   // Fallback for no products (applies if the category has no products at all)
   if (!initialProducts || initialProducts.length === 0) {
@@ -109,13 +106,10 @@ export default async function CategoryPage({
   }
 
   return (
-    <CategoryFilterableProducts
-      initialProducts={initialProducts}
-      totalInitialProducts={totalInitialProducts}
-      availableBrands={availableBrands}
-      categorySlug={categoryApiName}
-      initialHumanReadableCategoryName={humanReadableCategoryName}
-      // searchParams are not directly passed; client component uses useSearchParams
+    <CategoryProductsClient
+      products={initialProducts}
+      brands={availableBrands}
+      categoryName={humanReadableCategoryName}
     />
   );
 }

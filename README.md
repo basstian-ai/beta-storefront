@@ -75,7 +75,9 @@ To enable the checkout flow in production, set the following environment variabl
 
 - `STRIPE_SECRET_KEY`
 - `STRIPE_PUBLISHABLE_KEY`
-- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_WEBHOOK_SECRET` *(optional until webhook route is added)*
+
+The webhook secret will be required once we implement webhook handling.
 
 
 Here’s the updated `README.md` section you can append under a new heading, such as **"Development Notes and Practices"**:

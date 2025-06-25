@@ -12,4 +12,12 @@ describe('validateStripeEnv', () => {
     process.env = {} as any;
     expect(() => validateStripeEnv()).toThrow();
   });
+
+  it('allows missing webhook secret', () => {
+    process.env = {
+      STRIPE_SECRET_KEY: 'sk_test_123',
+      STRIPE_PUBLISHABLE_KEY: 'pk_test_123',
+    } as any;
+    expect(() => validateStripeEnv()).not.toThrow();
+  });
 });

@@ -4,8 +4,7 @@ import { getProducts, getCategories } from '@/bff/services';
 // Link will be used by client component
 // z will be used by client component
 import { Suspense } from 'react';
-import CategoryFilters from '@/components/CategoryFilters';
-import CategoryProductsClient from '@/components/CategoryProductsClient';
+import CategoryClient from './CategoryClient';
 import Link from 'next/link'; // Keep for fallback link
 
 // ProductCard component will be moved to CategoryFilterableProducts.tsx or a shared components directory
@@ -108,22 +107,12 @@ export default async function CategoryPage({
   }
 
   return (
-    <>
-      <Suspense fallback={null}>
-        <CategoryFilters
-          sortOptions={[
-            { value: '', label: 'Default' },
-            { value: 'price_asc', label: 'Price: Low to High' },
-            { value: 'price_desc', label: 'Price: High to Low' },
-            { value: 'newest', label: 'Newest' },
-          ]}
-        />
-      </Suspense>
-      <CategoryProductsClient
+    <Suspense fallback={null}>
+      <CategoryClient
         products={initialProducts}
         brands={availableBrands}
         categoryName={humanReadableCategoryName}
       />
-    </>
+    </Suspense>
   );
 }

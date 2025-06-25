@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import CategoryProductsClient from './CategoryProductsClient';
+import CategoryClient from './CategoryClient';
 import { ProductSchema } from '@/bff/types';
 import { z } from 'zod';
 
@@ -22,9 +22,9 @@ const products: Product[] = [
 
 const brands = ['Apple','Samsung'];
 
-describe('CategoryProductsClient', () => {
+describe('CategoryClient', () => {
   it('sorts products when selection changes', async () => {
-    render(<CategoryProductsClient products={products} brands={brands} categoryName="Test" />);
+    render(<CategoryClient products={products} brands={brands} categoryName="Test" />);
     await userEvent.selectOptions(screen.getByLabelText(/sort/i), 'price_desc');
     await waitFor(() => {
       const main = screen.getByRole('main');

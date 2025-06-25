@@ -4,9 +4,9 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { z } from 'zod';
 import { ProductSchema } from '@/bff/types';
 import { useProductFilters } from '@/store/productFilters';
-import SortDropdown from './SortDropdown';
-import FiltersSidebar from './FiltersSidebar';
-import ProductCardSkeleton from './ProductCardSkeleton';
+import SortDropdown from '@/components/SortDropdown';
+import FiltersSidebar from '@/components/FiltersSidebar';
+import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -53,7 +53,7 @@ const ProductCard = ({ product }: { product: Product }) => (
   </div>
 );
 
-export default function CategoryProductsClient({ products, brands, categoryName }: { products: Product[]; brands: string[]; categoryName: string }) {
+export default function CategoryClient({ products, brands, categoryName }: { products: Product[]; brands: string[]; categoryName: string }) {
   const [display, setDisplay] = useState<Product[]>(products);
   const [loading, setLoading] = useState(false);
   const state = useProductFilters();

@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { getCategories } from '@/bff/services';
 import Link from 'next/link';
+import PopularProductsCarousel from '@/components/PopularProductsCarousel';
 // import { slugify } from '@/lib/utils'; // Not needed for category slugs if fetched as objects
 
 interface CategoryInfo { // This interface might need adjustment or can use CategorySchema directly
@@ -79,6 +80,13 @@ export default async function HomePage() {
               Shop Now
             </a>
           </Link>
+        </div>
+      </section>
+
+      {/* Popular Products Carousel */}
+      <section className="py-8 bg-gray-100">
+        <div className="container mx-auto px-4">
+          <PopularProductsCarousel />
         </div>
       </section>
 

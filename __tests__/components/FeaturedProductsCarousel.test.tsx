@@ -56,6 +56,7 @@ describe('FeaturedProductsCarousel', () => {
       const imageElement = screen.getByAltText(product.name);
       expect(imageElement).toBeInTheDocument();
       expect(imageElement).toHaveAttribute('src', product.imageUrl);
+      expect(imageElement).toHaveAttribute('sizes');
     });
   });
 

@@ -153,7 +153,7 @@ As the project grows, we plan to incorporate additional testing methodologies:
 
 ## Performance
 
-All product and category images now use Next.js `<Image>` for automatic optimization. Remote domains `i.dummyjson.com` and `dummyjson.com` are whitelisted in `next.config.js` to improve Largest Contentful Paint.
+All product and category images now use Next.js `<Image>` for automatic optimization. Remote domains `i.dummyjson.com`, `cdn.dummyjson.com`, and `dummyjson.com` are whitelisted in `next.config.js` to improve Largest Contentful Paint. Key hero images load with a blur placeholder for smoother rendering.
 
 ## CI/CD with Vercel Preview Deployments
 

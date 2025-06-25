@@ -72,8 +72,10 @@ describe('ProductList Component', () => {
     expect(images.length).toBe(mockProducts.length);
     expect(images[0]).toHaveAttribute('src', '/images/laptop.jpg');
     expect(images[0]).toHaveAttribute('alt', 'Laptop Pro');
+    expect(images[0]).toHaveAttribute('sizes');
     expect(images[1]).toHaveAttribute('src', '/images/mouse.jpg');
     expect(images[1]).toHaveAttribute('alt', 'Wireless Mouse');
+    expect(images[1]).toHaveAttribute('sizes');
   });
 
   it('renders links for each product', () => {

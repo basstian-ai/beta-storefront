@@ -24,8 +24,9 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
               <Image
                 src={product.imageUrl || '/placeholder-image.png'}
                 alt={product.name}
-                layout="fill" // Use layout="fill" for responsiveness within the fixed-height wrapper
-                objectFit="cover"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                className="object-cover"
               />
             </div>
             <h3>{product.name}</h3>

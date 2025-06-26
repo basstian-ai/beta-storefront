@@ -15,5 +15,6 @@ export default defineConfig({
     environment: 'jsdom', // Simulate a browser environment for tests
     setupFiles: './vitest.setup.ts', // Optional: for global test setup
     include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['tests/e2e/**'],
   },
 });

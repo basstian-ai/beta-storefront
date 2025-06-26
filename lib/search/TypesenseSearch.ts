@@ -38,7 +38,9 @@ export class TypesenseSearch implements SearchService {
   }
 
   async indexProducts(products: Product[]): Promise<void> {
-    await this.ensureCollection();
+    if (process.env.NODE_ENV !== 'production') {
+      await this.ensureCollection();
+    }
     if (!products.length) return;
     const docs = products.map(p => ({
       id: String(p.id),
@@ -49,15 +51,19 @@ export class TypesenseSearch implements SearchService {
       brand: (p as any).brand || '',
       price: (p as any).price || 0,
     }));
+    const payload = docs.map(d => JSON.stringify(d)).join('\n');
     await this.client
       .collections('products')
       .documents()
-      .import(docs, { action: 'upsert' });
+      .import(payload, { action: 'upsert' });
   }
 
   async search(q: string, opts: SearchOpts = {}): Promise<any> {
-    await this.ensureCollection();
-    const res = await this.client
+    if (process.env.NODE_ENV !== 'production') {
+      await this.ensureCollection();
+    }
+    try {
+      const res = await this.client
       .collections('products')
       .documents()
       .search({
@@ -67,6 +73,10 @@ export class TypesenseSearch implements SearchService {
         page: opts.page ?? 1,
         per_page: opts.perPage ?? 20,
       });
-    return res;
+      return res;
+    } catch (err) {
+      console.error('Typesense search error:', err);
+      return { hits: [], found: 0 };
+    }
   }
 }

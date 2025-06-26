@@ -8,11 +8,16 @@ on:
 jobs:
   reindex:
     runs-on: ubuntu-latest
+    env:
+      TYPESENSE_HOST: ${{ secrets.TS_HOST }}
+      TYPESENSE_PORT: '443'
+      TYPESENSE_PROTOCOL: https
+      TYPESENSE_API_KEY: ${{ secrets.TS_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '20'

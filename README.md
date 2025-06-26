@@ -227,3 +227,8 @@ Once these steps are completed, any new pull request to your repository should t
 - `TYPESENSE_PORT`
 - `TYPESENSE_PROTOCOL`
 - `TYPESENSE_API_KEY`
+
+Run local search:
+```bash
+pnpm typesense:up && pnpm reindex
+```

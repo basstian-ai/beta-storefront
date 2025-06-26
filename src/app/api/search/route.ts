@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchSvc } from '@/lib/search';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -18,8 +18,13 @@ export async function GET(request: NextRequest) {
   if (priceMax) filters.push(`price:<=${priceMax}`);
   const filterStr = filters.length ? filters.join(' && ') : undefined;
   try {
-    const results = await searchSvc.search(q, { filters: filterStr, page, perPage });
-    return NextResponse.json(results);
+    const results = await searchSvc.search(q, {
+      filters: filterStr,
+      page,
+      perPage,
+    });
+    const { hits = [], found: total_hits = 0 } = results ?? {};
+    return NextResponse.json({ hits, total_hits });
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json({ message: 'Error during search' }, { status: 500 });

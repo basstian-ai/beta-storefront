@@ -1,32 +1,46 @@
 // src/app/api/search/route.ts
-import { searchProducts, DEFAULT_LIMIT } from '@/bff/services';
 import { NextRequest, NextResponse } from 'next/server';
+import { searchSvc } from '@/lib/search';
+import { z } from 'zod';
+
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const term = searchParams.get('term');
-  const sort = (searchParams.get('sort') as 'relevance' | 'price-asc' | 'price-desc') ?? 'relevance';
-  const skipParam = Number(searchParams.get('skip') ?? '0');
-  const limitParam = Number(searchParams.get('limit') ?? String(DEFAULT_LIMIT));
-  const skip = Number.isNaN(skipParam) ? 0 : skipParam;
-  const limit = Number.isNaN(limitParam) ? DEFAULT_LIMIT : limitParam;
-
-  if (!term || term.length < 3) {
-    return NextResponse.json(
-      { items: [], message: 'Search term must be at least 3 characters long' },
-      { status: 400 }
-    );
-  }
-
+  const schema = z.object({
+    q: z.string().optional(),
+    page: z.coerce.number().optional(),
+    perPage: z.coerce.number().optional(),
+    category: z.string().optional(),
+    brand: z.string().optional(),
+    priceMax: z.coerce.number().optional(),
+  });
+  const {
+    q = '',
+    page = 1,
+    perPage = 20,
+    category,
+    brand,
+    priceMax,
+  } = schema.parse(Object.fromEntries(searchParams));
+  const filters = [
+    category && `category:=${category}`,
+    brand && `brand:=${brand}`,
+    priceMax && `price:<=${priceMax}`,
+  ]
+    .filter(Boolean)
+    .join(' && ');
+  const filterStr = filters || undefined;
   try {
-    // The searchProducts service already handles B2B pricing and Zod validation
-    const results = await searchProducts(term, sort, skip, limit);
-    return NextResponse.json(results);
+    const results = await searchSvc.search(q, {
+      filters: filterStr,
+      page,
+      perPage,
+    });
+    const { hits = [], found = 0 } = results ?? {};
+    return NextResponse.json({ hits, totalHits: found, page, perPage });
   } catch (error) {
     console.error('Search API error:', error);
-    return NextResponse.json(
-      { message: 'Error during product search', items: [] },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Error during search' }, { status: 500 });
   }
 }

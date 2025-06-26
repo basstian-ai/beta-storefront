@@ -1,4 +1,4 @@
-import { searchSvc } from '../lib/search';
+import { searchSvc } from '../src/lib/search';
 
 async function run() {
   const res = await fetch('http://localhost:3000/api/bff/products?all=true');

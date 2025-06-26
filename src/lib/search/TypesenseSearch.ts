@@ -1,5 +1,5 @@
 import Typesense from 'typesense';
-import type { Product } from '../../types';
+import type { Product } from '../../../types';
 import type { SearchOpts, SearchService } from './SearchService';
 
 export class TypesenseSearch implements SearchService {

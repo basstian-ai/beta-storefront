@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import type { SearchApiResponse } from '@/lib/search';
 
 export interface SearchParams {
   q?: string;
@@ -20,6 +21,6 @@ export function useProductSearch(params: SearchParams) {
   if (params.page) qs.set('page', String(params.page));
   if (params.perPage) qs.set('perPage', String(params.perPage));
   const query = qs.toString();
-  const { data, error } = useSWR(`/api/search?${query}`, fetcher);
+  const { data, error } = useSWR<SearchApiResponse>(`/api/search?${query}`, fetcher);
   return { data, error };
 }

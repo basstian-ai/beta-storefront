@@ -7,6 +7,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Combobox } from '@headlessui/react';
 import { useSearchStatus } from '@/context/SearchStatusContext';
 import { useProductSearch } from '@/hooks/useProductSearch';
+import type { ProductSearchHit } from '@/lib/search';
 
 export default function SearchBar() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function SearchBar() {
       return;
     }
     if (data?.hits) {
-      setSuggestions(data.hits.map((h: any) => h.document.name || h.document.title));
+      setSuggestions(data.hits.map((h: ProductSearchHit) => h.document.name));
       setOpen(true);
     }
   }, [data, term]);

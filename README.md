@@ -222,3 +222,8 @@ Once these steps are completed, any new pull request to your repository should t
 - [ ] **Epic 6: Quick My Page shell**
 - [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
 - [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)
+## Config
+- `TYPESENSE_HOST`
+- `TYPESENSE_PORT`
+- `TYPESENSE_PROTOCOL`
+- `TYPESENSE_API_KEY`

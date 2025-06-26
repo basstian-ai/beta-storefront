@@ -6,6 +6,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Combobox } from '@headlessui/react';
 import { useSearchStatus } from '@/context/SearchStatusContext';
+import { useProductSearch } from '@/hooks/useProductSearch';
 
 export default function SearchBar() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function SearchBar() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const { setMessage } = useSearchStatus();
+  const { data } = useProductSearch({ q: term, perPage: 5 });
   const pushQuery = useDebouncedCallback((value: string) => {
     const trimmed = value.trim();
     if (trimmed) {
@@ -22,25 +24,16 @@ export default function SearchBar() {
     }
   }, 300);
 
-  const fetchHints = useDebouncedCallback(async (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) {
+  useEffect(() => {
+    if (!term.trim()) {
       setSuggestions([]);
       return;
     }
-    try {
-      const res = await fetch(
-        `/api/search?s=${encodeURIComponent(trimmed)}&limit=5&onlyNames=true`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setSuggestions(data.names ?? []);
-        setOpen(true);
-      }
-    } catch (e) {
-      console.error('hint fetch failed', e);
+    if (data?.hits) {
+      setSuggestions(data.hits.map((h: any) => h.document.name || h.document.title));
+      setOpen(true);
     }
-  }, 300);
+  }, [data, term]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -102,7 +95,6 @@ export default function SearchBar() {
           onChange={e => {
             setTerm(e.target.value);
             pushQuery(e.target.value);
-            fetchHints(e.target.value);
           }}
           onFocus={() => suggestions.length && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 100)}
@@ -110,7 +102,7 @@ export default function SearchBar() {
         {term && (
           <button
             type="button"
-            onClick={() => { setTerm(''); setSuggestions([]); setOpen(false); pushQuery.cancel(); fetchHints.cancel(); }}
+            onClick={() => { setTerm(''); setSuggestions([]); setOpen(false); pushQuery.cancel(); }}
             className="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             aria-label="Clear search"
           >

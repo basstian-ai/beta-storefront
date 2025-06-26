@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest"
+    "test": "vitest",
+    "reindex": "ts-node scripts/reindex.ts",
+    "typesense:up": "docker compose -f docker-compose.typesense.yml up -d"
   },
   "dependencies": {
     "@headlessui/react": "*",
@@ -23,7 +25,9 @@
     "stripe": "^18.2.1",
     "use-debounce": "^10.0.5",
     "zod": "*",
-    "zustand": "^4.0.0"
+    "zustand": "^4.0.0",
+    "typesense": "2.0.3",
+    "swr": "2.2.3"
   },
   "devDependencies": {
     "@tailwindcss/forms": "*",
@@ -44,6 +48,7 @@
     "postcss": "^8",
     "tailwindcss": "3.4.4",
     "typescript": "^5",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "ts-node": "^10.9.1"
   }
 }

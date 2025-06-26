@@ -79,6 +79,12 @@ To enable the checkout flow in production, set the following environment variabl
 
 The webhook secret will be required once we implement webhook handling.
 
+### Database Configuration
+
+- `DATABASE_URL` specifies the connection string Prisma uses for migrations and runtime queries. When using SQLite locally, set it to `file:./dev.db`.
+  - **Example**: `DATABASE_URL="file:./dev.db"`
+  - **Vercel Deployment**: Define `DATABASE_URL` in your project’s Environment Variables so migrations run during the build.
+
 
 Here’s the updated `README.md` section you can append under a new heading, such as **"Development Notes and Practices"**:
 

@@ -1,0 +1,9 @@
+-- CreateTable
+CREATE TABLE "Order" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "userId" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "total" REAL NOT NULL,
+    "items" JSONB NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -232,3 +232,6 @@ Run local search:
 ```bash
 pnpm typesense:up && pnpm reindex
 ```
+
+### Demo Order History
+No database is needed. Demo orders are stored in a Vercel Blob that is seeded via `pnpm ts-node scripts/seed-orders.ts` (also runs automatically in CI). The `/api/account/orders` endpoint reads this blob so no `.env` variables are required.

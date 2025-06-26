@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "userId": 1,
+    "date": "2024-01-01",
+    "items": [
+      { "productId": 101, "name": "Widget A", "quantity": 2, "price": 9.99 },
+      { "productId": 102, "name": "Widget B", "quantity": 1, "price": 19.99 }
+    ],
+    "total": 39.97
+  },
+  {
+    "id": 2,
+    "userId": 1,
+    "date": "2024-02-15",
+    "items": [
+      { "productId": 103, "name": "Widget C", "quantity": 3, "price": 4.99 }
+    ],
+    "total": 14.97
+  }
+]

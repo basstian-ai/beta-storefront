@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { getCategories, getProducts } from '@/bff/services';
-import CategoryFilter from '../[slug]/CategoryFilterClient';
+import CategoryFilter from '../[slug]/CategoryFilter';
 import CategoryClient from '../[slug]/CategoryClient';
 
 export default async function CategoryGrid({

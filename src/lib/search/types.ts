@@ -15,5 +15,7 @@ export type ProductSearchHit = SearchResponseHit<ProductDocument>;
 
 export interface SearchApiResponse {
   hits: ProductSearchHit[] | undefined;
-  total_hits: number;
+  totalHits: number;
+  page: number;
+  perPage: number;
 }

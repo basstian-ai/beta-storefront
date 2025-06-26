@@ -16,7 +16,7 @@ export default function SearchBar() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const { setMessage } = useSearchStatus();
-  const { data } = useProductSearch({ q: term, perPage: 5 });
+  const { data, isLoading } = useProductSearch({ q: term, perPage: 5 });
   const pushQuery = useDebouncedCallback((value: string) => {
     const trimmed = value.trim();
     if (trimmed) {
@@ -28,13 +28,19 @@ export default function SearchBar() {
   useEffect(() => {
     if (!term.trim()) {
       setSuggestions([]);
+      setOpen(false);
       return;
     }
     if (data?.hits) {
       setSuggestions(data.hits.map((h: ProductSearchHit) => h.document.name));
       setOpen(true);
+    } else if (isLoading) {
+      setOpen(true);
+    } else {
+      setSuggestions([]);
+      setOpen(true);
     }
-  }, [data, term]);
+  }, [data, term, isLoading]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -117,18 +123,31 @@ export default function SearchBar() {
         >
           <MagnifyingGlassIcon className="h-5 w-5" />
         </button>
-        {open && suggestions.length > 0 && (
+        {open && (
           <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg">
-            {suggestions.map(s => (
-              <Combobox.Option
-                key={s}
-                value={s}
-                className={({ active }) => `cursor-pointer select-none px-3 py-1 ${active ? 'bg-indigo-600 text-white' : 'text-gray-900'}`}
-                onClick={() => { pushQuery.flush(); setOpen(false); }}
-              >
-                {s}
-              </Combobox.Option>
-            ))}
+            {isLoading &&
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="px-3 py-2 text-gray-400 animate-pulse">
+                  Loading...
+                </div>
+              ))}
+            {!isLoading && suggestions.length === 0 && (
+              <div className="px-3 py-2 text-gray-500">No results</div>
+            )}
+            {!isLoading &&
+              suggestions.map(s => (
+                <Combobox.Option
+                  key={s}
+                  value={s}
+                  className={({ active }) => `cursor-pointer select-none px-3 py-1 ${active ? 'bg-indigo-600 text-white' : 'text-gray-900'}`}
+                  onClick={() => {
+                    pushQuery.flush();
+                    setOpen(false);
+                  }}
+                >
+                  {s}
+                </Combobox.Option>
+              ))}
           </Combobox.Options>
         )}
       </form>

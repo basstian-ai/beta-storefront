@@ -1,0 +1,5 @@
+typesense:
+  image: typesense/typesense:latest
+  ports:
+    - "8108:8108"
+  command: --data-dir=/data --api-key=xyz

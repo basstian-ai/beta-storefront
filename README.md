@@ -222,3 +222,17 @@ Once these steps are completed, any new pull request to your repository should t
 - [ ] **Epic 6: Quick My Page shell**
 - [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
 - [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)
+## Config
+Set the following environment variables to connect to your Typesense instance (defaults work with `docker-compose.typesense.yml`):
+- `TYPESENSE_HOST`
+- `TYPESENSE_PORT`
+- `TYPESENSE_PROTOCOL`
+- `TYPESENSE_API_KEY`
+
+Run local search:
+```bash
+pnpm typesense:up && pnpm reindex
+```
+
+### Demo Order History
+No database is needed. Demo orders are stored in a Vercel Blob that is seeded via `pnpm ts-node scripts/seed-orders.ts` (also runs automatically in CI). The `/api/account/orders` endpoint reads this blob so no `.env` variables are required.

@@ -24,7 +24,6 @@
     "react-hot-toast": "*",
     "stripe": "^18.2.1",
     "swr": "2.2.3",
-    "typesense": "2.0.3",
     "use-debounce": "^10.0.5",
     "zod": "*",
     "zustand": "^4.0.0"

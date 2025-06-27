@@ -223,6 +223,7 @@ Once these steps are completed, any new pull request to your repository should t
 - [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
 - [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)
 ## Config
+By default search uses a local mock dataset. Set `SEARCH_DRIVER=typesense` and provide the variables below to enable your own Typesense instance.
 The app can connect to Typesense if you provide these optional variables.  If left empty, search results will be fetched directly from dummyjson.com:
 
 ```bash
@@ -230,6 +231,7 @@ TYPESENSE_HOST=
 TYPESENSE_PORT=443
 TYPESENSE_PROTOCOL=https
 TYPESENSE_API_KEY=
+SEARCH_DRIVER=mock
 ```
 Local docker defaults:
 ```bash
@@ -237,6 +239,7 @@ TYPESENSE_HOST=localhost
 TYPESENSE_PORT=8108
 TYPESENSE_PROTOCOL=http
 TYPESENSE_API_KEY=xyz
+SEARCH_DRIVER=mock
 ```
 
 Run local Typesense (optional):

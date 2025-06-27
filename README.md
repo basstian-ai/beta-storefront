@@ -28,6 +28,15 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Quick Start
+
+```bash
+cp .env.example .env
+pnpm prisma migrate dev --name init
+pnpm prisma db seed
+pnpm dev
+```
+
 ### Linting and tests
 
 Run ESLint and the test suite with:
@@ -78,6 +87,12 @@ To enable the checkout flow in production, set the following environment variabl
 - `STRIPE_WEBHOOK_SECRET` *(optional until webhook route is added)*
 
 The webhook secret will be required once we implement webhook handling.
+
+### Database Configuration
+
+- `DATABASE_URL` specifies the connection string Prisma uses for migrations and runtime queries. When using SQLite locally, set it to `file:./dev.db`.
+  - **Example**: `DATABASE_URL=file:./dev.db`
+  - **Vercel Deployment**: Define `DATABASE_URL` in your project’s Environment Variables so migrations run during the build.
 
 
 Here’s the updated `README.md` section you can append under a new heading, such as **"Development Notes and Practices"**:

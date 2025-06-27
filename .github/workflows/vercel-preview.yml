@@ -24,6 +24,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile # Using --no-frozen-lockfile as requested
 
+      - name: Run migrations and seed
+        run: |
+          pnpm prisma migrate deploy
+          pnpm prisma db seed
+
       - name: Run Tests
         run: pnpm test # Assumes 'test' script in package.json runs Vitest
 

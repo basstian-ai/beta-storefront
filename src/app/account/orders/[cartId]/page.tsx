@@ -4,10 +4,9 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 interface OrderItem {
-  description: string | null;
-  quantity: number | null;
-  amount_total: number | null;
-  price_id?: string | null;
+  title: string;
+  quantity: number;
+  price: number;
 }
 
 export default async function OrderDetailPage({ params }: { params: { cartId: string } }) {
@@ -16,7 +15,7 @@ export default async function OrderDetailPage({ params }: { params: { cartId: st
     redirect(`/login?callbackUrl=/account/orders/${params.cartId}`);
   }
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/orders/${params.cartId}`, { cache: 'no-store' });
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ''}/api/account/orders/${params.cartId}`, { cache: 'no-store' });
   if (!res.ok) {
     return <div className="container mx-auto px-4 py-8">Order not found.</div>;
   }
@@ -38,9 +37,9 @@ export default async function OrderDetailPage({ params }: { params: { cartId: st
           <tbody className="divide-y divide-gray-200">
             {items.map((item, idx) => (
               <tr key={idx}>
-                <td className="px-4 py-2">{item.description}</td>
+                <td className="px-4 py-2">{item.title}</td>
                 <td className="px-4 py-2">{item.quantity}</td>
-                <td className="px-4 py-2">${((item.amount_total || 0) / 100).toFixed(2)}</td>
+                <td className="px-4 py-2">${(item.price / 100).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

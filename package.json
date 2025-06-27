@@ -57,5 +57,8 @@
       "prisma",
       "@prisma/engines"
     ]
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

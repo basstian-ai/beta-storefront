@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GET } from '../src/app/api/orders/route';
+import { GET } from '../src/app/api/account/orders/route';
 
 vi.mock('../src/lib/prisma', () => ({
   prisma: {
@@ -15,7 +15,7 @@ vi.mock('next-auth', () => ({ getServerSession: vi.fn() }));
 const { prisma } = require('../src/lib/prisma');
 const { getServerSession } = require('next-auth');
 
-describe('GET /api/orders', () => {
+describe('GET /api/account/orders', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -27,7 +27,7 @@ describe('GET /api/orders', () => {
       { id: 1, createdAt: new Date('2024-01-01'), total: 50 },
     ]);
 
-    const res = await GET(new Request('http://test/api/orders'));
+    const res = await GET(new Request('http://test/api/account/orders'));
     const data = await res.json();
     expect(data.length).toBe(2);
     expect(prisma.order.findMany).toHaveBeenCalled();

@@ -1,7 +1,7 @@
 export * from './TypesenseSearch';
+export * from './DummyJsonSearch';
 export * from './SearchService';
 export * from './types';
-import { TypesenseSearch } from './TypesenseSearch';
-
-export const searchSvc = new TypesenseSearch();
+import { DummyJsonSearch } from './DummyJsonSearch';
+export const searchSvc = new DummyJsonSearch();
 

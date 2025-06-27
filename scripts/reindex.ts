@@ -6,7 +6,7 @@ async function run() {
   const data = await res.json();
   const products = data.items || data.products || [];
   await searchSvc.indexProducts(products);
-  console.log(`Imported ${products.length} documents into Typesense`);
+  console.log(`Indexed ${products.length} products`);
 }
 
 run().catch(err => {

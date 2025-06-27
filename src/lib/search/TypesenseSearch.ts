@@ -83,12 +83,14 @@ export class TypesenseSearch implements SearchService {
         .collections('products')
         .documents()
         .search({
-        q,
-        query_by: 'name,description',
-        filter_by: opts.filters,
-        page: opts.page ?? 1,
-        per_page: opts.perPage ?? 20,
-      });
+          q,
+          query_by: 'name,description',
+          filter_by: opts.filters,
+          page: opts.page ?? 1,
+          per_page: opts.perPage ?? 20,
+          facet_by: 'brand,category',
+          max_facet_values: 30,
+        });
       return res as ProductSearchResponse;
     } catch (err) {
       console.error('Typesense search error:', err);

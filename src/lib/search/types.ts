@@ -18,4 +18,5 @@ export interface SearchApiResponse {
   totalHits: number;
   page: number;
   perPage: number;
+  facetCounts?: Record<string, Record<string, number>>;
 }

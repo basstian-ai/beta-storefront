@@ -4,23 +4,23 @@ import { mergeQueryString } from '@/utils/mergeQuery';
 
 interface Props {
   total: number;
-  skip: number;
-  limit: number;
+  page: number;
+  perPage: number;
 }
 
-export default function SearchPager({ total, skip, limit }: Props) {
+export default function SearchPager({ total, page, perPage }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const totalPages = Math.ceil(total / limit);
-  const current = Math.floor(skip / limit) + 1;
+  const totalPages = Math.ceil(total / perPage);
+  const current = page;
 
   if (totalPages <= 1) return null;
 
-  const goTo = (page: number) => {
+  const goTo = (p: number) => {
     const query = mergeQueryString(searchParams.toString(), {
-      skip: String((page - 1) * limit),
-      limit: String(limit),
+      page: String(p),
+      perPage: String(perPage),
     });
     router.push(`/search?${query}`);
   };

@@ -223,11 +223,21 @@ Once these steps are completed, any new pull request to your repository should t
 - [ ] **Task 8: Dev Experience** (CONTRIBUTING.md, test script, BFF logging)
 - [x] **Task 9: CI/CD** (Vercel preview workflow - workflow file created, but full CI setup might be pending actual run)
 ## Config
-Set the following environment variables to connect to your Typesense instance (defaults work with `docker-compose.typesense.yml`):
-- `TYPESENSE_HOST`
-- `TYPESENSE_PORT`
-- `TYPESENSE_PROTOCOL`
-- `TYPESENSE_API_KEY`
+Set the following environment variables to connect to your Typesense instance:
+
+```bash
+TYPESENSE_HOST=
+TYPESENSE_PORT=443
+TYPESENSE_PROTOCOL=https
+TYPESENSE_API_KEY=
+```
+Local docker defaults:
+```bash
+TYPESENSE_HOST=localhost
+TYPESENSE_PORT=8108
+TYPESENSE_PROTOCOL=http
+TYPESENSE_API_KEY=xyz
+```
 
 Run local search:
 ```bash

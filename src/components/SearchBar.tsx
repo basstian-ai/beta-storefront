@@ -16,7 +16,7 @@ export default function SearchBar() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const { setMessage } = useSearchStatus();
-  const { data, isLoading } = useProductSearch({ q: term, perPage: 5 });
+  const { hits, isLoading } = useProductSearch({ q: term, perPage: 5 });
   const pushQuery = useDebouncedCallback((value: string) => {
     const trimmed = value.trim();
     if (trimmed) {
@@ -31,8 +31,8 @@ export default function SearchBar() {
       setOpen(false);
       return;
     }
-    if (data?.hits) {
-      setSuggestions(data.hits.map((h: ProductSearchHit) => h.document.name));
+    if (hits) {
+      setSuggestions(hits.map((h: ProductSearchHit) => h.document.name));
       setOpen(true);
     } else if (isLoading) {
       setOpen(true);
@@ -40,7 +40,7 @@ export default function SearchBar() {
       setSuggestions([]);
       setOpen(true);
     }
-  }, [data, term, isLoading]);
+  }, [hits, term, isLoading]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

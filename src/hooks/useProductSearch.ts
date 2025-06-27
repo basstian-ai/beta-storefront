@@ -22,5 +22,11 @@ export function useProductSearch(params: SearchParams) {
   if (params.perPage) qs.set('perPage', String(params.perPage));
   const query = qs.toString();
   const { data, error, isLoading } = useSWR<SearchApiResponse>(`/api/search?${query}`, fetcher);
-  return { data, error, isLoading };
+  return {
+    hits: data?.hits ?? [],
+    found: data?.totalHits ?? 0,
+    facetCounts: data?.facetCounts ?? {},
+    isLoading,
+    error,
+  };
 }

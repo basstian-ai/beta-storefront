@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
     priceMax,
   } = schema.parse(Object.fromEntries(searchParams));
   const filters = [
-    category && `category:=${category}`,
-    brand && `brand:=${brand}`,
+    category && `category:=${encodeURIComponent(category)}`,
+    brand && `brand:=${encodeURIComponent(brand)}`,
     priceMax && `price:<=${priceMax}`,
   ]
     .filter(Boolean)
@@ -37,8 +37,16 @@ export async function GET(request: NextRequest) {
       page,
       perPage,
     });
-    const { hits = [], found = 0 } = results ?? {};
-    return NextResponse.json({ hits, totalHits: found, page, perPage });
+    const { hits = [], found = 0, facet_counts = [] } = results ?? {};
+    type Facet = { field_name: string; counts: { value: string; count: number }[] };
+    const facetCounts: Record<string, Record<string, number>> = {};
+    for (const f of facet_counts as Facet[]) {
+      facetCounts[f.field_name] = {};
+      for (const c of f.counts) {
+        facetCounts[f.field_name][c.value] = c.count;
+      }
+    }
+    return NextResponse.json({ hits, totalHits: found, page, perPage, facetCounts });
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json({ message: 'Error during search' }, { status: 500 });

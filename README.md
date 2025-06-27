@@ -211,6 +211,21 @@ To add these secrets to GitHub:
 
 Once these steps are completed, any new pull request to your repository should trigger the GitHub Action, which will then deploy a preview environment to Vercel. The deployment URL will typically be commented on the pull request by the Vercel bot.
 
+## Crystallize import
+
+This repo also provides a workflow to import products into your Crystallize tenant.
+The workflow defined in `.github/workflows/crystallize-import.yml` runs on demand
+or whenever the import scripts or specs change. It relies on these repository
+secrets:
+
+* `CRYSTALLIZE_ACCESS_TOKEN_ID`
+* `CRYSTALLIZE_ACCESS_TOKEN_SECRET`
+* `CRYSTALLIZE_TENANT_IDENTIFIER`
+
+When triggered, it converts `data/dummyProducts.json` into item specification
+files under `crystallize-import/` and then calls the Crystallize CLI to import
+them.
+
 ## Project Implementation Status
 
 - [x] **Task 1: Foundation + Mock BFF** (Adapters, Services, Zod, B2B logic, Vitest)

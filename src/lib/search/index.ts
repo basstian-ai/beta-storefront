@@ -4,8 +4,9 @@ export * from './types';
 import { MockSearch } from './MockSearch';
 
 let svc: import('./SearchService').SearchService;
+const driver = process.env.SEARCH_DRIVER ?? 'mock';
 
-if (process.env.SEARCH_DRIVER === 'typesense') {
+if (driver === 'typesense') {
   try {
     // @ts-expect-error Optional dependency
     const dynamicImport = new Function('p', 'return import(p)');

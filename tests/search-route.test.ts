@@ -10,4 +10,13 @@ describe('GET /api/search', () => {
     const json = await res.json();
     expect(json.hits.length).toBeGreaterThan(0);
   });
+
+  it('handles empty query safely', async () => {
+    const req = new NextRequest('https://example.com/api/search');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.hits).toEqual([]);
+    expect(json.found || json.totalHits || 0).toBe(0);
+  });
 });

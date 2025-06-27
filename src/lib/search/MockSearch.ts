@@ -21,6 +21,9 @@ export class MockSearch implements SearchService {
   }
 
   async search(q: string, opts: SearchOpts = {}): Promise<ProductSearchResponse> {
+    if (!q) {
+      return { hits: [], found: 0, facet_counts: [], page: 1, per_page: opts.perPage ?? 20 };
+    }
     const term = q.toLowerCase();
     const page = opts.page ?? 1;
     const perPage = opts.perPage ?? 20;

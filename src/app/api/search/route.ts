@@ -7,6 +7,10 @@ export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const rawQuery = searchParams.get('q')?.trim() || '';
+  if (!rawQuery) {
+    return NextResponse.json({ hits: [], found: 0 });
+  }
   const schema = z.object({
     q: z.string().optional(),
     page: z.coerce.number().optional(),
@@ -16,7 +20,7 @@ export async function GET(request: NextRequest) {
     priceMax: z.coerce.number().optional(),
   });
   const {
-    q = '',
+    q = rawQuery,
     page = 1,
     perPage = 20,
     category,
@@ -48,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json({ hits, totalHits: found, page, perPage, facetCounts });
   } catch (error) {
-    console.error('Search API error:', error);
-    return NextResponse.json({ message: 'Error during search' }, { status: 500 });
+    console.error('search error', error);
+    return NextResponse.json({ hits: [], found: 0 }, { status: 200 });
   }
 }

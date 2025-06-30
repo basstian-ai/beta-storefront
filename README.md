@@ -234,7 +234,7 @@ To run the import:
 * After completion, the items appear in your Crystallize catalogue
 * Re-running the workflow will upsert existing items thanks to `--update`
 
-Uses `ts-node` in ESM mode with a loader to run TypeScript scripts inside GitHub Actions.
+Uses `ts-node` in ESM mode to run TypeScript scripts inside GitHub Actions.
 
 ## Project Implementation Status
 

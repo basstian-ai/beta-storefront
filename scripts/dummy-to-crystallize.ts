@@ -1,6 +1,18 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+async function fetchDummyJSON(limit = 1000, tries = 3) {
+  const url = `https://dummyjson.com/products?limit=${limit}`;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url, { timeout: 10_000 });
+      if (r.ok) return r.json();
+    } catch {}
+    await new Promise((res) => setTimeout(res, 1_000 * (i + 1)));
+  }
+  throw new Error('❌ DummyJSON fetch failed after retries');
+}
+
 const categories = [
   { slug: 'beauty', name: 'Beauty' },
   { slug: 'fragrances', name: 'Fragrances' },
@@ -34,7 +46,6 @@ async function main() {
     return;
   }
 
-  const src = path.join('data', 'dummyProducts.json');
   const outDir = path.join('crystallize-import', 'items');
   const topicsDir = path.join('crystallize-import', 'topics');
 
@@ -65,9 +76,8 @@ async function main() {
     )
   );
 
-  const raw = await fs.readFile(src, 'utf8');
-  const data = JSON.parse(raw);
-  const products = Array.isArray(data) ? data : data.products || [];
+  const { products } = await fetchDummyJSON();
+  if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
 
   for (const product of products) {
     const slug = String(product.slug || product.title || product.name || product.id)
@@ -101,6 +111,7 @@ async function main() {
       'utf8'
     );
   }
+  console.log(`📝 Wrote ${products.length} item specs to crystallize-import/items/`);
 }
 
 main().catch((err) => {

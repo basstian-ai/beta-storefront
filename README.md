@@ -234,6 +234,8 @@ To run the import:
 * After completion, the items appear in your Crystallize catalogue
 * Re-running the workflow will upsert existing items thanks to `--update`
 
+Uses `tsx` to run TypeScript scripts in GitHub Actions.
+
 ## Project Implementation Status
 
 - [x] **Task 1: Foundation + Mock BFF** (Adapters, Services, Zod, B2B logic, Vitest)

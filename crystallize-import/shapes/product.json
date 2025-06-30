@@ -4,6 +4,11 @@
   "type": "product",
   "components": [
     { "id": "description", "name": "Description", "type": "richText" },
-    { "id": "price", "name": "Price", "type": "numeric" }
+    {
+      "id": "priceVariants",
+      "name": "Price",
+      "type": "priceVariant",
+      "config": { "multi": false, "mandatory": true }
+    }
   ]
 }

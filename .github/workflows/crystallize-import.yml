@@ -39,6 +39,7 @@ jobs:
           echo "Using tenant: $TENANT"
           npx tsx scripts/dummy-to-crystallize.ts
           npx crystallize import \
+            --json \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$TENANT" \

@@ -52,8 +52,8 @@ importers:
         version: 4.5.7(@types/react@19.1.8)(immer@9.0.21)(react@19.1.0)
     devDependencies:
       '@crystallize/cli':
-        specifier: ^3.31.7
-        version: 3.31.7(@types/react@19.1.8)
+        specifier: ^3.37.0
+        version: 3.37.0(@types/react@19.1.8)
       '@tailwindcss/forms':
         specifier: '*'
         version: 0.5.10(tailwindcss@3.4.4(ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3)))
@@ -327,7 +327,7 @@ packages:
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
     engines: {node: '>=0.1.90'}
 
-  '@crystallize/cli@3.31.7':
+  '@crystallize/cli@3.37.0':
     resolution: {integrity: sha512-AfDHPh1kGjH1Oq/iWRVVyiU3ux58ZImQbik9Wpiamae+hJ9gfCDaR16t5MzLC2+wsKOv1u26Lrqq9r7dD792QA==}
     engines: {node: '>=12'}
     hasBin: true
@@ -5289,7 +5289,7 @@ snapshots:
 
   '@colors/colors@1.6.0': {}
 
-  '@crystallize/cli@3.31.7(@types/react@19.1.8)':
+  '@crystallize/cli@3.37.0(@types/react@19.1.8)':
     dependencies:
       os: 0.1.2
       '@crystallize/import-utilities': 0.94.2

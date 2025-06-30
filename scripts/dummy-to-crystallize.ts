@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 
 async function fetchDummyJSON(limit = 100, tries = 3) {
   const url = `https://dummyjson.com/products?limit=${limit}`;

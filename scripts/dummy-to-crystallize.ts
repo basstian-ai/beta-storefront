@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-async function fetchDummyJSON(limit = 1000, tries = 3) {
+async function fetchDummyJSON(limit = 100, tries = 3) {
   const url = `https://dummyjson.com/products?limit=${limit}`;
   for (let i = 0; i < tries; i++) {
     try {
@@ -78,8 +78,9 @@ async function main() {
 
   const { products } = await fetchDummyJSON();
   if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
+  const selected = products.slice(0, 100);
 
-  for (const product of products) {
+  for (const product of selected) {
     const slug = String(product.slug || product.title || product.name || product.id)
       .toLowerCase()
       .replace(/\s+/g, '-');
@@ -87,7 +88,7 @@ async function main() {
     const itemSpec = {
       tenantLanguage: 'en',
       name: product.title || product.name,
-      shape: 'Product',
+      shape: 'product',
       path: slug,
       priceVariants: { default: product.price || 0 },
       variants: [
@@ -111,7 +112,7 @@ async function main() {
       'utf8'
     );
   }
-  console.log(`📝 Wrote ${products.length} item specs to crystallize-import/items/`);
+  console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
 }
 
 main().catch((err) => {

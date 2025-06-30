@@ -24,22 +24,18 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Convert DummyJSON → Crystallize spec
-        run: |
-          set -e
-          pnpx ts-node-esm scripts/dummy-to-crystallize.ts
-        env:
-          CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
-          CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
-          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
-
       - run: |
+          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
+          echo "Using tenant: $TENANT"
+          pnpm exec ts-node-esm --loader ts-node/esm scripts/dummy-to-crystallize.ts
           npx crystallize import \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
-            --tenant               "$CRYSTALLIZE_TENANT_IDENTIFIER" \
-            --batch-size 50 \
-            --max-tries 5 \
-            --update \
+            --tenant               "$TENANT" \
+            --batch-size 50 --max-tries 5 --update \
             --path crystallize-import
-          echo "Import complete"
+        env:
+          CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+          CRYSTALLIZE_TENANT_ID:           ${{ secrets.CRYSTALLIZE_TENANT_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}

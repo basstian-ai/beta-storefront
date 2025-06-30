@@ -15,6 +15,7 @@ jobs:
       CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
       CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
       CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+      CI: true
 
     steps:
       - uses: actions/checkout@v4
@@ -22,24 +23,41 @@ jobs:
       - uses: pnpm/action-setup@v2
         with: { version: 10 }
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
       - run: pnpm install --frozen-lockfile
 
-      - name: Convert DummyJSON → Crystallize spec
+      - name: Check import files
         run: |
-          set -e
-          pnpx ts-node-esm scripts/dummy-to-crystallize.ts
-        env:
-          CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
-          CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
-          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+          test -f crystallize-import/shapes/product.json
+          test -f crystallize-import/priceVariants.json
 
-      - run: |
+      - name: Import to Crystallize
+        run: |
+          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
+          echo "🚀 Importing into tenant: $TENANT"
+          npx tsx scripts/dummy-to-crystallize.ts
           npx crystallize import \
+            --json \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
-            --tenant               "$CRYSTALLIZE_TENANT_IDENTIFIER" \
-            --batch-size 50 \
-            --max-tries 5 \
-            --update \
-            --path crystallize-import
-          echo "Import complete"
+            --tenant               "$TENANT" \
+            --batch-size 50 --max-tries 5 --update \
+            --path crystallize-import \
+            > import.json
+      env:
+        CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+        CRYSTALLIZE_TENANT_ID:           ${{ secrets.CRYSTALLIZE_TENANT_ID }}
+        CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+        CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+        CI: true
+
+      - name: Fail when nothing was created
+        run: |
+          ITEMS=$(jq '.itemsCreated' import.json)
+          if [ "$ITEMS" -eq 0 ]; then
+            echo "::error::Import created 0 items" && exit 1
+          fi

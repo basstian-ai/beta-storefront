@@ -49,6 +49,12 @@ async function main() {
     'utf8'
   );
 
+  await fs.writeFile(
+    path.join(topicsDir, 'index.json'),
+    JSON.stringify(['categories.json'], null, 2),
+    'utf8'
+  );
+
   await Promise.all(
     categories.map((c) =>
       fs.writeFile(
@@ -74,18 +80,17 @@ async function main() {
       shape: 'Product',
       path: slug,
       priceVariants: { default: product.price || 0 },
+      variants: [
+        {
+          sku: `SKU-${product.id}`,
+          priceVariants: { default: product.price || 0 },
+          stock: product.stock || 0,
+          images: (product.images || []).map((url: string) => ({ url })),
+        },
+      ],
       components: {
         description: {
           content: { plainText: product.description || '' },
-        },
-        price: {
-          priceVariants: [
-            {
-              identifier: 'default',
-              price: product.price || 0,
-              currency: 'USD',
-            },
-          ],
         },
       },
     };

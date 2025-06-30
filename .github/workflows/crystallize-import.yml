@@ -37,5 +37,7 @@ jobs:
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$CRYSTALLIZE_TENANT_IDENTIFIER" \
             --batch-size 50 \
+            --max-tries 5 \
+            --update \
             --path crystallize-import
           echo "Import complete"

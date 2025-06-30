@@ -232,6 +232,7 @@ To run the import:
 * Ensure repository secrets are set (`CRYSTALLIZE_ACCESS_TOKEN_ID`, `CRYSTALLIZE_ACCESS_TOKEN_SECRET`, `CRYSTALLIZE_TENANT_IDENTIFIER`)
 * The workflow generates item specs in `crystallize-import/` and imports them
 * After completion, the items appear in your Crystallize catalogue
+* Re-running the workflow will upsert existing items thanks to `--update`
 
 ## Project Implementation Status
 

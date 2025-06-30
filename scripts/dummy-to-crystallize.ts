@@ -41,10 +41,11 @@ const categories = [
 ];
 
 async function main() {
-  if (!process.env.CRYSTALLIZE_ACCESS_TOKEN_ID) {
-    console.log('CRYSTALLIZE_ACCESS_TOKEN_ID not set, skipping');
-    return;
-  }
+  try {
+    if (!process.env.CRYSTALLIZE_ACCESS_TOKEN_ID) {
+      console.log('CRYSTALLIZE_ACCESS_TOKEN_ID not set, skipping');
+      return;
+    }
 
   const outDir = path.join('crystallize-import', 'items');
   const topicsDir = path.join('crystallize-import', 'topics');
@@ -80,7 +81,7 @@ async function main() {
   if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
   const selected = products.slice(0, 100);
 
-  for (const product of selected) {
+    for (const product of selected) {
     const slug = String(product.slug || product.title || product.name || product.id)
       .toLowerCase()
       .replace(/\s+/g, '-');
@@ -111,11 +112,12 @@ async function main() {
       JSON.stringify(itemSpec, null, 2),
       'utf8'
     );
+    }
+    console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
+  } catch (err) {
+    console.error('Script failed:', err);
+    process.exit(1);
   }
-  console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main();

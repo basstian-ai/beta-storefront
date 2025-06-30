@@ -15,6 +15,7 @@ jobs:
       CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
       CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
       CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+      CI: true
 
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +40,7 @@ jobs:
           echo "🚀 Importing into tenant: $TENANT"
           npx tsx scripts/dummy-to-crystallize.ts
           npx crystallize import \
-            --json --no-ui \
+            --json \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$TENANT" \
@@ -50,3 +51,4 @@ jobs:
           CRYSTALLIZE_TENANT_ID:           ${{ secrets.CRYSTALLIZE_TENANT_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+          CI: true

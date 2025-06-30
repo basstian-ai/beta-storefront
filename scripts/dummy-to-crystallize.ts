@@ -116,7 +116,8 @@ async function main() {
     }
     console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
   } catch (err) {
-    console.error('Script failed:', err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('DummyJSON fetch failed:', message);
     process.exit(1);
   }
 }

@@ -68,7 +68,7 @@ jobs:
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated' import.json)
+          ITEMS=$(jq '.itemsCreated // 0' import.json 2>/dev/null || echo 0)
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi

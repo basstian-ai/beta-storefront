@@ -1,4 +1,5 @@
 name: Crystallize Import
+
 on:
   workflow_dispatch:
   push:
@@ -11,9 +12,10 @@ on:
 jobs:
   import:
     runs-on: ubuntu-latest
+
     env:
-      CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
-      CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+      CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+      CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
       CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
       CI: true
 
@@ -21,7 +23,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v2
-        with: { version: 10 }
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: pnpm
 
       - uses: actions/setup-node@v4
         with:
@@ -31,29 +39,32 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Check import files
+
         run: |
           test -f crystallize-import/shapes/product.json
           test -f crystallize-import/priceVariants.json
 
       - name: Import to Crystallize
         run: |
+
           TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
           echo "🚀 Importing into tenant: $TENANT"
           npx tsx scripts/dummy-to-crystallize.ts
           npx crystallize import \
-            --json \
+            --json --no-ui \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
             > import.json
-      env:
-        CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
-        CRYSTALLIZE_TENANT_ID:           ${{ secrets.CRYSTALLIZE_TENANT_ID }}
-        CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
-        CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
-        CI: true
+        env:
+          CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+          CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+          CI: true
+
 
       - name: Fail when nothing was created
         run: |

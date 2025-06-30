@@ -31,12 +31,9 @@ jobs:
           node-version: 18
           cache: pnpm
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
       - run: pnpm install --frozen-lockfile
+
+      - run: pnpm approve-builds
 
       - name: Check import files
 
@@ -46,10 +43,13 @@ jobs:
 
       - name: Import to Crystallize
         run: |
-
           TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
           echo "🚀 Importing into tenant: $TENANT"
+
+          # 1️⃣ Generate 100 item-specs (idempotent)
           npx tsx scripts/dummy-to-crystallize.ts
+
+          # 2️⃣ Run the CLI _silently_ (no Ink / ANSI) ➜ JSON-only summary
           npx crystallize import \
             --json --no-ui \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
@@ -57,7 +57,11 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-            > import.json
+            | tee import.log \
+            | jq -c . > import.json
+
+          echo "✅  Import summary:"
+          cat import.json
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
@@ -65,10 +69,18 @@ jobs:
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
           CI: true
 
+      - name: Debug import logs
+        run: |
+          echo "--- import.log ---"
+          cat import.log || true
+          echo "--- import.json ---"
+          cat import.json || true
+
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated' import.json)
+          ITEMS=$(jq -r '.itemsCreated // 0' import.json)
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi
+          echo "🎉  $ITEMS items created/updated"

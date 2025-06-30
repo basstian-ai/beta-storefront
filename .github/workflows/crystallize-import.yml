@@ -24,13 +24,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpx ts-node scripts/dummy-to-crystallize.ts
+      - name: Convert DummyJSON → Crystallize spec
+        run: pnpx ts-node-esm scripts/dummy-to-crystallize.ts
+        env:
+          CRYSTALLIZE_TENANT_IDENTIFIER:   ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+          CRYSTALLIZE_ACCESS_TOKEN_ID:     ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
 
       - run: |
           npx crystallize import \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$CRYSTALLIZE_TENANT_IDENTIFIER" \
-            --path crystallize-import \
-            --update
+            --batch-size 50 \
+            --max-tries 5 \
+            --update \
+            --path crystallize-import
           echo "Import complete"

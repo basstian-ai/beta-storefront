@@ -1,0 +1,4 @@
+language: en
+priceVariants: priceVariants.json
+topics: topics
+items: items

@@ -38,6 +38,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm approve-builds
+
       - name: Check import files
 
         run: |
@@ -57,7 +59,7 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-            > import.json
+            2>&1 | tee import.log | tail -n 1 > import.json
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
@@ -65,10 +67,23 @@ jobs:
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
           CI: true
 
+      - name: Debug import logs
+        run: |
+          echo "--- import.log ---"
+          cat import.log || true
+          echo "--- import.json ---"
+          cat import.json || true
+
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated' import.json)
+          if [ ! -s import.json ]; then
+            echo "::error::import.json is empty" && cat import.log && exit 1
+          fi
+          ITEMS=$(jq '.itemsCreated // 0' import.json 2>/dev/null || echo 0)
+          case "$ITEMS" in
+            ''|*[!0-9]*) ITEMS=0 ;;
+          esac
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi

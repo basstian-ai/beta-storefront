@@ -27,7 +27,7 @@ jobs:
       - run: |
           TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
           echo "Using tenant: $TENANT"
-          node --loader ts-node/esm scripts/dummy-to-crystallize.ts
+          pnpm exec ts-node-esm scripts/dummy-to-crystallize.ts
           npx crystallize import \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \

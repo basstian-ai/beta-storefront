@@ -1,7 +1,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 
-async function fetchDummyJSON(limit = 1000, tries = 3) {
+async function fetchDummyJSON(limit = 100, tries = 3) {
   const url = `https://dummyjson.com/products?limit=${limit}`;
   for (let i = 0; i < tries; i++) {
     try {
@@ -41,10 +42,11 @@ const categories = [
 ];
 
 async function main() {
-  if (!process.env.CRYSTALLIZE_ACCESS_TOKEN_ID) {
-    console.log('CRYSTALLIZE_ACCESS_TOKEN_ID not set, skipping');
-    return;
-  }
+  try {
+    if (!process.env.CRYSTALLIZE_ACCESS_TOKEN_ID) {
+      console.log('CRYSTALLIZE_ACCESS_TOKEN_ID not set, skipping');
+      return;
+    }
 
   const outDir = path.join('crystallize-import', 'items');
   const topicsDir = path.join('crystallize-import', 'topics');
@@ -78,8 +80,9 @@ async function main() {
 
   const { products } = await fetchDummyJSON();
   if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
+  const selected = products.slice(0, 100);
 
-  for (const product of products) {
+    for (const product of selected) {
     const slug = String(product.slug || product.title || product.name || product.id)
       .toLowerCase()
       .replace(/\s+/g, '-');
@@ -87,7 +90,7 @@ async function main() {
     const itemSpec = {
       tenantLanguage: 'en',
       name: product.title || product.name,
-      shape: 'Product',
+      shape: 'product',
       path: slug,
       priceVariants: { default: product.price || 0 },
       variants: [
@@ -110,11 +113,13 @@ async function main() {
       JSON.stringify(itemSpec, null, 2),
       'utf8'
     );
+    }
+    console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('DummyJSON fetch failed:', message);
+    process.exit(1);
   }
-  console.log(`📝 Wrote ${products.length} item specs to crystallize-import/items/`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main();

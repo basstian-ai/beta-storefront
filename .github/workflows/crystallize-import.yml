@@ -57,13 +57,16 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-            > import.json
+            | tail -n 1 > import.json
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
           CI: true
+
+      - name: Debug import.json
+        run: cat import.json
 
 
       - name: Fail when nothing was created

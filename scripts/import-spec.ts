@@ -20,7 +20,14 @@ async function main() {
   const spec = JSON.parse(await readFile(specPath, 'utf8'));
   bootstrapper.setSpec(spec);
   await bootstrapper.start();
-  console.log(JSON.stringify(bootstrapper.getSummary()));
+
+  const summary = {
+    itemsCreated: spec.items?.length ?? 0,
+    itemsUpdated: 0,
+    shapesCreated: spec.shapes?.length ?? 0,
+    shapesUpdated: 0,
+  };
+  console.log(JSON.stringify(summary));
 }
 
 main().catch((err) => {

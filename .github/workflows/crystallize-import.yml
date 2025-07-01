@@ -40,7 +40,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm approve-builds --all
+      - run: pnpm approve-builds
 
       - name: Check import files
 

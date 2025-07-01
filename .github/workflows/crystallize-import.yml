@@ -62,7 +62,8 @@ jobs:
 
           npx tsx scripts/dummy-to-crystallize.ts
 
-          npx crystallize import \
+          # Use npx to run Crystallize CLI in isolated env to avoid React/Ink dependency issues
+          npx -p @crystallize/cli crystallize import \
             --ci --json --no-ui \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \

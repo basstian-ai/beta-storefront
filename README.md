@@ -224,7 +224,8 @@ secrets:
 
 When triggered, it converts `data/dummyProducts.json` into item specification
 files under `crystallize-import/` and then calls the Crystallize CLI to import
-them.
+them. The workflow currently pins `@crystallize/cli@3.17.0` because newer
+versions crash on the GitHub runner with an Ink/React re-render loop.
 
 To run the import:
 

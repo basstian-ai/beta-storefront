@@ -29,7 +29,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: pnpm
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: node-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: node-cache-v2-${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
 
@@ -58,10 +63,10 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-          | tee /tmp/import.log \
-          | sed -n 's/^[[:space:]]*{/{/p' > import.json
+          | tee import_raw.log \
+          | grep -E '^{.*}$' > import.json
 
-          cat /tmp/import.log
+          cat import_raw.log
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
@@ -71,16 +76,18 @@ jobs:
 
       - name: Debug import logs
         run: |
-          echo "--- import.log ---"
-          cat /tmp/import.log || true
+          echo "--- import_raw.log ---"
+          cat import_raw.log || true
           echo "--- import.json ---"
           cat import.json || true
 
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq -r '.itemsCreated // 0' import.json)
+          ITEMS=$(jq '.itemsCreated' import.json)
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi
           echo "🎉  $ITEMS items created/updated"
+          echo "JSON summary:"
+          cat import.json

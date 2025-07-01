@@ -69,10 +69,15 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-            > import.json
+            | tee import.log \
+            | tail -n 1 > import.json
 
-      - name: Debug import.json
-        run: cat import.json
+      - name: Debug import output
+        run: |
+          echo "--- import.log ---"
+          cat import.log || true
+          echo "--- import.json ---"
+          cat import.json
 
 
       - name: Fail when nothing was created

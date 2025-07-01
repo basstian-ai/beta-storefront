@@ -40,7 +40,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm approve-builds --yes >/dev/null
+      # Build scripts approved locally; no interactive prompt in CI
+      # - run: pnpm approve-builds --yes >/dev/null
 
 
       - name: Check import files
@@ -61,7 +62,9 @@ jobs:
           echo "🚀  Importing into tenant: $TENANT"
 
           pnpm exec tsx scripts/dummy-to-crystallize.ts
-          pnpm exec tsx scripts/import-spec.ts | tee import.log > import.json
+          pnpm exec tsx scripts/import-spec.ts \
+            | tee import.log \
+            | tail -n 1 > import.json
           test -s import.json || { echo "::error::import.json empty" ; exit 1 ; }
 
       - name: Debug import output

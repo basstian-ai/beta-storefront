@@ -38,7 +38,7 @@ jobs:
           key: node-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: node-cache-v2-${{ runner.os }}-
 
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm install --frozen-lockfile
 
       - name: Check import files
 
@@ -63,7 +63,7 @@ jobs:
           npx tsx scripts/dummy-to-crystallize.ts
 
           npx crystallize import \
-            --json --no-ui \
+            --ci --json --no-ui \
             --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$TENANT" \

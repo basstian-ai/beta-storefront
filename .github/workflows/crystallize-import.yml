@@ -18,6 +18,8 @@ jobs:
       CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
       CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
       CI: true
+      FORCE_COLOR: 0
+      TERM: dumb
 
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +31,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: pnpm
 
-      - uses: actions/setup-node@v4
+      - uses: actions/cache@v4
         with:
-          node-version: 18
-          cache: 'pnpm'
+          path: ~/.local/share/pnpm/store
+          key: node-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: node-cache-v2-${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
+
+      - run: pnpm approve-builds
 
       - name: Check import files
 
@@ -45,30 +49,56 @@ jobs:
           test -f crystallize-import/priceVariants.json
 
       - name: Import to Crystallize
-        run: |
-
-          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
-          echo "🚀 Importing into tenant: $TENANT"
-          npx tsx scripts/dummy-to-crystallize.ts
-          npx crystallize import \
-            --json --no-ui \
-            --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
-            --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
-            --tenant               "$TENANT" \
-            --batch-size 50 --max-tries 5 --update \
-            --path crystallize-import \
-            > import.json
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
           CI: true
+          FORCE_COLOR: 0
+          TERM: dumb
+        run: |
+          set -euo pipefail
+          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
+          echo "🚀  Importing into tenant: $TENANT"
+
+          npx tsx scripts/dummy-to-crystallize.ts
+
+          # Run a known-good CLI version to avoid Ink/React re-render loop
+          unset NODE_PATH
+          npx -p @crystallize/cli@3.28.0 crystallize import \
+            --ci --json --no-ui \
+            --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
+            --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
+            --tenant               "$TENANT" \
+            --batch-size 50 --max-tries 5 --update \
+            --path crystallize-import \
+            | tee import.log | grep -o '{.*}' | tail -n 1 > import.json
+          STATUS=${PIPESTATUS[0]}
+          if [ $STATUS -ne 0 ]; then
+            echo "::error::Import CLI failed to run" && exit 1
+          fi
+          if [ ! -s import.json ]; then
+            echo "::error::No import summary found; import.json is empty" && exit 1
+          fi
+
+      - name: Debug import output
+        run: |
+          echo "--- import.log ---"
+          cat import.log || true
+          echo "--- import.json ---"
+          cat import.json
 
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated' import.json)
+          ITEMS=$(jq '.itemsCreated // 0' import.json 2>/dev/null || echo 0)
+          case "$ITEMS" in
+            ''|*[!0-9]*) ITEMS=0 ;;
+          esac
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi
+          echo "🎉  $ITEMS items created/updated"
+          echo "JSON summary:"
+          cat import.json

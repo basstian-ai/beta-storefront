@@ -40,10 +40,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm approve-builds
+      - run: pnpm approve-builds --yes >/dev/null
 
-      - name: Show CLI version
-        run: npx -p @crystallize/cli@3.17.0 crystallize --version
 
       - name: Check import files
 
@@ -57,33 +55,14 @@ jobs:
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
-          CI: true
-          FORCE_COLOR: 0
-          TERM: dumb
         run: |
           set -euo pipefail
           TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
           echo "🚀  Importing into tenant: $TENANT"
 
-          npx tsx scripts/dummy-to-crystallize.ts
-
-          # Run a pre-Ink CLI version to avoid re-render crashes
-          unset NODE_PATH
-          npx -p @crystallize/cli@3.17.0 crystallize import \
-            --ci --json --no-ui \
-            --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
-            --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
-            --tenant               "$TENANT" \
-            --batch-size 50 --max-tries 5 --update \
-            --path crystallize-import \
-            | tee import.log | tail -n 1 > import.json
-          STATUS=${PIPESTATUS[0]}
-          if [ $STATUS -ne 0 ]; then
-            echo "::error::Import CLI failed to run" && exit 1
-          fi
-          if [ ! -s import.json ]; then
-            echo "::error::No import summary found; import.json is empty" && exit 1
-          fi
+          pnpm exec tsx scripts/dummy-to-crystallize.ts
+          pnpm exec tsx scripts/import-spec.ts | tee import.log > import.json
+          test -s import.json || { echo "::error::import.json empty" ; exit 1 ; }
 
       - name: Debug import output
         run: |
@@ -95,10 +74,24 @@ jobs:
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated + .itemsUpdated // 0' import.json 2>/dev/null || echo 0)
+          ITEMS=$(jq -r '.itemsCreated + .itemsUpdated // 0' import.json 2>/dev/null || echo 0)
+          case "$ITEMS" in ''|*[!0-9]*) ITEMS=0 ;; esac
           if [ "$ITEMS" -eq 0 ]; then
-            echo "::error::Import created 0 items" && exit 1
+            echo "::error::Import changed 0 items" && exit 1
           fi
           echo "🎉  $ITEMS items created/updated"
-          echo "JSON summary:"
-          cat import.json
+          echo "JSON summary:" && cat import.json
+
+      - name: Smoke-test tenant
+        env:
+          CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+          CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+        run: |
+          curl -s -X POST "https://api.crystallize.com/${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}/catalogue" \
+            -H "x-crystallize-access-token-id:$CRYSTALLIZE_ACCESS_TOKEN_ID" \
+            -H "x-crystallize-access-token-secret:$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
+            -H "content-type: application/json" \
+            -d '{"query":"{ catalogue(path:\"/iphone-9\", language:\"en\"){name} }"}' \
+            | jq -e '.data.catalogue.name' >/dev/null

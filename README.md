@@ -223,17 +223,17 @@ secrets:
 * `CRYSTALLIZE_TENANT_IDENTIFIER`
 
 When triggered, it converts `data/dummyProducts.json` into item specification
-files under `crystallize-import/` and then calls the Crystallize CLI to import
-them. The workflow currently pins `@crystallize/cli@3.17.0` because newer
-versions crash on the GitHub runner with an Ink/React re-render loop.
+files under `crystallize-import/` and then imports them using
+`@crystallize/import-utilities`. We avoid the legacy CLI to prevent Ink/React
+issues in CI.
 
 To run the import:
 
 * Trigger **Crystallize Import** from the Actions tab
 * Ensure repository secrets are set (`CRYSTALLIZE_ACCESS_TOKEN_ID`, `CRYSTALLIZE_ACCESS_TOKEN_SECRET`, `CRYSTALLIZE_TENANT_IDENTIFIER`)
-* The workflow generates item specs in `crystallize-import/` and imports them
+* The workflow generates item specs in `crystallize-import/` and imports them via `pnpm exec tsx scripts/import-spec.ts`
 * After completion, the items appear in your Crystallize catalogue
-* Re-running the workflow will upsert existing items thanks to `--update`
+* Re-running the workflow will upsert existing items thanks to the import utilities
 
 Uses `tsx` to run TypeScript scripts in GitHub Actions.
 

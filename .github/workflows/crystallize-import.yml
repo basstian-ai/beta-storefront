@@ -40,6 +40,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm approve-builds --all
+
       - name: Check import files
 
         run: |
@@ -71,8 +73,8 @@ jobs:
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
             --path crystallize-import \
-            | tee import.log \
-            | tail -n 1 > import.json
+            > import.log 2>&1
+          grep -o '{.*}' import.log | tail -n 1 > import.json
 
       - name: Debug import output
         run: |
@@ -85,6 +87,9 @@ jobs:
       - name: Fail when nothing was created
         run: |
           ITEMS=$(jq '.itemsCreated // 0' import.json 2>/dev/null || echo 0)
+          case "$ITEMS" in
+            ''|*[!0-9]*) ITEMS=0 ;;
+          esac
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi

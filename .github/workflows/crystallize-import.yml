@@ -79,13 +79,10 @@ jobs:
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq -r '.itemsCreated + .itemsUpdated // 0' import.json 2>/dev/null || echo 0)
-          case "$ITEMS" in ''|*[!0-9]*) ITEMS=0 ;; esac
+          ITEMS=$(jq '.itemsCreated // 0' import.json 2>/dev/null || echo 0)
           if [ "$ITEMS" -eq 0 ]; then
-            echo "::error::Import changed 0 items" && exit 1
+            echo "::error::Import created 0 items" && exit 1
           fi
-          echo "🎉  $ITEMS items created/updated"
-          echo "JSON summary:" && cat import.json
 
       - name: Smoke-test tenant
         env:

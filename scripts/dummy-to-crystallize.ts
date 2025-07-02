@@ -48,8 +48,9 @@ async function main() {
       return;
     }
 
-  const outDir = path.join('crystallize-import', 'items');
-  const topicsDir = path.join('crystallize-import', 'topics');
+  const baseImportDir = path.resolve(process.cwd(), 'crystallize-import');
+  const outDir = path.join(baseImportDir, 'items');
+  const topicsDir = path.join(baseImportDir, 'topics');
 
   await Promise.all([
     fs.mkdir(outDir, { recursive: true }),
@@ -149,12 +150,14 @@ async function main() {
 
     // Update index.json for the single item
     const itemFilenames = selected.map((p) => {
-        if (p.id === 1) return 'iphone-9.json'; // Ensure correct filename for iPhone 9
-        return `${String(p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-')}.json`;
+        // Ensure consistent slug generation for filenames as used when writing item files
+        const productSlug = String(p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-');
+        if (p.id === 1) return 'iphone-9.json'; // Explicitly for iPhone 9 to match the forced slug
+        return `${productSlug}.json`;
     });
     const index = { items: itemFilenames };
 
-    await fs.writeFile('crystallize-import/index.json', JSON.stringify(index, null, 2));
+    await fs.writeFile(path.resolve(baseImportDir, 'index.json'), JSON.stringify(index, null, 2));
     console.log('✅ Wrote crystallize-import/index.json for the single simplified item');
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

@@ -8,11 +8,14 @@ async function main() {
     accessTokenId: process.env.CRYSTALLIZE_ACCESS_TOKEN_ID!,
     accessTokenSecret: process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET!,
     logLevel: 'info',
+    // Paths in spec are often relative to where bootstrapper is run or expect an index.json.
+    // Since we are manually loading, these specific paths might be less critical if data is passed directly.
+    // However, for consistency and if bootstrapper uses them for any relative linking internally:
     spec: {
-      shapes: './crystallize-import/shapes',
-      items: './crystallize-import/items',
-      topics: './crystallize-import/topics',
-      priceVariants: './crystallize-import/priceVariants.json',
+      shapes: path.resolve(process.cwd(), 'crystallize-import/shapes'),
+      items: path.resolve(process.cwd(), 'crystallize-import/items'), // Points to the directory of item JSONs
+      topics: path.resolve(process.cwd(), 'crystallize-import/topics'),
+      priceVariants: path.resolve(process.cwd(), 'crystallize-import/priceVariants.json'),
     },
   };
 
@@ -74,8 +77,10 @@ async function main() {
   bootstrapper.setAccessToken(context.accessTokenId!, context.accessTokenSecret!);
   bootstrapper.setTenantIdentifier(context.tenantId!);
 
+  const baseImportDir = path.resolve(process.cwd(), 'crystallize-import');
+
   // Read and parse priceVariants.json
-  const priceVariantsPath = './crystallize-import/priceVariants.json';
+  const priceVariantsPath = path.join(baseImportDir, 'priceVariants.json');
   let priceVariantsData = [];
   try {
     const priceVariantsContent = await fs.readFile(priceVariantsPath, 'utf-8');
@@ -90,7 +95,7 @@ async function main() {
   }
 
   // Read and parse shape files
-  const shapesDirPath = './crystallize-import/shapes';
+  const shapesDirPath = path.join(baseImportDir, 'shapes');
   const shapesIndexPath = path.join(shapesDirPath, 'index.json');
   let shapesData: any[] = [];
   try {
@@ -114,8 +119,8 @@ async function main() {
   }
 
   // Read and parse item files
-  const itemsDirPath = './crystallize-import/items';
-  const mainIndexJsonPath = './crystallize-import/index.json'; // Main index.json
+  const itemsDirPath = path.join(baseImportDir, 'items');
+  const mainIndexJsonPath = path.join(baseImportDir, 'index.json'); // Main index.json
   let itemsData: any[] = [];
   try {
     const mainIndexContent = await fs.readFile(mainIndexJsonPath, 'utf-8');
@@ -138,7 +143,7 @@ async function main() {
   }
 
   // Read and parse topic files
-  const topicsDirPath = './crystallize-import/topics';
+  const topicsDirPath = path.join(baseImportDir, 'topics');
   const topicsIndexPath = path.join(topicsDirPath, 'index.json');
   let topicsData: any[] = [];
   try {
@@ -188,27 +193,25 @@ async function main() {
   // we'll assume the import was successful if no error was thrown.
   // For simplicity, we'll construct a basic summary.
   // A more robust solution might involve checking the actual created items if the API provides such a mechanism.
-  const itemsPath = './crystallize-import/items';
-  let itemCount = 0;
-  try {
-    const itemFiles = await fs.readdir(itemsPath);
-    itemCount = itemFiles.filter(file => file.endsWith('.json')).length;
-  } catch (e) {
-    // If items directory doesn't exist or we can't read it, assume 0 items for now.
-    console.warn(`Could not read items from ${itemsPath}: ${e}`);
-  }
 
-  const result = { spec: { items: { length: itemCount } } }; // Mocking the old result structure for summary
+  // The 'itemsData' array now holds the successfully read and parsed item objects.
+  // Its length reflects how many items were actually prepared to be sent to the bootstrapper.
+  const itemCount = itemsData.length;
+
   const summary = {
-    status: 'ok',
-    importedItems: result?.spec?.items?.length ?? 0,
+    status: 'ok', // This status should ideally reflect actual API success.
+    importedItems: itemCount, // Reflects items loaded by import-spec.ts, not necessarily API-confirmed.
   };
 
-  await fs.writeFile('import.json', JSON.stringify(summary, null, 2));
-  console.log('✅ Import completed:', summary);
+  // Ensure import.json is also written relative to CWD
+  await fs.writeFile(path.resolve(process.cwd(), 'import.json'), JSON.stringify(summary, null, 2));
+  console.log('✅ Import spec processing completed:', summary);
 }
 
 main().catch((err) => {
-  console.error('❌ Import failed:', err);
+  console.error('❌ Import script execution failed:', err);
+  // Attempt to write a failed import.json
+  fs.writeFile(path.resolve(process.cwd(), 'import.json'), JSON.stringify({ status: 'error', importedItems: 0, error: err.message }, null, 2))
+    .catch(e => console.error('Failed to write error import.json:', e));
   process.exit(1);
 });

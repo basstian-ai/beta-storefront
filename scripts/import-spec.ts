@@ -1,29 +1,31 @@
-import { Bootstrapper, loadSpecFromPath } from '@crystallize/import-utilities';
-import { resolve } from 'node:path';
+import { Bootstrapper, type JSONSpec } from '@crystallize/import-utilities';
+import { readFile } from 'fs/promises';
+import { join } from 'node:path';
 
 async function main() {
   const tenant =
     process.env.CRYSTALLIZE_TENANT_IDENTIFIER ||
     process.env.CRYSTALLIZE_TENANT_ID;
-  if (!tenant) {
-    throw new Error('Missing CRYSTALLIZE_TENANT_IDENTIFIER/ID');
+  const id = process.env.CRYSTALLIZE_ACCESS_TOKEN_ID;
+  const secret = process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET;
+
+  if (!tenant || !id || !secret) {
+    throw new Error('Missing Crystallize environment variables.');
   }
 
-  const spec = await loadSpecFromPath(resolve('crystallize-import'));
+  const specPath = join('crystallize-import', 'index.json');
+  const raw = await readFile(specPath, 'utf-8');
+  const spec: JSONSpec = JSON.parse(raw);
 
-  const bootstrapper = new Bootstrapper({
-    tenantIdentifier: tenant,
-    accessTokenId: process.env.CRYSTALLIZE_ACCESS_TOKEN_ID ?? '',
-    accessTokenSecret: process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET ?? '',
-    config: {
-      publish: true,
-      languages: ['en'],
-    },
-  });
-
+  const bootstrapper = new Bootstrapper();
+  bootstrapper.setAccessToken(id, secret);
+  bootstrapper.setTenantIdentifier(tenant);
   bootstrapper.setSpec(spec);
-  const summary = await bootstrapper.start();
-  process.stdout.write(JSON.stringify(summary) + '\n');
+
+  await bootstrapper.start();
+  await bootstrapper.kill();
+
+  console.log('✅ Import completed.');
 }
 
 main().catch((err) => {

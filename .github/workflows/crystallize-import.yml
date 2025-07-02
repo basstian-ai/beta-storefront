@@ -73,6 +73,10 @@ jobs:
           pnpm exec tsx scripts/import-spec.ts | tee import.log
           test -s import.json || { echo "::error::import.json empty" && exit 1 ; }
 
+      - name: Add delay for eventual consistency
+        run: |
+          echo "Waiting 30 seconds for Crystallize to process items..."
+          sleep 30
 
       - name: Fail when nothing was created
         run: |

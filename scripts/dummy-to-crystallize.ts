@@ -80,54 +80,82 @@ async function main() {
 
   const { products } = await fetchDummyJSON();
   if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
-  const selected = products.slice(0, 100);
 
-    for (const product of selected) {
-    const slug = String(product.slug || product.title || product.name || product.id)
+  // --- START SIMPLIFICATION ---
+  // Select only product with ID 1 (iPhone 9) for testing
+  const singleProduct = products.find((p: any) => p.id === 1);
+  const selected = singleProduct ? [singleProduct] : [];
+
+  if (selected.length === 0) {
+    throw new Error('❌ Could not find product with ID 1 (iPhone 9) for simplified test.');
+  }
+  // --- END SIMPLIFICATION ---
+
+    for (const product of selected) { // This loop will now run only once
+    const slug = String(product.title || product.name || product.id) // Prioritize title for slug, and ensure it's the iPhone 9
       .toLowerCase()
       .replace(/\s+/g, '-');
 
-    const itemSpec = {
+    const itemSpec: any = { // Use 'any' for flexibility during simplification
       tenantLanguage: 'en',
       name: product.title || product.name,
-      shape: 'product',
-      path: slug,
-      priceVariants: { default: product.price || 0 },
+      shape: 'product', // Must match a shape identifier in Crystallize
+      path: `/${slug}`,  // Ensure path starts with a slash
+      // ExternalReference is often useful, ensure it's unique if used
+      // externalReference: `dummyjson-${product.id}`,
       variants: [
         {
           sku: `SKU-${product.id}`,
+          name: product.title || product.name, // Variant name
           priceVariants: { default: product.price || 0 },
-          stock: product.stock || 0,
-          images: (product.images || []).map((url: string) => ({ url })),
+          // Temporarily removing stock and images
+          // stock: product.stock || 0,
+          // images: (product.images || []).slice(0, 1).map((url: string) => ({ url })), // Limit to 1 image if re-enabled
         },
       ],
-      components: {
-        description: {
-          json: [
-            {
-              type: 'paragraph',
-              children: [
-                {
-                  text: product.description || '',
-                },
-              ],
-            },
-          ],
-        },
-      },
+      // Temporarily removing components
+      // components: {
+      //   description: { // Assuming 'description' is the ID of a component in your 'product' shape
+      //     json: [
+      //       {
+      //         type: 'paragraph',
+      //         children: [
+      //           {
+      //             text: product.description || 'No description available.',
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   },
+      // },
     };
 
+    // Ensure the path is exactly /iphone-9 for the test product
+    if (product.id === 1) {
+        itemSpec.path = '/iphone-9';
+        itemSpec.name = 'iPhone 9'; // Ensure name is consistent for the test
+        itemSpec.variants[0].sku = 'SKU-IPHONE9-TEST'; // Make SKU distinct for test
+        itemSpec.variants[0].name = 'iPhone 9';
+    }
+
+
     await fs.writeFile(
-      path.join(outDir, `${slug}.json`),
+      path.join(outDir, `${slug}.json`), // Will be 'iphone-9.json'
       JSON.stringify(itemSpec, null, 2),
       'utf8'
     );
     }
-    console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
-    // After writing item specs, create index.json for bootstrapper
-    const index = { items: selected.map((p) => `${String(p.slug || p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-')}.json`) };
+    console.log(`📝 Wrote ${selected.length} (simplified) item spec to crystallize-import/items/`);
+
+    // Update index.json for the single item
+    const itemFilenames = selected.map((p) => {
+        if (p.id === 1) return 'iphone-9.json'; // Ensure correct filename for iPhone 9
+        return `${String(p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-')}.json`;
+    });
+    const index = { items: itemFilenames };
+
     await fs.writeFile('crystallize-import/index.json', JSON.stringify(index, null, 2));
-    console.log('✅ Wrote crystallize-import/index.json');
+    console.log('✅ Wrote crystallize-import/index.json for the single simplified item');
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('DummyJSON fetch failed:', message);

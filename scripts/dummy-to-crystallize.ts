@@ -103,7 +103,16 @@ async function main() {
       ],
       components: {
         description: {
-          content: { plainText: product.description || '' },
+          json: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  text: product.description || '',
+                },
+              ],
+            },
+          ],
         },
       },
     };

@@ -29,6 +29,7 @@ async function main() {
   // so bootstrap() might not return the spec anymore.
   // We'll adjust the result handling accordingly.
   await bootstrapper.start();
+  await bootstrapper.kill();
 
   // Since bootstrapper.start() doesn't return the spec directly,
   // we'll assume the import was successful if no error was thrown.

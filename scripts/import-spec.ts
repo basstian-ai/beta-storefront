@@ -137,18 +137,43 @@ async function main() {
     console.error(`Failed to read or parse ${mainIndexJsonPath}: ${e}.`);
   }
 
+  // Read and parse topic files
+  const topicsDirPath = './crystallize-import/topics';
+  const topicsIndexPath = path.join(topicsDirPath, 'index.json');
+  let topicsData: any[] = [];
+  try {
+    const topicsIndexContent = await fs.readFile(topicsIndexPath, 'utf-8');
+    const topicFiles = JSON.parse(topicsIndexContent); // This index should list the topic JSON filenames
+    if (Array.isArray(topicFiles)) {
+      for (const topicFile of topicFiles) {
+        const topicFilePath = path.join(topicsDirPath, topicFile);
+        try {
+          const topicContent = await fs.readFile(topicFilePath, 'utf-8');
+          topicsData.push(JSON.parse(topicContent));
+        } catch (e) {
+          console.error(`Failed to read or parse topic file ${topicFilePath}: ${e}`);
+        }
+      }
+    } else {
+      console.error(`${topicsIndexPath} does not contain a valid JSON array of topic filenames.`);
+    }
+  } catch (e) {
+    console.error(`Failed to read or parse ${topicsIndexPath}: ${e}.`);
+  }
+
   const specToSet = {
     shapes: shapesData,
-    items: itemsData, // Pass the array of parsed item objects
-    topics: './crystallize-import/topics', // Assuming topics might still work as a path or needs similar treatment if errors arise
+    items: itemsData,
+    topicMaps: topicsData, // Use topicMaps as per JsonSpec interface and pass the array
     priceVariants: priceVariantsData,
   };
 
-  console.log('Setting bootstrapper spec with (shapes/items data might be extensive, logging counts instead):');
+  console.log('Setting bootstrapper spec with (shapes/items/topics data might be extensive, logging counts instead):');
   console.log(JSON.stringify({
     ...specToSet,
     shapes: shapesData.length > 0 ? `${shapesData.length} shapes loaded` : 'No shapes loaded',
     items: itemsData.length > 0 ? `${itemsData.length} items loaded` : 'No items loaded',
+    topicMaps: topicsData.length > 0 ? `${topicsData.length} topics loaded` : 'No topics loaded',
   }, null, 2));
   bootstrapper.setSpec(specToSet);
 

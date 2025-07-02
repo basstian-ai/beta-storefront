@@ -1,4 +1,5 @@
-import { Bootstrapper } from '@crystallize/import-utilities';
+import { Bootstrapper, loadSpecFromPath } from '@crystallize/import-utilities';
+import { resolve } from 'node:path';
 
 async function main() {
   const tenant =
@@ -7,6 +8,8 @@ async function main() {
   if (!tenant) {
     throw new Error('Missing CRYSTALLIZE_TENANT_IDENTIFIER/ID');
   }
+
+  const spec = await loadSpecFromPath(resolve('crystallize-import'));
 
   const bootstrapper = new Bootstrapper({
     tenantIdentifier: tenant,
@@ -18,12 +21,9 @@ async function main() {
     },
   });
 
-  await bootstrapper.setPath('crystallize-import');
-  await bootstrapper.run();
-
-  process.stdout.write(
-    JSON.stringify(bootstrapper.getStatusSummary()) + '\n',
-  );
+  bootstrapper.setSpec(spec);
+  const summary = await bootstrapper.start();
+  process.stdout.write(JSON.stringify(summary) + '\n');
 }
 
 main().catch((err) => {

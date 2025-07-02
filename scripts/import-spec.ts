@@ -1,4 +1,4 @@
-import { Bootstrapper, type BootstrapperContext } from '@crystallize/import-utilities';
+import { Bootstrapper, type BootstrapperContext, EVENT_NAMES } from '@crystallize/import-utilities';
 import fs from 'fs/promises';
 
 async function main() {
@@ -16,6 +16,56 @@ async function main() {
   };
 
   const bootstrapper = new Bootstrapper();
+
+  // Set log level to debug
+  // Assuming 'debug' is a valid LogLevel. Other options might be 'info', 'verbose'.
+  // The actual type definition for LogLevel wasn't visible in the snippets.
+  try {
+    (bootstrapper as any).config.logLevel = 'debug';
+    console.log('Attempted to set logLevel to debug.');
+  } catch (e) {
+    console.error('Failed to set logLevel:', e);
+  }
+
+  // Add event listeners
+  bootstrapper.on(EVENT_NAMES.ERROR, (error: any) => {
+    console.error(`[EVENT_NAMES.ERROR]:`, JSON.stringify(error, null, 2));
+  });
+  bootstrapper.on(EVENT_NAMES.WARNING, (warning: any) => {
+    console.warn(`[EVENT_NAMES.WARNING]:`, JSON.stringify(warning, null, 2));
+  });
+  bootstrapper.on(EVENT_NAMES.ITEM_CREATED, (payload: any) => {
+    console.log(`[EVENT_NAMES.ITEM_CREATED]: ${payload?.name} (Path: ${payload?.from?.path}, SKU: ${payload?.from?.variants?.[0]?.sku})`);
+  });
+  bootstrapper.on(EVENT_NAMES.ITEM_UPDATED, (payload: any) => {
+    console.log(`[EVENT_NAMES.ITEM_UPDATED]: ${payload?.name} (Path: ${payload?.from?.path}, SKU: ${payload?.from?.variants?.[0]?.sku})`);
+  });
+  bootstrapper.on(EVENT_NAMES.ITEMS_UPDATE, (update: any) => {
+    // ITEMS_UPDATE seems to pass an AreaUpdate object
+    if (update?.message) {
+      console.log(`[EVENT_NAMES.ITEMS_UPDATE]: ${update.message}`, update.progress ? `Progress: ${update.progress}` : '');
+    }
+    if (update?.warning) {
+      console.warn(`[EVENT_NAMES.ITEMS_UPDATE_WARNING]:`, JSON.stringify(update.warning, null, 2));
+    }
+    if (update?.error) {
+      console.error(`[EVENT_NAMES.ITEMS_UPDATE_ERROR]:`, JSON.stringify(update.error, null, 2));
+    }
+  });
+  bootstrapper.on(EVENT_NAMES.STATUS_UPDATE, (status: any) => {
+    // This might be too verbose, but let's log item progress specifically
+    if (status?.items?.progress) {
+      console.log(`[EVENT_NAMES.STATUS_UPDATE]: Items Progress: ${status.items.progress}%`);
+      if (status?.items?.warnings?.length > 0) {
+        console.warn(`[EVENT_NAMES.STATUS_UPDATE]: Items Warnings:`, JSON.stringify(status.items.warnings, null, 2));
+      }
+    }
+  });
+   bootstrapper.on(EVENT_NAMES.DONE, (result: any) => {
+    console.log('[EVENT_NAMES.DONE]: Import process finished by bootstrapper.', `Duration: ${result?.duration}`);
+  });
+
+
   bootstrapper.setAccessToken(context.accessTokenId!, context.accessTokenSecret!);
   bootstrapper.setTenantIdentifier(context.tenantId!);
   bootstrapper.setSpec({

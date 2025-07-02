@@ -1,7 +1,4 @@
 import { Bootstrapper } from '@crystallize/import-utilities';
-import { readFile, readdir } from 'fs/promises';
-import { join } from 'path';
-import { getGlobalDispatcher } from 'undici';
 
 async function main() {
   const tenant =
@@ -10,48 +7,23 @@ async function main() {
   if (!tenant) {
     throw new Error('Missing CRYSTALLIZE_TENANT_IDENTIFIER/ID');
   }
-  const bootstrapper = new Bootstrapper();
-  bootstrapper.setAccessToken(
-    process.env.CRYSTALLIZE_ACCESS_TOKEN_ID!,
-    process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET!
-  );
-  bootstrapper.setTenantIdentifier(tenant);
 
-  const specPath = join('crystallize-import', 'index.json');
-  const spec = JSON.parse(await readFile(specPath, 'utf8'));
-  bootstrapper.setSpec(spec);
-
-  let itemsCreated = 0;
-  let itemsUpdated = 0;
-  bootstrapper.on('item:after', ({ status }) => {
-    if (status === 'created') {
-      itemsCreated += 1;
-    }
-    if (status === 'updated') {
-      itemsUpdated += 1;
-    }
+  const bootstrapper = new Bootstrapper({
+    tenantIdentifier: tenant,
+    accessTokenId: process.env.CRYSTALLIZE_ACCESS_TOKEN_ID ?? '',
+    accessTokenSecret: process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET ?? '',
+    config: {
+      publish: true,
+      languages: ['en'],
+    },
   });
 
-  await bootstrapper.start();
+  await bootstrapper.setPath('crystallize-import');
+  await bootstrapper.run();
 
-  // ensure Node exits: close idle sockets opened by undici
-  const dispatcher = getGlobalDispatcher() as any;
-  if (typeof dispatcher.close === 'function') {
-    await dispatcher.close();
-  }
-
-  if (itemsCreated + itemsUpdated === 0) {
-    try {
-      const files = await readdir(join('crystallize-import', 'items'));
-      itemsCreated = files.length;
-    } catch {
-      itemsCreated = 0;
-    }
-  }
-
-  const summary = { itemsCreated, itemsUpdated };
-  process.stdout.write(JSON.stringify(summary) + '\n');
-  process.exit(0);
+  process.stdout.write(
+    JSON.stringify(bootstrapper.getStatusSummary()) + '\n',
+  );
 }
 
 main().catch((err) => {

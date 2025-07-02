@@ -113,15 +113,43 @@ async function main() {
     console.error(`Failed to read or parse ${shapesIndexPath}: ${e}.`);
   }
 
+  // Read and parse item files
+  const itemsDirPath = './crystallize-import/items';
+  const mainIndexJsonPath = './crystallize-import/index.json'; // Main index.json
+  let itemsData: any[] = [];
+  try {
+    const mainIndexContent = await fs.readFile(mainIndexJsonPath, 'utf-8');
+    const mainIndex = JSON.parse(mainIndexContent);
+    if (mainIndex && Array.isArray(mainIndex.items)) {
+      for (const itemFile of mainIndex.items) {
+        const itemFilePath = path.join(itemsDirPath, itemFile); // itemFile is just the filename e.g. "iphone-9.json"
+        try {
+          const itemContent = await fs.readFile(itemFilePath, 'utf-8');
+          itemsData.push(JSON.parse(itemContent));
+        } catch (e) {
+          console.error(`Failed to read or parse item file ${itemFilePath}: ${e}`);
+        }
+      }
+    } else {
+      console.error(`${mainIndexJsonPath} does not contain a valid 'items' array.`);
+    }
+  } catch (e) {
+    console.error(`Failed to read or parse ${mainIndexJsonPath}: ${e}.`);
+  }
+
   const specToSet = {
-    shapes: shapesData, // Pass the array of parsed shape objects
-    items: './crystallize-import/items', // This should be a path, bootstrapper reads index.json from here
-    topics: './crystallize-import/topics',
+    shapes: shapesData,
+    items: itemsData, // Pass the array of parsed item objects
+    topics: './crystallize-import/topics', // Assuming topics might still work as a path or needs similar treatment if errors arise
     priceVariants: priceVariantsData,
   };
 
-  console.log('Setting bootstrapper spec with (shapes data might be extensive, logging paths instead for brevity if shapesData is populated):');
-  console.log(JSON.stringify({ ...specToSet, shapes: shapesData.length > 0 ? `${shapesData.length} shapes loaded` : 'No shapes loaded' }, null, 2));
+  console.log('Setting bootstrapper spec with (shapes/items data might be extensive, logging counts instead):');
+  console.log(JSON.stringify({
+    ...specToSet,
+    shapes: shapesData.length > 0 ? `${shapesData.length} shapes loaded` : 'No shapes loaded',
+    items: itemsData.length > 0 ? `${itemsData.length} items loaded` : 'No items loaded',
+  }, null, 2));
   bootstrapper.setSpec(specToSet);
 
   // The bootstrap method seems to have been replaced by start()

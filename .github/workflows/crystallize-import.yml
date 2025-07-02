@@ -18,6 +18,8 @@ jobs:
       CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
       CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
       CI: true
+      FORCE_COLOR: 0
+      TERM: dumb
 
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +31,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: pnpm
 
-      - uses: actions/setup-node@v4
+      - uses: actions/cache@v4
         with:
-          node-version: 18
-          cache: 'pnpm'
+          path: ~/.local/share/pnpm/store
+          key: node-cache-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: node-cache-v2-${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
+
+      # Build scripts approved locally; no interactive prompt in CI
+      # - run: pnpm approve-builds --yes >/dev/null
+
 
       - name: Check import files
 
@@ -44,31 +50,47 @@ jobs:
           test -f crystallize-import/shapes/product.json
           test -f crystallize-import/priceVariants.json
 
-      - name: Import to Crystallize
+      - name: List and validate import spec
         run: |
+          echo "Contents of crystallize-import/"
+          ls -R crystallize-import || true
+          echo "Validating JSON files"
+          find crystallize-import -name '*.json' -print -exec jq empty {} \;
 
-          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
-          echo "🚀 Importing into tenant: $TENANT"
-          npx tsx scripts/dummy-to-crystallize.ts
-          npx crystallize import \
-            --json --no-ui \
-            --access-token-id      "$CRYSTALLIZE_ACCESS_TOKEN_ID" \
-            --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
-            --tenant               "$TENANT" \
-            --batch-size 50 --max-tries 5 --update \
-            --path crystallize-import \
-            > import.json
+      - name: Import to Crystallize
+        timeout-minutes: 30
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
           CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
           CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
-          CI: true
+        run: |
+          set -euo pipefail
+          TENANT=${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}
+          echo "🚀  Importing into tenant: $TENANT"
+
+          pnpm exec tsx scripts/dummy-to-crystallize.ts
+          pnpm exec tsx scripts/import-spec.ts | tee import.log
+          test -s import.json || { echo "::error::import.json empty" && exit 1 ; }
 
 
       - name: Fail when nothing was created
         run: |
-          ITEMS=$(jq '.itemsCreated' import.json)
+          ITEMS=$(jq '.importedItems // 0' import.json 2>/dev/null || echo 0)
           if [ "$ITEMS" -eq 0 ]; then
             echo "::error::Import created 0 items" && exit 1
           fi
+
+      - name: Smoke-test tenant
+        env:
+          CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}
+          CRYSTALLIZE_TENANT_ID:         ${{ secrets.CRYSTALLIZE_TENANT_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_ID:   ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_ID }}
+          CRYSTALLIZE_ACCESS_TOKEN_SECRET: ${{ secrets.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}
+        run: |
+          curl -s -X POST "https://api.crystallize.com/${CRYSTALLIZE_TENANT_IDENTIFIER:-$CRYSTALLIZE_TENANT_ID}/catalogue" \
+            -H "x-crystallize-access-token-id:$CRYSTALLIZE_ACCESS_TOKEN_ID" \
+            -H "x-crystallize-access-token-secret:$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
+            -H "content-type: application/json" \
+          -d '{"query":"{ catalogue(path:\"/iphone-9\", version:draft, language:\"en\"){name} }"}' \
+            | jq -e '.data.catalogue.name' >/dev/null

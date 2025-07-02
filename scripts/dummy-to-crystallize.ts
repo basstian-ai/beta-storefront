@@ -115,6 +115,10 @@ async function main() {
     );
     }
     console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
+    // After writing item specs, create index.json for bootstrapper
+    const index = { items: selected.map((p) => `${String(p.slug || p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-')}.json`) };
+    await fs.writeFile('crystallize-import/index.json', JSON.stringify(index, null, 2));
+    console.log('✅ Wrote crystallize-import/index.json');
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('DummyJSON fetch failed:', message);

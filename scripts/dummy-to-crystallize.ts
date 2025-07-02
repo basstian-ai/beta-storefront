@@ -139,12 +139,23 @@ async function main() {
         itemSpec.variants[0].name = 'iPhone 9';
     }
 
+    const itemFilePath = path.join(outDir, `${slug}.json`);
+    console.log(`Attempting to write item spec to: ${itemFilePath}`);
 
     await fs.writeFile(
-      path.join(outDir, `${slug}.json`), // Will be 'iphone-9.json'
+      itemFilePath,
       JSON.stringify(itemSpec, null, 2),
       'utf8'
     );
+
+    // Verify file existence immediately after writing
+    try {
+      await fs.access(itemFilePath, fs.constants.F_OK); // Check for existence
+      console.log(`File ${itemFilePath} exists and is accessible after write.`);
+    } catch (e) {
+      console.error(`File not found or not accessible immediately after writing: ${itemFilePath}`, e);
+      throw new Error(`File not found or not accessible immediately after writing: ${itemFilePath}`);
+    }
     }
     console.log(`📝 Wrote ${selected.length} (simplified) item spec to crystallize-import/items/`);
 

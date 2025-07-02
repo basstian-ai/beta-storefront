@@ -232,7 +232,7 @@ To run the import:
 * Trigger **Crystallize Import** from the Actions tab
 * Ensure repository secrets are set (`CRYSTALLIZE_ACCESS_TOKEN_ID`, `CRYSTALLIZE_ACCESS_TOKEN_SECRET`, `CRYSTALLIZE_TENANT_IDENTIFIER`)
 * The workflow generates item specs in `crystallize-import/` and imports them via `pnpm exec tsx scripts/import-spec.ts`
-* After completion, the items appear in your Crystallize catalogue
+* After completion, the items appear in your Crystallize catalogue (the script calls `setPublish(true)` so items are published automatically)
 * Re-running the workflow will upsert existing items thanks to the import utilities
 
 Uses `tsx` to run TypeScript scripts in GitHub Actions.

@@ -1,5 +1,6 @@
 import { Bootstrapper, type BootstrapperContext, EVENT_NAMES } from '@crystallize/import-utilities';
 import fs from 'fs/promises';
+import path from 'path';
 
 async function main() {
   const context: BootstrapperContext = {
@@ -88,14 +89,39 @@ async function main() {
     priceVariantsData = [];
   }
 
+  // Read and parse shape files
+  const shapesDirPath = './crystallize-import/shapes';
+  const shapesIndexPath = path.join(shapesDirPath, 'index.json');
+  let shapesData: any[] = [];
+  try {
+    const shapesIndexContent = await fs.readFile(shapesIndexPath, 'utf-8');
+    const shapeFiles = JSON.parse(shapesIndexContent);
+    if (Array.isArray(shapeFiles)) {
+      for (const shapeFile of shapeFiles) {
+        const shapeFilePath = path.join(shapesDirPath, shapeFile);
+        try {
+          const shapeContent = await fs.readFile(shapeFilePath, 'utf-8');
+          shapesData.push(JSON.parse(shapeContent));
+        } catch (e) {
+          console.error(`Failed to read or parse shape file ${shapeFilePath}: ${e}`);
+        }
+      }
+    } else {
+      console.error(`${shapesIndexPath} does not contain a valid JSON array of shape filenames.`);
+    }
+  } catch (e) {
+    console.error(`Failed to read or parse ${shapesIndexPath}: ${e}.`);
+  }
+
   const specToSet = {
-    shapes: './crystallize-import/shapes',
+    shapes: shapesData, // Pass the array of parsed shape objects
     items: './crystallize-import/items', // This should be a path, bootstrapper reads index.json from here
     topics: './crystallize-import/topics',
     priceVariants: priceVariantsData,
   };
 
-  console.log('Setting bootstrapper spec with:', JSON.stringify(specToSet, null, 2));
+  console.log('Setting bootstrapper spec with (shapes data might be extensive, logging paths instead for brevity if shapesData is populated):');
+  console.log(JSON.stringify({ ...specToSet, shapes: shapesData.length > 0 ? `${shapesData.length} shapes loaded` : 'No shapes loaded' }, null, 2));
   bootstrapper.setSpec(specToSet);
 
   // The bootstrap method seems to have been replaced by start()

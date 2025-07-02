@@ -20,7 +20,6 @@ async function main() {
   const specPath = join('crystallize-import', 'index.json');
   const spec = JSON.parse(await readFile(specPath, 'utf8'));
   bootstrapper.setSpec(spec);
-  bootstrapper.setPublish(true);
 
   let itemsCreated = 0;
   let itemsUpdated = 0;

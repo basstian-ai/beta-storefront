@@ -50,6 +50,13 @@ jobs:
           test -f crystallize-import/shapes/product.json
           test -f crystallize-import/priceVariants.json
 
+      - name: List and validate import spec
+        run: |
+          echo "Contents of crystallize-import/"
+          ls -R crystallize-import || true
+          echo "Validating JSON files"
+          find crystallize-import -name '*.json' -print -exec jq empty {} \;
+
       - name: Import to Crystallize
         timeout-minutes: 30
         env:

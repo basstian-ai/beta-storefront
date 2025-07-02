@@ -68,11 +68,27 @@ async function main() {
 
   bootstrapper.setAccessToken(context.accessTokenId!, context.accessTokenSecret!);
   bootstrapper.setTenantIdentifier(context.tenantId!);
+
+  // Read and parse priceVariants.json
+  const priceVariantsPath = './crystallize-import/priceVariants.json';
+  let priceVariantsData = [];
+  try {
+    const priceVariantsContent = await fs.readFile(priceVariantsPath, 'utf-8');
+    priceVariantsData = JSON.parse(priceVariantsContent);
+    if (!Array.isArray(priceVariantsData)) {
+      console.error(`${priceVariantsPath} does not contain a valid JSON array. Using empty array.`);
+      priceVariantsData = [];
+    }
+  } catch (e) {
+    console.error(`Failed to read or parse ${priceVariantsPath}: ${e}. Using empty array.`);
+    priceVariantsData = [];
+  }
+
   bootstrapper.setSpec({
     shapes: './crystallize-import/shapes',
     items: './crystallize-import/items',
     topics: './crystallize-import/topics',
-    priceVariants: './crystallize-import/priceVariants.json',
+    priceVariants: priceVariantsData, // Pass the parsed array here
   });
   // The bootstrap method seems to have been replaced by start()
   // and it also looks like the spec is passed via setSpec now

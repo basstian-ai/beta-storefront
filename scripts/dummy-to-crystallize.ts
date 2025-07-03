@@ -115,21 +115,20 @@ async function main() {
           // images: (product.images || []).slice(0, 1).map((url: string) => ({ url })), // Limit to 1 image if re-enabled
         },
       ],
-      // Temporarily removing components
-      // components: {
-      //   description: { // Assuming 'description' is the ID of a component in your 'product' shape
-      //     json: [
-      //       {
-      //         type: 'paragraph',
-      //         children: [
-      //           {
-      //             text: product.description || 'No description available.',
-      //           },
-      //         ],
-      //       },
-      //     ],
-      //   },
-      // },
+      components: {
+        description: { // Assuming 'description' is the ID of a rich text component in the 'product' shape
+          json: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  text: product.description || 'No description available.',
+                },
+              ],
+            },
+          ],
+        },
+      },
     };
 
     // Removed special handling for product.id === 1 as we are targeting a specific product (ID 5)

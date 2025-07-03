@@ -96,5 +96,5 @@ jobs:
             -H "x-crystallize-access-token-id:$CRYSTALLIZE_ACCESS_TOKEN_ID" \
             -H "x-crystallize-access-token-secret:$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             -H "content-type: application/json" \
-          -d '{"query":"{ catalogue(path:\"/iphone-9\", version:draft, language:\"en\"){name} }"}' \
+          -d '{"query":"{ catalogue(path:\"/red-nail-polish\", version:draft, language:\"en\"){name} }"}' \
             | jq -e '.data.catalogue.name' >/dev/null

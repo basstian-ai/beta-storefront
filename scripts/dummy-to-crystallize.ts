@@ -83,17 +83,18 @@ async function main() {
   if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
 
   // --- START SIMPLIFICATION ---
-  // Select only product with ID 1 (iPhone 9) for testing
-  const singleProduct = products.find((p: any) => p.id === 1);
+  // Select only product with ID 5 ("Essence Mascara Lash Princess") for testing
+  const targetProductId = 5;
+  const singleProduct = products.find((p: any) => p.id === targetProductId);
   const selected = singleProduct ? [singleProduct] : [];
 
   if (selected.length === 0) {
-    throw new Error('❌ Could not find product with ID 1 (iPhone 9) for simplified test.');
+    throw new Error(`❌ Could not find product with ID ${targetProductId} for simplified test.`);
   }
   // --- END SIMPLIFICATION ---
 
     for (const product of selected) { // This loop will now run only once
-    const slug = String(product.title || product.name || product.id) // Prioritize title for slug, and ensure it's the iPhone 9
+    const slug = String(product.title || product.name || product.id)
       .toLowerCase()
       .replace(/\s+/g, '-');
 
@@ -131,13 +132,8 @@ async function main() {
       // },
     };
 
-    // Ensure the path is exactly /iphone-9 for the test product
-    if (product.id === 1) {
-        itemSpec.path = '/iphone-9';
-        itemSpec.name = 'iPhone 9'; // Ensure name is consistent for the test
-        itemSpec.variants[0].sku = 'SKU-IPHONE9-TEST'; // Make SKU distinct for test
-        itemSpec.variants[0].name = 'iPhone 9';
-    }
+    // Removed special handling for product.id === 1 as we are targeting a specific product (ID 5)
+    // and want its natural data to be used.
 
     const itemFilePath = path.join(outDir, `${slug}.json`);
     console.log(`Attempting to write item spec to: ${itemFilePath}`);
@@ -163,7 +159,7 @@ async function main() {
     const itemFilenames = selected.map((p) => {
         // Ensure consistent slug generation for filenames as used when writing item files
         const productSlug = String(p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-');
-        if (p.id === 1) return 'iphone-9.json'; // Explicitly for iPhone 9 to match the forced slug
+        // Removed special handling for p.id === 1 to ensure the filename is always derived from the actual product's slug
         return `${productSlug}.json`;
     });
     const index = { items: itemFilenames };

@@ -109,9 +109,9 @@ async function main() {
         {
           sku: `SKU-${product.id}`,
           name: product.title || product.name, // Variant name
+          isDefault: true, // Add isDefault flag
           priceVariants: { default: product.price || 0 },
-          // Temporarily removing stock and images
-          // stock: product.stock || 0,
+          stockLocations: [{ identifier: "default", stock: product.stock || 0 }], // Add stockLocations
           // images: (product.images || []).slice(0, 1).map((url: string) => ({ url })), // Limit to 1 image if re-enabled
         },
       ],

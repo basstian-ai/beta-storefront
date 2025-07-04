@@ -28,27 +28,41 @@ async function fetchAllDummyProducts() {
   let totalProducts = 0;
   const limit = 100; // Max limit per dummyjson.com API
 
-  // First call to get the total
-  const initialData = await fetchProductPage(limit, 0);
-  allProducts = allProducts.concat(initialData.products);
-  fetchedCount = initialData.products.length;
-  totalProducts = initialData.total;
-  console.log(`Initial fetch: got ${fetchedCount} of ${totalProducts} products.`);
+  try {
+    // First call to get the total
+    const initialData = await fetchProductPage(limit, 0);
+    allProducts = allProducts.concat(initialData.products);
+    fetchedCount = initialData.products.length;
+    totalProducts = initialData.total;
+    console.log(`Initial fetch: got ${fetchedCount} of ${totalProducts} products.`);
 
-  while (fetchedCount < totalProducts) {
-    console.log(`Fetching next page, current count: ${fetchedCount}, total: ${totalProducts}`);
-    const nextPageData = await fetchProductPage(limit, fetchedCount);
-    if (nextPageData.products.length === 0) {
-        console.warn("Received empty products array on a subsequent fetch, stopping.");
+    while (fetchedCount < totalProducts) {
+      console.log(`Fetching next page, current count: ${fetchedCount}, total: ${totalProducts}`);
+      const nextPageData = await fetchProductPage(limit, fetchedCount);
+      if (nextPageData.products.length === 0) {
+        console.warn('Received empty products array on a subsequent fetch, stopping.');
         break; // Avoid infinite loops if API behaves unexpectedly
+      }
+      allProducts = allProducts.concat(nextPageData.products);
+      fetchedCount += nextPageData.products.length;
+      console.log(`Fetched page: got ${nextPageData.products.length} products. Total now: ${fetchedCount}`);
     }
-    allProducts = allProducts.concat(nextPageData.products);
-    fetchedCount += nextPageData.products.length;
-    console.log(`Fetched page: got ${nextPageData.products.length} products. Total now: ${fetchedCount}`);
-  }
 
-  console.log(`Finished fetching. Total products retrieved: ${allProducts.length}`);
-  return allProducts;
+    console.log(`Finished fetching. Total products retrieved: ${allProducts.length}`);
+    return allProducts;
+  } catch (err) {
+    console.warn('Failed to fetch from dummyjson.com, falling back to local dataset.', err);
+    try {
+      const fallbackPath = path.resolve(process.cwd(), 'data', 'dummyProducts.json');
+      const fileData = await fs.readFile(fallbackPath, 'utf-8');
+      const localProducts = JSON.parse(fileData);
+      console.log(`Loaded ${localProducts.length} products from local file.`);
+      return localProducts.slice(0, limit);
+    } catch (e) {
+      console.error('Failed to load local fallback data', e);
+      throw err;
+    }
+  }
 }
 
 

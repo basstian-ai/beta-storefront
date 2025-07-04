@@ -98,25 +98,14 @@ async function main() {
       .toLowerCase()
       .replace(/\s+/g, '-');
 
-    const itemSpec: any = { // Use 'any' for flexibility during simplification
+    const itemSpec: any = {
+      name: product.title || product.name, // Main product name
       tenantLanguage: 'en',
-      name: product.title || product.name,
-      shape: 'product', // Must match a shape identifier in Crystallize
-      path: `/${slug}`,  // Ensure path starts with a slash
-      // ExternalReference is often useful, ensure it's unique if used
-      // externalReference: `dummyjson-${product.id}`,
-      variants: [
-        {
-          sku: `SKU-${product.id}`,
-          name: product.title || product.name, // Variant name
-          isDefault: true, // Add isDefault flag
-          priceVariants: { default: product.price || 0 },
-          stockLocations: [{ identifier: "default", stock: product.stock || 0 }], // Add stockLocations
-          // images: (product.images || []).slice(0, 1).map((url: string) => ({ url })), // Limit to 1 image if re-enabled
-        },
-      ],
+      shape: 'beta-storefront', // Explicitly use the beta-storefront shape
+      path: `/${slug}`,
       components: {
-        description: { // Assuming 'description' is the ID of a rich text component in the 'product' shape
+        // 'title' component (ID: title) omitted due to restrictive regex pattern
+        description: {
           json: [
             {
               type: 'paragraph',
@@ -128,7 +117,19 @@ async function main() {
             },
           ],
         },
+        // 'brand' component (ID: brand) omitted due to restrictive regex pattern
+        thumbnail: product.thumbnail ? [{ url: product.thumbnail }] : [], // Product-level thumbnail
       },
+      variants: [
+        {
+          name: product.title || product.name, // Variant name
+          sku: `SKU-${product.id}`, // Standard SKU field
+          isDefault: true,
+          priceVariants: { default: product.price || 0 },
+          stockLocations: [{ identifier: 'default', stock: product.stock || 0 }],
+          images: product.images && product.images.length > 0 ? [{ url: product.images[0] }] : [], // Variant images
+        },
+      ],
     };
 
     // Removed special handling for product.id === 1 as we are targeting a specific product (ID 5)

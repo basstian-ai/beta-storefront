@@ -1,8 +1,0 @@
-{
-  "identifier": "product",
-  "name": "Product",
-  "type": "product",
-  "components": [
-    { "id": "description", "name": "Description", "type": "richText" }
-  ]
-}

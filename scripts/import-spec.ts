@@ -94,29 +94,8 @@ async function main() {
     priceVariantsData = [];
   }
 
-  // Read and parse shape files
-  const shapesDirPath = path.join(baseImportDir, 'shapes');
-  const shapesIndexPath = path.join(shapesDirPath, 'index.json');
-  let shapesData: any[] = [];
-  try {
-    const shapesIndexContent = await fs.readFile(shapesIndexPath, 'utf-8');
-    const shapeFiles = JSON.parse(shapesIndexContent);
-    if (Array.isArray(shapeFiles)) {
-      for (const shapeFile of shapeFiles) {
-        const shapeFilePath = path.join(shapesDirPath, shapeFile);
-        try {
-          const shapeContent = await fs.readFile(shapeFilePath, 'utf-8');
-          shapesData.push(JSON.parse(shapeContent));
-        } catch (e) {
-          console.error(`Failed to read or parse shape file ${shapeFilePath}: ${e}`);
-        }
-      }
-    } else {
-      console.error(`${shapesIndexPath} does not contain a valid JSON array of shape filenames.`);
-    }
-  } catch (e) {
-    console.error(`Failed to read or parse ${shapesIndexPath}: ${e}.`);
-  }
+  // Shapes are not being imported; rely on existing shapes in the tenant.
+  const shapesData: any[] = []; // we import items only
 
   // Read and parse item files
   const itemsDirPath = path.join(baseImportDir, 'items');

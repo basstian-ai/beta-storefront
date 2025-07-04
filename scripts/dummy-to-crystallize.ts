@@ -131,7 +131,7 @@ async function main() {
             sku: `SKU-${product.id}`, // SKU moved into components
             images: product.images && product.images.length > 0 ? [{ url: product.images[0] }] : [], // Images moved into components
             stock: product.stock || 0, // Stock (numeric) added to components
-            attributes: [], // Attributes remains in components
+            // attributes key is now omitted as it would be an empty array
           },
         },
       ],

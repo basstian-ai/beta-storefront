@@ -125,7 +125,7 @@ async function main() {
           name: product.title || product.name, // Variant name (remains at root)
           isDefault: true, // (remains at root)
           priceVariants: { default: product.price || 0 }, // (remains at root)
-          stockLocations: [{ identifier: 'default', stock: product.stock || 0 }], // (remains at root, importer uses this for stock updates)
+          // stockLocations: [{ identifier: 'default', stock: product.stock || 0 }], // REMOVED as per user feedback
           // SKU, images, and stock are now moved into the components object below
           components: {
             sku: `SKU-${product.id}`, // SKU moved into components

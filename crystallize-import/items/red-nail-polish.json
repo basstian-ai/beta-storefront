@@ -31,12 +31,6 @@
       "priceVariants": {
         "default": 8.99
       },
-      "stockLocations": [
-        {
-          "identifier": "default",
-          "stock": 79
-        }
-      ],
       "components": {
         "sku": "SKU-5",
         "images": [

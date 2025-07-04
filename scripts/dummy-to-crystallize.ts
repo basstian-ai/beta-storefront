@@ -104,7 +104,7 @@ async function main() {
       shape: 'beta-storefront', // Explicitly use the beta-storefront shape
       path: `/${slug}`,
       components: {
-        // 'title' component (ID: title) omitted due to restrictive regex pattern
+        title: product.title || '', // Added title component
         description: {
           json: [
             {
@@ -117,7 +117,7 @@ async function main() {
             },
           ],
         },
-        // 'brand' component (ID: brand) omitted due to restrictive regex pattern
+        brand: product.brand || '', // Added brand component
         thumbnail: product.thumbnail ? [{ url: product.thumbnail }] : [], // Product-level thumbnail
       },
       variants: [
@@ -128,6 +128,9 @@ async function main() {
           priceVariants: { default: product.price || 0 },
           stockLocations: [{ identifier: 'default', stock: product.stock || 0 }],
           images: product.images && product.images.length > 0 ? [{ url: product.images[0] }] : [], // Variant images
+          components: { // Added components wrapper for variant specific components
+            attributes: [], // Added empty attributes as per shape definition
+          },
         },
       ],
     };

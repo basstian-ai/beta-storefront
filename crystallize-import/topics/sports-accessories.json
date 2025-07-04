@@ -1,1 +1,5 @@
-{ "parent": "/categories", "name": "Sports Accessories", "path": "/categories/sports-accessories" }
+{
+  "parent": "/categories",
+  "name": "Sports Accessories",
+  "path": "/categories/sports-accessories"
+}

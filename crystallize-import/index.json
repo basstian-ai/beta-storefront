@@ -1,7 +1,5 @@
 {
-  "tenant": "tenant.yaml",
-  "shapes": "shapes",
-  "items": "items",
-  "topics": "topics",
-  "priceVariants": "priceVariants.json"
+  "items": [
+    "red-nail-polish.json"
+  ]
 }

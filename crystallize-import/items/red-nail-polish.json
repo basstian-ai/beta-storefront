@@ -1,0 +1,51 @@
+{
+  "name": "Red Nail Polish",
+  "tenantLanguage": "en",
+  "shape": "beta-storefront",
+  "path": "/red-nail-polish",
+  "components": {
+    "title": "Red Nail Polish",
+    "description": {
+      "json": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "The Red Nail Polish offers a rich and glossy red hue for vibrant and polished nails. With a quick-drying formula, it provides a salon-quality finish at home."
+            }
+          ]
+        }
+      ]
+    },
+    "brand": "Nail Couture",
+    "thumbnail": [
+      {
+        "url": "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/thumbnail.webp"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "name": "Red Nail Polish",
+      "sku": "SKU-5",
+      "isDefault": true,
+      "priceVariants": {
+        "default": 8.99
+      },
+      "stockLocations": [
+        {
+          "identifier": "default",
+          "stock": 79
+        }
+      ],
+      "images": [
+        {
+          "url": "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/1.webp"
+        }
+      ],
+      "components": {
+        "attributes": []
+      }
+    }
+  ]
+}

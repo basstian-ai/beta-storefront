@@ -1,0 +1,15 @@
+Attempted to set logLevel to debug.
+Setting bootstrapper spec with (shapes/items/topics data might be extensive, logging counts instead):
+{
+  "shapes": "2 shapes loaded",
+  "items": "1 items loaded",
+  "topicMaps": "1 topics loaded",
+  "priceVariants": [
+    {
+      "identifier": "default",
+      "name": "Default",
+      "currency": "NOK"
+    }
+  ]
+}
+✅ Import spec processing completed: { status: 'ok', importedItems: 1 }

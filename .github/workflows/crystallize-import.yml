@@ -66,7 +66,7 @@ jobs:
           pnpm exec tsx scripts/dummy-to-crystallize.ts # Ensure item files are generated
 
           echo "🚀  Importing items only for tenant: $TENANT"
-          npx --yes @crystallize/import-utilities crystallize-import \
+          pnpm dlx @crystallize/import-utilities crystallize-import \
             import \
             --spec-directory crystallize-import \
             --tenant-identifier "${{ env.CRYSTALLIZE_TENANT_IDENTIFIER || env.CRYSTALLIZE_TENANT_ID }}" \

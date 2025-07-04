@@ -1,1 +1,5 @@
-{ "parent": "/categories", "name": "Womens Jewellery", "path": "/categories/womens-jewellery" }
+{
+  "parent": "/categories",
+  "name": "Womens Jewellery",
+  "path": "/categories/womens-jewellery"
+}

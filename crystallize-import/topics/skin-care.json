@@ -1,1 +1,5 @@
-{ "parent": "/categories", "name": "Skin Care", "path": "/categories/skin-care" }
+{
+  "parent": "/categories",
+  "name": "Skin Care",
+  "path": "/categories/skin-care"
+}

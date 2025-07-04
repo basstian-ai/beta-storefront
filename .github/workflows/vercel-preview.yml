@@ -13,7 +13,7 @@ jobs:
       - name: Setup PNPM
         uses: pnpm/action-setup@v2
         with:
-          version: 8 # Specify a PNPM version, e.g., 8.x (latest stable)
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4 # It's good practice to setup Node explicitly
@@ -22,7 +22,7 @@ jobs:
           cache: 'pnpm' # Enable caching for pnpm
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile # Using --no-frozen-lockfile as requested
+        run: pnpm install --frozen-lockfile
 
       - name: Run Tests
         run: pnpm test # Assumes 'test' script in package.json runs Vitest

@@ -1,1 +1,5 @@
-{ "parent": "/categories", "name": "Kitchen Accessories", "path": "/categories/kitchen-accessories" }
+{
+  "parent": "/categories",
+  "name": "Kitchen Accessories",
+  "path": "/categories/kitchen-accessories"
+}

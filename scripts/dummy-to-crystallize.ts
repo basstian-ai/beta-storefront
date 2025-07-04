@@ -2,17 +2,55 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 
-async function fetchDummyJSON(limit = 100, tries = 3) {
-  const url = `https://dummyjson.com/products?limit=${limit}`;
+// Helper function to fetch a single page of products
+async function fetchProductPage(limit: number, skip: number, tries = 3) {
+  const url = `https://dummyjson.com/products?limit=${limit}&skip=${skip}`;
   for (let i = 0; i < tries; i++) {
     try {
-      const r = await fetch(url, { timeout: 10_000 });
-      if (r.ok) return r.json();
-    } catch {}
-    await new Promise((res) => setTimeout(res, 1_000 * (i + 1)));
+      const response = await fetch(url, { timeout: 10_000 });
+      if (response.ok) {
+        return response.json() as Promise<{ products: any[]; total: number; skip: number; limit: number }>;
+      }
+      console.error(`Failed to fetch page: ${url}, status: ${response.status}`);
+    } catch (e) {
+      console.error(`Error fetching page: ${url}, attempt ${i + 1}/${tries}`, e);
+    }
+    if (i < tries - 1) {
+      await new Promise((res) => setTimeout(res, 1_000 * (i + 1)));
+    }
   }
-  throw new Error('❌ DummyJSON fetch failed after retries');
+  throw new Error(`❌ DummyJSON fetch failed for page (limit=${limit}, skip=${skip}) after ${tries} retries`);
 }
+
+async function fetchAllDummyProducts() {
+  let allProducts: any[] = [];
+  let fetchedCount = 0;
+  let totalProducts = 0;
+  const limit = 100; // Max limit per dummyjson.com API
+
+  // First call to get the total
+  const initialData = await fetchProductPage(limit, 0);
+  allProducts = allProducts.concat(initialData.products);
+  fetchedCount = initialData.products.length;
+  totalProducts = initialData.total;
+  console.log(`Initial fetch: got ${fetchedCount} of ${totalProducts} products.`);
+
+  while (fetchedCount < totalProducts) {
+    console.log(`Fetching next page, current count: ${fetchedCount}, total: ${totalProducts}`);
+    const nextPageData = await fetchProductPage(limit, fetchedCount);
+    if (nextPageData.products.length === 0) {
+        console.warn("Received empty products array on a subsequent fetch, stopping.");
+        break; // Avoid infinite loops if API behaves unexpectedly
+    }
+    allProducts = allProducts.concat(nextPageData.products);
+    fetchedCount += nextPageData.products.length;
+    console.log(`Fetched page: got ${nextPageData.products.length} products. Total now: ${fetchedCount}`);
+  }
+
+  console.log(`Finished fetching. Total products retrieved: ${allProducts.length}`);
+  return allProducts;
+}
+
 
 const categories = [
   { slug: 'beauty', name: 'Beauty' },
@@ -79,21 +117,15 @@ async function main() {
     )
   );
 
-  const { products } = await fetchDummyJSON();
-  if (!products?.length) throw new Error('❌ DummyJSON returned 0 products');
+  const allProducts = await fetchAllDummyProducts();
+  if (!allProducts?.length) throw new Error('❌ DummyJSON returned 0 products after attempting to fetch all.');
 
-  // --- START SIMPLIFICATION ---
-  // Select only product with ID 5 ("Essence Mascara Lash Princess") for testing
-  const targetProductId = 5;
-  const singleProduct = products.find((p: any) => p.id === targetProductId);
-  const selected = singleProduct ? [singleProduct] : [];
+  // Process all fetched products
+  const productsToProcess = allProducts;
 
-  if (selected.length === 0) {
-    throw new Error(`❌ Could not find product with ID ${targetProductId} for simplified test.`);
-  }
-  // --- END SIMPLIFICATION ---
+  console.log(`Processing ${productsToProcess.length} products.`);
 
-    for (const product of selected) { // This loop will now run only once
+    for (const product of productsToProcess) {
     const slug = String(product.title || product.name || product.id)
       .toLowerCase()
       .replace(/\s+/g, '-');
@@ -158,22 +190,20 @@ async function main() {
       throw new Error(`File not found or not accessible immediately after writing: ${itemFilePath}`);
     }
     }
-    console.log(`📝 Wrote ${selected.length} (simplified) item spec to crystallize-import/items/`);
+    console.log(`📝 Wrote ${productsToProcess.length} item specs to crystallize-import/items/`);
 
-    // Update index.json for the single item
-    const itemFilenames = selected.map((p) => {
-        // Ensure consistent slug generation for filenames as used when writing item files
+    // Update index.json to include all generated item filenames
+    const itemFilenames = productsToProcess.map((p) => {
         const productSlug = String(p.title || p.name || p.id).toLowerCase().replace(/\s+/g, '-');
-        // Removed special handling for p.id === 1 to ensure the filename is always derived from the actual product's slug
         return `${productSlug}.json`;
     });
     const index = { items: itemFilenames };
 
     await fs.writeFile(path.resolve(baseImportDir, 'index.json'), JSON.stringify(index, null, 2));
-    console.log('✅ Wrote crystallize-import/index.json for the single simplified item');
+    console.log(`✅ Wrote crystallize-import/index.json for ${itemFilenames.length} items.`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('DummyJSON fetch failed:', message);
+    console.error('Error in main execution:', message);
     process.exit(1);
   }
 }

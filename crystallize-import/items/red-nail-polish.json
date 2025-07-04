@@ -27,7 +27,6 @@
   "variants": [
     {
       "name": "Red Nail Polish",
-      "sku": "SKU-5",
       "isDefault": true,
       "priceVariants": {
         "default": 8.99
@@ -38,12 +37,14 @@
           "stock": 79
         }
       ],
-      "images": [
-        {
-          "url": "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/1.webp"
-        }
-      ],
       "components": {
+        "sku": "SKU-5",
+        "images": [
+          {
+            "url": "https://cdn.dummyjson.com/product-images/beauty/red-nail-polish/1.webp"
+          }
+        ],
+        "stock": 79,
         "attributes": []
       }
     }

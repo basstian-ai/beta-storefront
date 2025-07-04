@@ -122,14 +122,16 @@ async function main() {
       },
       variants: [
         {
-          name: product.title || product.name, // Variant name
-          sku: `SKU-${product.id}`, // Standard SKU field
-          isDefault: true,
-          priceVariants: { default: product.price || 0 },
-          stockLocations: [{ identifier: 'default', stock: product.stock || 0 }],
-          images: product.images && product.images.length > 0 ? [{ url: product.images[0] }] : [], // Variant images
-          components: { // Added components wrapper for variant specific components
-            attributes: [], // Added empty attributes as per shape definition
+          name: product.title || product.name, // Variant name (remains at root)
+          isDefault: true, // (remains at root)
+          priceVariants: { default: product.price || 0 }, // (remains at root)
+          stockLocations: [{ identifier: 'default', stock: product.stock || 0 }], // (remains at root, importer uses this for stock updates)
+          // SKU, images, and stock are now moved into the components object below
+          components: {
+            sku: `SKU-${product.id}`, // SKU moved into components
+            images: product.images && product.images.length > 0 ? [{ url: product.images[0] }] : [], // Images moved into components
+            stock: product.stock || 0, // Stock (numeric) added to components
+            attributes: [], // Attributes remains in components
           },
         },
       ],

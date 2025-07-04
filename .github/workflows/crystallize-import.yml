@@ -40,6 +40,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Ensure import utilities are up to date and binaries available
+      - run: pnpm update @crystallize/import-utilities --latest || true
+
       # Build scripts approved locally; no interactive prompt in CI
       # - run: pnpm approve-builds --yes >/dev/null
 
@@ -65,18 +68,28 @@ jobs:
           echo "🚀  Generating item files for tenant: $TENANT"
           pnpm exec tsx scripts/dummy-to-crystallize.ts # Ensure item files are generated
 
-          echo "🚀  Importing items only for tenant: $TENANT"
-          pnpm dlx @crystallize/import-utilities \
-            import \
+          CLI="./node_modules/.bin/crystallize"
+          if [ ! -x "$CLI" ]; then
+            echo "::warning::Local crystallize CLI not found, falling back to pnpm dlx"
+            CLI="pnpm dlx @crystallize/cli"
+          fi
+
+          echo "🚀  Importing items only for tenant: $TENANT using $CLI"
+          $CLI import \
             --spec-directory crystallize-import \
             --tenant-identifier "${{ env.CRYSTALLIZE_TENANT_IDENTIFIER || env.CRYSTALLIZE_TENANT_ID }}" \
             --access-token-id   "${{ env.CRYSTALLIZE_ACCESS_TOKEN_ID }}" \
             --access-token-secret "${{ env.CRYSTALLIZE_ACCESS_TOKEN_SECRET }}" \
             --skip-shapes \
             --log-level info \
-            --output import.json
+            --output import.json \
+            2>&1 | tee import.log
 
-          test -s import.json || { echo "::error::import.json empty after CLI import" && exit 1 ; }
+          if [ ! -s import.json ]; then
+            echo "::error::import.json empty after CLI import"
+            cat import.log
+            exit 1
+          fi
 
       - name: Add delay for eventual consistency
         run: |

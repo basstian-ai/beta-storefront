@@ -74,8 +74,13 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
               {/* Logo and Desktop Navigation Links */}
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <Link href="/" className="text-primary font-bold text-xl">
-                    Forte
+                  <Link href="/" className="flex items-center">
+                    <Image
+                      src="https://framerusercontent.com/images/H8v52JdMhMaxYB8SqOgDMWLqwI.svg"
+                      alt="Forte Digital Logo"
+                      width={100}
+                      height={40}
+                    />
                   </Link>
                 </div>
                 <div className="hidden sm:ml-6 sm:block">

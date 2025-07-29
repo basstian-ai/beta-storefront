@@ -27,6 +27,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'robohash.org',
       },
+      {
+        protocol: 'https',
+        hostname: 'framerusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
   },
 };

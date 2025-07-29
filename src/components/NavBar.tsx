@@ -54,14 +54,14 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
   const hiddenItems = navigation.slice(MAX_VISIBLE_CATEGORIES);
 
   return (
-    <Disclosure as="nav" className="bg-gray-800 shadow-md">
+<Disclosure as="nav" className="bg-secondary shadow-md">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
-              {/* Mobile menu button - unchanged */}
+              {/* Mobile menu button */}
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-primary hover:bg-gray-100 hover:text-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -71,11 +71,11 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 </Disclosure.Button>
               </div>
 
-              {/* Logo and Desktop Navigation Links - unchanged */}
+              {/* Logo and Desktop Navigation Links */}
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <Link href="/" className="text-white font-bold text-xl">
-                    BetaStore
+                  <Link href="/" className="text-primary font-bold text-xl">
+                    Forte
                   </Link>
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
@@ -85,7 +85,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                         key={item.name}
                         href={item.href}
                         className={classNames(
-                          item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          item.current ? 'text-accent' : 'text-primary hover:text-accent',
                           'rounded-md px-3 py-2 text-sm font-medium'
                         )}
                         aria-current={item.current ? 'page' : undefined}
@@ -96,7 +96,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                     {hiddenItems.length > 0 && (
                       <Menu as="div" className="relative">
                         <div>
-                          <Menu.Button className="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+                          <Menu.Button className="text-primary hover:text-accent rounded-md px-3 py-2 text-sm font-medium">
                             More
                           </Menu.Button>
                         </div>
@@ -109,7 +109,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                           leaveFrom="transform opacity-100 scale-100"
                           leaveTo="transform opacity-0 scale-95"
                         >
-                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-secondary py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                             {hiddenItems.map((item) => (
                               <Menu.Item key={item.name}>
                                 {({ active }) => (
@@ -117,7 +117,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                                     href={item.href}
                                     className={classNames(
                                       active ? 'bg-gray-100' : '',
-                                      item.current ? 'bg-gray-100 text-gray-900' : 'text-gray-700', // Ensure current item in dropdown is highlighted
+                                      item.current ? 'text-accent' : 'text-primary',
                                       'block px-4 py-2 text-sm'
                                     )}
                                     aria-current={item.current ? 'page' : undefined}
@@ -141,32 +141,32 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 <div className="hidden sm:block w-64">
                   <SearchBar />
                 </div>
-                <Link href="/cart" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="View Cart">
+                <Link href="/cart" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Cart">
                   <span className="sr-only">View Cart</span>
                   <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
                   {hasMounted && totalCartItems > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
                       {totalCartItems}
                     </span>
                   )}
                 </Link>
-                <Link href="/wishlist" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="View Wishlist">
+                <Link href="/wishlist" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Wishlist">
                   <span className="sr-only">View Wishlist</span>
                   <Heart className="h-6 w-6" aria-hidden="true" />
                   {hasMounted && wishlistCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
                       {wishlistCount}
                     </span>
                   )}
                 </Link>
 
-                {/* Auth Section: Avatar Dropdown or Login Icon - unchanged */}
+                {/* Auth Section: Avatar Dropdown or Login Icon */}
                 {status === 'loading' ? (
-                  <div className="ml-3 h-8 w-8 animate-pulse rounded-full bg-gray-700"></div>
+                  <div className="ml-3 h-8 w-8 animate-pulse rounded-full bg-gray-100"></div>
                 ) : session ? (
                   <Menu as="div" className="relative ml-3">
                     <div>
-                      <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                      <Menu.Button className="flex rounded-full bg-secondary text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary">
                         <span className="sr-only">Open user menu</span>
                         {session.user?.image ? (
                           <Image
@@ -180,28 +180,28 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                             blurDataURL="/img/placeholder.svg"
                           />
                         ) : (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-600">
-                            <span className="text-sm font-medium leading-none text-white">
-                              {session.user?.name?.substring(0, 2).toUpperCase() || <UserCircleIcon className="h-6 w-6 text-gray-400" />}
+                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                            <span className="text-sm font-medium leading-none text-primary">
+                              {session.user?.name?.substring(0, 2).toUpperCase() || <UserCircleIcon className="h-6 w-6 text-primary" />}
                             </span>
                           </span>
                         )}
                       </Menu.Button>
                     </div>
                     <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-secondary py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <Menu.Item>
-                          {({ active }) => (<Link href="/account" className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}>My Account</Link>)}
+                          {({ active }) => (<Link href="/account" className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-primary')}>My Account</Link>)}
                         </Menu.Item>
                         <Menu.Item>
-                          {({ active }) => (<button onClick={() => signOut({ callbackUrl: '/' })} className={classNames(active ? 'bg-gray-100' : '', 'block w-full text-left px-4 py-2 text-sm text-gray-700')}>Sign out</button>)}
+                          {({ active }) => (<button onClick={() => signOut({ callbackUrl: '/' })} className={classNames(active ? 'bg-gray-100' : '', 'block w-full text-left px-4 py-2 text-sm text-primary')}>Sign out</button>)}
                         </Menu.Item>
                       </Menu.Items>
                     </Transition>
                   </Menu>
                 ) : (
                   <Link href="/login" passHref>
-                    <button type="button" className="ml-3 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" title="Login / My Account">
+                    <button type="button" className="ml-3 rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="Login / My Account">
                       <span className="sr-only">Login / My Account</span>
                       <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
@@ -211,18 +211,17 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
             </div>
           </div>
 
-          {/* Mobile Menu Panel - unchanged, but ensure error display is present if needed */}
+          {/* Mobile Menu Panel */}
           <Disclosure.Panel className="sm:hidden">
             <div className="space-y-3 px-2 pb-3 pt-2">
               <SearchBar />
-              {/* Ensure mobile navigation also uses the full list or has its own logic if different */}
               {navigation.map((item) => (
                 <Disclosure.Button
                   key={item.name}
                   as={Link}
                   href={item.href}
                   className={classNames(
-                    item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                    item.current ? 'bg-gray-100 text-accent' : 'text-primary hover:bg-gray-100 hover:text-accent',
                     'block rounded-md px-3 py-2 text-base font-medium'
                   )}
                   aria-current={item.current ? 'page' : undefined}
@@ -230,7 +229,6 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                   {item.name}
                 </Disclosure.Button>
               ))}
-              {/* Ensured categoryError display is in mobile panel too */}
               {categoryError && <div className="px-3 py-2 text-base font-medium text-red-400">{categoryError}</div>}
             </div>
           </Disclosure.Panel>

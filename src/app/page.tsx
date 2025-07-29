@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { getCategories } from '@/bff/services';
 import Link from 'next/link';
 import PopularProductsCarousel from '@/components/PopularProductsCarousel';
+import HeroBanner from '@/components/HeroBanner';
 // import { slugify } from '@/lib/utils'; // Not needed for category slugs if fetched as objects
 
 interface CategoryInfo { // This interface might need adjustment or can use CategorySchema directly
@@ -67,21 +68,14 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20 md:py-32">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Welcome to BetaStore!
-          </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-            Discover amazing products across all categories. Built with Next.js 14 and modern tech.
-          </p>
-          <Link href={categoriesToDisplay.length > 0 ? `/category/${categoriesToDisplay[0].slug}` : "/"} legacyBehavior>
-            <a className="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-100 transition duration-300">
-              Shop Now
-            </a>
-          </Link>
-        </div>
-      </section>
+      <HeroBanner
+        title="Welcome to Forte!"
+        description="Discover amazing products across all categories. Built with Next.js 14 and modern tech."
+        ctaText="Shop Now"
+        ctaLink={categoriesToDisplay.length > 0 ? `/category/${categoriesToDisplay[0].slug}` : "/"}
+        imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        imageAlt="A group of people working on laptops"
+      />
 
       {/* Popular Products Carousel */}
       <section className="py-8 bg-gray-100">

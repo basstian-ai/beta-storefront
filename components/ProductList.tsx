@@ -3,7 +3,6 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/lib/api';
-import styles from './ProductList.module.css'; // Import the CSS module
 
 export interface ProductListProps {
   products: Product[];
@@ -11,16 +10,15 @@ export interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({ products }) => {
   if (!products || products.length === 0) {
-        // Apply the new style for the empty state
-        return <p className={styles.emptyProductList}>No products found.</p>;
+    return <p className="text-center text-gray-500 py-8">No products found.</p>;
   }
 
   return (
-    <div className={styles.productGrid}> {/* Use CSS module class */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {products.map((product) => (
-        <Link href={`/product/${product.id}`} key={product.id} passHref legacyBehavior>
-          <a className={styles.productCard}> {/* Use CSS module class */}
-            <div className={styles.imageWrapper}> {/* Use CSS module class */}
+        <Link href={`/product/${product.id}`} key={product.id} passHref>
+          <div className="bg-secondary rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 cursor-pointer">
+            <div className="relative w-full h-64">
               <Image
                 src={product.imageUrl || '/placeholder-image.webp'}
                 alt={product.name}
@@ -29,11 +27,13 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                 className="object-cover"
               />
             </div>
-            <h3>{product.name}</h3>
-            <p className={styles.price}>${product.price.toFixed(2)}</p> {/* Use CSS module class */}
-            <p className={styles.brand}>Brand: {product.brand}</p> {/* Use CSS module class */}
-            <p className={styles.size}>Size: {product.size}</p> {/* Use CSS module class */}
-          </a>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-primary">{product.name}</h3>
+              <p className="text-accent font-bold mt-2">${product.price.toFixed(2)}</p>
+              <p className="text-gray-500 text-sm mt-1">Brand: {product.brand}</p>
+              <p className="text-gray-500 text-sm">Size: {product.size}</p>
+            </div>
+          </div>
         </Link>
       ))}
     </div>

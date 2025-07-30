@@ -9,18 +9,18 @@ import { ChevronRightIcon, HomeIcon } from '@heroicons/react/20/solid';
 
 export interface BreadcrumbsProps {
   productTitle?: string;
-  categoryName?: string;
+  category?: { name: string; slug: string };
 }
 
-export default function Breadcrumbs({ productTitle, categoryName }: BreadcrumbsProps) {
+export default function Breadcrumbs({ productTitle, category }: BreadcrumbsProps) {
   const pathname = usePathname();
   const [segments, setSegments] = useState<BreadcrumbSegment[]>([]);
 
   useEffect(() => {
-    const dynamicData = { productTitle, categoryName };
+    const dynamicData = { productTitle, category };
     const generatedSegments = generateBreadcrumbs(pathname, dynamicData);
     setSegments(generatedSegments);
-  }, [pathname, productTitle, categoryName]);
+  }, [pathname, productTitle, category]);
 
   if (segments.length <= 1 && pathname === '/') {
     return null;

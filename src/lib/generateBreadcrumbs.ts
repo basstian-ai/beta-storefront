@@ -61,5 +61,12 @@ export function generateBreadcrumbs(
       segments.splice(productSegmentIndex, 0, categorySegment);
     }
   }
+  const hasCategory = segments.some(s => s.href.startsWith('/category/'));
+  if (hasCategory) {
+    const productsIndex = segments.findIndex(s => s.name === 'Products');
+    if (productsIndex > -1) {
+        segments.splice(productsIndex, 1);
+    }
+  }
   return segments;
 }

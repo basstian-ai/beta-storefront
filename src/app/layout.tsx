@@ -3,7 +3,6 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import NavBar from '@/components/NavBar';
-import Breadcrumbs from '@/components/Breadcrumbs';
 import { getCategories } from '@/bff/services';
 import { Suspense } from 'react';
 // import { unstable_noStore as noStore } from 'next/cache'; // Remove if using revalidate
@@ -52,7 +51,6 @@ export default async function RootLayout({
           <Suspense fallback={null}>
             <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
           </Suspense>
-          <Breadcrumbs />
           <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
             {children}
           </main>

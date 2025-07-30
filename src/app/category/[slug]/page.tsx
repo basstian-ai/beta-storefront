@@ -5,6 +5,7 @@ import { getProducts, getCategories } from '@/bff/services';
 // z will be used by client component
 import CategoryFilterableProducts from '@/components/CategoryFilterableProducts'; // Import the new client component
 import Link from 'next/link'; // Keep for fallback link
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 // ProductCard component will be moved to CategoryFilterableProducts.tsx or a shared components directory
 
@@ -109,13 +110,16 @@ export default async function CategoryPage({
   }
 
   return (
-    <CategoryFilterableProducts
-      initialProducts={initialProducts}
-      totalInitialProducts={totalInitialProducts}
+    <>
+      <Breadcrumbs category={{ name: humanReadableCategoryName, slug: slug }} />
+      <CategoryFilterableProducts
+        initialProducts={initialProducts}
+        totalInitialProducts={totalInitialProducts}
       availableBrands={availableBrands}
       categorySlug={categoryApiName}
       initialHumanReadableCategoryName={humanReadableCategoryName}
       // searchParams are not directly passed; client component uses useSearchParams
     />
+    </>
   );
 }

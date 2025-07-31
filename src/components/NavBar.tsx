@@ -142,76 +142,80 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
               </div>
 
               {/* Right side icons and search */}
-              <div className="absolute inset-y-0 right-0 flex items-center space-x-3 pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 <div className="hidden sm:block w-64">
                   <SearchBar />
                 </div>
-                <Link href="/cart" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Cart">
-                  <span className="sr-only">View Cart</span>
-                  <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
-                  {hasMounted && totalCartItems > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
-                      {totalCartItems}
-                    </span>
-                  )}
-                </Link>
-                <Link href="/wishlist" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Wishlist">
-                  <span className="sr-only">View Wishlist</span>
-                  <Heart className="h-6 w-6" aria-hidden="true" />
-                  {hasMounted && wishlistCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Link>
 
-                {/* Auth Section: Avatar Dropdown or Login Icon */}
-                {status === 'loading' ? (
-                  <div className="ml-3 h-8 w-8 animate-pulse rounded-full bg-gray-100"></div>
-                ) : session ? (
-                  <Menu as="div" className="relative ml-3">
-                    <div>
-                      <Menu.Button className="flex rounded-full bg-secondary text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary">
-                        <span className="sr-only">Open user menu</span>
-                        {session.user?.image ? (
-                          <Image
-                            className="h-8 w-8 rounded-full"
-                            src={session.user.image}
-                            alt="User avatar"
-                            width={32}
-                            height={32}
-                            sizes="32px"
-                            placeholder="blur"
-                            blurDataURL="/img/placeholder.svg"
-                          />
-                        ) : (
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-                            <span className="text-sm font-medium leading-none text-primary">
-                              {session.user?.name?.substring(0, 2).toUpperCase() || <UserCircleIcon className="h-6 w-6 text-primary" />}
-                            </span>
-                          </span>
-                        )}
-                      </Menu.Button>
-                    </div>
-                    <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-secondary py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <Menu.Item>
-                          {({ active }) => (<Link href="/account" className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-primary')}>My Account</Link>)}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (<button onClick={() => signOut({ callbackUrl: '/' })} className={classNames(active ? 'bg-gray-100' : '', 'block w-full text-left px-4 py-2 text-sm text-primary')}>Sign out</button>)}
-                        </Menu.Item>
-                      </Menu.Items>
-                    </Transition>
-                  </Menu>
-                ) : (
-                  <Link href="/login" passHref>
-                    <button type="button" className="ml-3 rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="Login / My Account">
-                      <span className="sr-only">Login / My Account</span>
-                      <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
+                {/* Icons Group */}
+                <div className="flex items-center space-x-4 ml-4">
+                  <Link href="/cart" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Cart">
+                    <span className="sr-only">View Cart</span>
+                    <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />
+                    {hasMounted && totalCartItems > 0 && (
+                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
+                        {totalCartItems}
+                      </span>
+                    )}
                   </Link>
-                )}
+                  <Link href="/wishlist" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Wishlist">
+                    <span className="sr-only">View Wishlist</span>
+                    <Heart className="h-6 w-6" aria-hidden="true" />
+                    {hasMounted && wishlistCount > 0 && (
+                      <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-secondary">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* Auth Section: Avatar Dropdown or Login Icon */}
+                  {status === 'loading' ? (
+                    <div className="h-6 w-6 animate-pulse rounded-full bg-gray-100"></div>
+                  ) : session ? (
+                    <Menu as="div" className="relative">
+                      <div>
+                        <Menu.Button className="flex rounded-full bg-secondary text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary">
+                          <span className="sr-only">Open user menu</span>
+                          {session.user?.image ? (
+                            <Image
+                              className="h-6 w-6 rounded-full"
+                              src={session.user.image}
+                              alt="User avatar"
+                              width={24}
+                              height={24}
+                              sizes="24px"
+                              placeholder="blur"
+                              blurDataURL="/img/placeholder.svg"
+                            />
+                          ) : (
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
+                              <span className="text-xs font-medium leading-none text-primary">
+                                {session.user?.name?.substring(0, 2).toUpperCase() || <UserCircleIcon className="h-5 w-5 text-primary" />}
+                              </span>
+                            </span>
+                          )}
+                        </Menu.Button>
+                      </div>
+                      <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
+                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-secondary py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Menu.Item>
+                            {({ active }) => (<Link href="/account" className={classNames(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-primary')}>My Account</Link>)}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (<button onClick={() => signOut({ callbackUrl: '/' })} className={classNames(active ? 'bg-gray-100' : '', 'block w-full text-left px-4 py-2 text-sm text-primary')}>Sign out</button>)}
+                          </Menu.Item>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
+                  ) : (
+                    <Link href="/login" passHref>
+                      <button type="button" className="rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="Login / My Account">
+                        <span className="sr-only">Login / My Account</span>
+                        <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           </div>

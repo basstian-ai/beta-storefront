@@ -148,7 +148,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                 </div>
 
                 {/* Icons Group */}
-                <div className="flex items-center space-x-4 ml-4">
+                <div className="flex items-center space-x-2 sm:space-x-4 ml-auto sm:ml-4">
                   <Link href="/cart" className="relative rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="View Cart">
                     <span className="sr-only">View Cart</span>
                     <ShoppingCartIcon className="h-6 w-6" aria-hidden="true" />

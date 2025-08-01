@@ -3,6 +3,7 @@ import AuthGuard from '@/components/AuthGuard';
 import React from 'react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { Order } from '@/types/order';
 
 async function getAccountData() {
   const cookie = cookies().toString();
@@ -50,7 +51,7 @@ export default async function AccountPage() {
           <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
           {ordersData?.carts?.length > 0 ? (
             <ul>
-              {ordersData.carts.map((order: any) => (
+              {ordersData.carts.map((order: Order) => (
                 <li key={order.id} className="border-b last:border-b-0 py-2">
                   <Link href={`/account/orders/${order.id}`} className="text-blue-500 hover:underline">
                     Order #{order.id} - ${order.total}

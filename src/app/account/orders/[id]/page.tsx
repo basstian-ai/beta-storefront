@@ -3,6 +3,7 @@ import AuthGuard from '@/components/AuthGuard';
 import React from 'react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { Product } from '@/types/order';
 
 async function getOrderDetails(id: string) {
   const cookie = cookies().toString();
@@ -46,7 +47,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-2">Products</h2>
           <ul>
-            {order.products.map((product: any) => (
+            {order.products.map((product: Product) => (
               <li key={product.id} className="border-b last:border-b-0 py-2">
                 <p><strong>{product.title}</strong></p>
                 <p>Price: ${product.price}</p>

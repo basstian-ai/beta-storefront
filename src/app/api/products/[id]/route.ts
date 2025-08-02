@@ -1,4 +1,4 @@
-import { getProduct } from '@/bff/products';
+import { getProduct } from '../../../../bff/products/index.js';
 import { NextResponse } from 'next/server';
 
 export async function GET(

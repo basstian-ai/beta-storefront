@@ -5,11 +5,19 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Product } from '@/types/order';
 
+import { headers } from 'next/headers';
+
+function getBaseUrl() {
+  const headersList = headers();
+  const host = headersList.get('x-forwarded-host') || headersList.get('host');
+  const proto = headersList.get('x-forwarded-proto') || 'http';
+  return `${proto}://${host}`;
+}
+
 async function getOrderDetails(id: string) {
   const cookie = cookies().toString();
-  // Use a relative path for the API call
-  const url = new URL(`/api/orders/${id}`, process.env.NEXTAUTH_URL || 'http://localhost:3000');
-  const res = await fetch(url, {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/orders/${id}`, {
     headers: {
       cookie,
     },

@@ -8,7 +8,7 @@ export async function GET(
   try {
     const product = await getProduct(params.id);
     return NextResponse.json(product);
-  } catch (error) {
+  } catch {
     return new Response('Error fetching product', { status: 500 });
   }
 }

@@ -378,3 +378,48 @@ export async function login(credentials: { username?: string; password?: string 
     throw err instanceof Error ? err : new Error('Login failed due to an unexpected error.');
   }
 }
+
+export async function fetchUser(userId: number | string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchUser] Network error', err);
+    }
+    return null;
+  }
+}
+
+export async function fetchUserCarts(userId: number | string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/carts`);
+    if (!response.ok) {
+      return { carts: [] };
+    }
+    return await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchUserCarts] Network error', err);
+    }
+    return { carts: [] };
+  }
+}
+
+export async function fetchCartById(cartId: number | string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/carts/${cartId}`);
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchCartById] Network error', err);
+    }
+    return null;
+  }
+}

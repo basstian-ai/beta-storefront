@@ -7,7 +7,9 @@ import { Order } from '@/types/order';
 
 async function getAccountData() {
   const cookie = cookies().toString();
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/account`, {
+  // Use a relative path for the API call
+  const url = new URL('/api/account', process.env.NEXTAUTH_URL || 'http://localhost:3000');
+  const res = await fetch(url, {
     headers: {
       cookie,
     },
@@ -20,7 +22,9 @@ async function getAccountData() {
 
 async function getOrders() {
   const cookie = cookies().toString();
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/orders`, {
+  // Use a relative path for the API call
+  const url = new URL('/api/orders', process.env.NEXTAUTH_URL || 'http://localhost:3000');
+  const res = await fetch(url, {
     headers: {
       cookie,
     },

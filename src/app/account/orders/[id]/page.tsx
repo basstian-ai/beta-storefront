@@ -7,7 +7,9 @@ import { Product } from '@/types/order';
 
 async function getOrderDetails(id: string) {
   const cookie = cookies().toString();
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/orders/${id}`, {
+  // Use a relative path for the API call
+  const url = new URL(`/api/orders/${id}`, process.env.NEXTAUTH_URL || 'http://localhost:3000');
+  const res = await fetch(url, {
     headers: {
       cookie,
     },

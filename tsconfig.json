@@ -16,7 +16,8 @@
     "baseUrl": ".", // Added
     "paths": {
       "@/*": ["src/*"],
-      "@/lib/*": ["src/lib/*"]
+      "@/lib/*": ["src/lib/*"],
+      "@root/*": ["./*"]
     },
     "types": ["node"], // Removed "jest"
     "forceConsistentCasingInFileNames": true, // Added

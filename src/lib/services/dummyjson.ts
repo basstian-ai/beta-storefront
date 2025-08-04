@@ -102,7 +102,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 
   let data: DummyJsonResponse;
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { next: { revalidate: 60 } });
     if (!response.ok) {
       return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
     }
@@ -198,7 +198,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 export async function fetchProductById(id: number | string) {
   let product: DummyJsonProductRaw | undefined;
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`);
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, { next: { revalidate: 60 } });
     if (!response.ok) {
       return undefined;
     }
@@ -221,7 +221,7 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
   if (sort && sort !== 'relevance') params.append('sort', sort);
   let data: DummyJsonResponse;
   try {
-    const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/products/search?${params.toString()}`, { next: { revalidate: 60 } });
     if (!response.ok) {
       return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
     }
@@ -308,7 +308,7 @@ export async function fetchCategories(fetchOptions?: RequestInit) {
 export async function fetchAllProductsSimple() {
   let data: DummyJsonResponse;
   try {
-    const response = await fetch(`${API_BASE_URL}/products?limit=0`);
+    const response = await fetch(`${API_BASE_URL}/products?limit=0`, { next: { revalidate: 60 } });
     if (!response.ok) {
       return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
     }

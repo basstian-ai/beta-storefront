@@ -21,7 +21,11 @@ export async function GET(request: NextRequest) {
   try {
     // The searchProducts service already handles B2B pricing and Zod validation
     const results = await searchProducts(term, sort, skip, limit);
-    return NextResponse.json(results);
+    return NextResponse.json(results, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json(

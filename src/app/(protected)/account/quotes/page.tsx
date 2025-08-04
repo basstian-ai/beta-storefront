@@ -3,23 +3,20 @@ import OrderTable from '@/components/OrderTable';
 import AccountTabs from '@/components/AccountTabs';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { headers } from 'next/headers';
 import type { Quote } from '@/types';
+import { readHistory } from '@/lib/history';
 
 async function getQuotes(): Promise<Quote[]> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return [] as Quote[];
   }
-  const host = headers().get('host');
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-  const res = await fetch(`${protocol}://${host}/api/quotes?userId=${session.user.id}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    return [] as Quote[];
-  }
-  return res.json();
+  const history = await readHistory();
+  return history.filter(
+    (r) =>
+      r.type === 'quote' &&
+      String(r.userId) === String(session.user.id),
+  ) as Quote[];
 }
 
 export default async function QuotesPage() {

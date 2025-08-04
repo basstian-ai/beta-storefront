@@ -19,6 +19,11 @@ export default function OrderSuccessClient() {
       .then((s) => {
         setSession(s);
         setError(null);
+        fetch('/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session: s }),
+        }).catch((err) => console.error('order record failed', err));
       })
       .catch(() => setError('Failed to load session'))
       .finally(() => setLoading(false));

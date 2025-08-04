@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { nanoid } from 'nanoid';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,11 +41,14 @@ export async function POST(request: Request) {
   }
 
   const quoteId = nanoid();
+  const session = await getServerSession(authOptions);
   const record = {
     id: quoteId,
+    userId: session?.user?.id ?? null,
+    status: 'submitted',
     ...parsed.data,
     createdAt: new Date().toISOString(),
-  };
+  } as const;
   const baseDir = process.env.VERCEL
     ? '/tmp'
     : path.join(process.cwd(), 'data');

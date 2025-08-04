@@ -8,6 +8,8 @@ import Image from 'next/image'; // For better image handling
 import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import React from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { createCheckoutSession } from '@/lib/services/dummyjson';
 
 export default function CartPage() {
@@ -17,6 +19,9 @@ export default function CartPage() {
   const removeItem = useCartStore((state) => state.removeItem);
   const getCartSubtotal = useCartStore((state) => state.getCartSubtotal);
   const clearCart = useCartStore((state) => state.clearCart); // For "Clear Cart" button
+
+  const { data: session } = useSession();
+  const router = useRouter();
 
   const subtotal = getCartSubtotal();
 
@@ -35,13 +40,43 @@ export default function CartPage() {
     toast.error(`${productName} removed from cart`);
   };
 
-  const handleRequestQuote = () => {
-    // Stub handler for now
-    toast.info('"Request Quote" feature coming soon!');
-    // In a real app, this might clear the cart and redirect to a quote form or confirmation page.
-  };
-
+  const [requestingQuote, setRequestingQuote] = React.useState(false);
   const [checkingOut, setCheckingOut] = React.useState(false);
+
+  const handleRequestQuote = async () => {
+    if (items.length === 0) return;
+    setRequestingQuote(true);
+    try {
+      const res = await fetch('/api/quote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cart: {
+            items: items.map((i) => ({
+              productId: i.product.id,
+              quantity: i.quantity,
+            })),
+          },
+          user: {
+            name: session?.user?.name || 'Unknown',
+            email: session?.user?.email || 'unknown@example.com',
+          },
+        }),
+      });
+      if (!res.ok) {
+        throw new Error('Quote request failed');
+      }
+      const data = await res.json();
+      router.push(`/quote/confirmation?id=${data.quoteId}`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to request quote');
+    } finally {
+      setRequestingQuote(false);
+    }
+  };
 
   const handleCheckout = async () => {
     setCheckingOut(true);
@@ -185,15 +220,16 @@ export default function CartPage() {
                 </div>
               </dl>
 
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={handleRequestQuote}
-                  className="w-full rounded-md border border-transparent bg-blue-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-50"
-                >
-                  Request Quote (Stub)
-                </button>
-              </div>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={handleRequestQuote}
+                disabled={items.length === 0 || requestingQuote}
+                className="w-full rounded-md border border-transparent bg-blue-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-50 disabled:opacity-50"
+              >
+                {requestingQuote ? 'Requesting…' : 'Request Quote'}
+              </button>
+            </div>
               {items.length > 0 && (
                 <div className="mt-4">
                   <button

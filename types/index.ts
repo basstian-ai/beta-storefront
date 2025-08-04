@@ -25,3 +25,4 @@ export type Product = {
 };
 
 export type { CartItem, CheckoutSession } from './order';
+export type { Quote } from './quote';

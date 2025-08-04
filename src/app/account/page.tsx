@@ -1,45 +1,26 @@
 // src/app/account/page.tsx
 import AuthGuard from '@/components/AuthGuard';
 import React from 'react';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Order } from '@/types/order';
-
-import { headers } from 'next/headers';
-
-function getBaseUrl() {
-  const headersList = headers();
-  const host = headersList.get('x-forwarded-host') || headersList.get('host');
-  const proto = headersList.get('x-forwarded-proto') || 'http';
-  return `${proto}://${host}`;
-}
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { fetchUser, fetchUserCarts } from '@/lib/services/dummyjson';
 
 async function getAccountData() {
-  const cookie = cookies().toString();
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/account`, {
-    headers: {
-      cookie,
-    },
-  });
-  if (!res.ok) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
     return null;
   }
-  return res.json();
+  return fetchUser(session.user.id);
 }
 
 async function getOrders() {
-  const cookie = cookies().toString();
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/orders`, {
-    headers: {
-      cookie,
-    },
-  });
-  if (!res.ok) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
     return { carts: [] };
   }
-  return res.json();
+  return fetchUserCarts(session.user.id);
 }
 
 export default async function AccountPage() {

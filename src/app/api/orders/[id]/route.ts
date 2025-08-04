@@ -1,5 +1,5 @@
 // src/app/api/orders/[id]/route.ts
-import { fetchCartById } from "@/bff/adapters/dummyjson";
+import { fetchCartById } from "@/lib/services/dummyjson";
 import { NextResponse } from "next/server";
 
 export async function GET(

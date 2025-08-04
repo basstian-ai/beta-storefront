@@ -4,6 +4,7 @@ import React from 'react';
 import { Product } from '@/types/order';
 import { useCartStore } from '@/stores/useCartStore';
 import toast from 'react-hot-toast';
+import { fetchProductById } from '@/lib/services/dummyjson';
 
 interface AddToCartButtonProps {
   products: Product[];
@@ -16,9 +17,8 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
     let success = true;
     for (const orderProduct of products) {
       try {
-        const res = await fetch(`/api/products/${orderProduct.id}`);
-        if (res.ok) {
-          const fullProduct = await res.json();
+        const fullProduct = await fetchProductById(orderProduct.id);
+        if (fullProduct) {
           // The cart store expects a product object that matches ProductSchema.
           // The quantity comes from the original order.
           addItem(fullProduct, orderProduct.quantity);

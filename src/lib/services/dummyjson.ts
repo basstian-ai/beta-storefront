@@ -423,3 +423,31 @@ export async function fetchCartById(cartId: number | string) {
     return null;
   }
 }
+
+export async function fetchSearchHints(term: string, limit = 5): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/search?term=${encodeURIComponent(term)}&limit=${limit}&onlyNames=true`);
+    if (!res.ok) {
+      return [];
+    }
+    const data = await res.json();
+    return data.names ?? [];
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchSearchHints] Network error', err);
+    }
+    return [];
+  }
+}
+
+export async function createCheckoutSession(items: { productId: number; quantity: number }[]) {
+  const response = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  });
+  if (!response.ok) {
+    throw new Error('Checkout failed');
+  }
+  return response.json();
+}

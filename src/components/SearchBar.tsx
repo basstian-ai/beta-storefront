@@ -6,6 +6,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Combobox } from '@headlessui/react';
 import { useSearchStatus } from '@/context/SearchStatusContext';
+import { fetchSearchHints } from '@/lib/services/dummyjson';
 
 export default function SearchBar() {
   const router = useRouter();
@@ -29,14 +30,9 @@ export default function SearchBar() {
       return;
     }
     try {
-      const res = await fetch(
-        `/api/search?s=${encodeURIComponent(trimmed)}&limit=5&onlyNames=true`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setSuggestions(data.names ?? []);
-        setOpen(true);
-      }
+      const names = await fetchSearchHints(trimmed);
+      setSuggestions(names);
+      setOpen(true);
     } catch (e) {
       console.error('hint fetch failed', e);
     }

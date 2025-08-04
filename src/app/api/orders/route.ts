@@ -1,7 +1,7 @@
 // src/app/api/orders/route.ts
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { fetchUserCarts } from "@/bff/adapters/dummyjson";
+import { fetchUserCarts } from "@/lib/services/dummyjson";
 import { NextResponse } from "next/server";
 
 export async function GET() {

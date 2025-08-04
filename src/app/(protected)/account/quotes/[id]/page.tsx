@@ -2,24 +2,24 @@ import AuthGuard from '@/components/AuthGuard';
 import AccountTabs from '@/components/AccountTabs';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 import type { CartItem, Quote } from '@/types';
+import { readHistory } from '@/lib/history';
 
 async function getQuote(id: string): Promise<Quote | null> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return null;
   }
-  const host = headers().get('host');
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-  const res = await fetch(`${protocol}://${host}/api/quotes/${id}?userId=${session.user.id}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    return null;
-  }
-  return (await res.json()) as Quote;
+  const history = await readHistory();
+  return (
+    history.find(
+      (r) =>
+        r.type === 'quote' &&
+        r.id === id &&
+        String(r.userId) === String(session.user.id),
+    ) as Quote | undefined
+  ) ?? null;
 }
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {

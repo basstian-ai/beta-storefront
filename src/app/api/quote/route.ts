@@ -46,13 +46,14 @@ export async function POST(request: Request) {
     id: quoteId,
     userId: session?.user?.id ?? null,
     status: 'submitted',
+    type: 'quote' as const,
     ...parsed.data,
     createdAt: new Date().toISOString(),
   } as const;
   const baseDir = process.env.VERCEL
     ? '/tmp'
     : path.join(process.cwd(), 'data');
-  const filePath = path.join(baseDir, 'quotes.json');
+  const filePath = path.join(baseDir, 'user-history.json');
 
   try {
     await fs.mkdir(baseDir, { recursive: true });

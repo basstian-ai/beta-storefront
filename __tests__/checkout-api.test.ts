@@ -9,7 +9,7 @@ vi.mock('../src/lib/stripe', () => {
   };
 });
 
-vi.mock('../src/bff/adapters/dummyjson', () => ({
+vi.mock('@/lib/services/dummyjson', () => ({
   fetchProductById: vi.fn(async (id: number) => ({ id, title: 'Test', price: 10, thumbnail: 'img' })),
 }));
 

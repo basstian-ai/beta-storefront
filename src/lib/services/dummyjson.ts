@@ -1,5 +1,3 @@
-// src/bff/adapters/dummyjson.ts
-
 const API_BASE_URL = 'https://dummyjson.com';
 
 // Helper to transform a category slug string into a Category-like object (name/slug)
@@ -101,7 +99,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 
   let data: DummyJsonResponse;
   try {
-    const response = await fetch(url, { next: { revalidate: 60 } });
+    const response = await fetch(url);
     if (!response.ok) {
       return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
     }
@@ -245,7 +243,7 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
 export async function fetchCategories(fetchOptions?: RequestInit) {
   let rawResponseJson: unknown;
   try {
-    const response = await fetch(`${API_BASE_URL}/products/categories`, { ...fetchOptions, next: { revalidate: 60 } });
+    const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
     if (!response.ok) {
       return [];
     }
@@ -422,4 +420,32 @@ export async function fetchCartById(cartId: number | string) {
     }
     return null;
   }
+}
+
+export async function fetchSearchHints(term: string, limit = 5): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/search?term=${encodeURIComponent(term)}&limit=${limit}&onlyNames=true`);
+    if (!res.ok) {
+      return [];
+    }
+    const data = await res.json();
+    return data.names ?? [];
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Adapter.fetchSearchHints] Network error', err);
+    }
+    return [];
+  }
+}
+
+export async function createCheckoutSession(items: { productId: number; quantity: number }[]) {
+  const response = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  });
+  if (!response.ok) {
+    throw new Error('Checkout failed');
+  }
+  return response.json();
 }

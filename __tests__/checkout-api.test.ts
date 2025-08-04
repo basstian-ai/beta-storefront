@@ -9,8 +9,9 @@ vi.mock('../src/lib/stripe', () => {
   };
 });
 
+
 vi.mock('../src/lib/services/dummyjson', () => ({
-  fetchProductById: vi.fn(async (id: number) => ({ id, title: 'Test', price: 10, thumbnail: 'img' })),
+fetchProductById: vi.fn(async (id: number) => ({ id, title: 'Test', price: 10, thumbnail: 'img' })),
 }));
 
 describe('POST /api/checkout', () => {

@@ -4,6 +4,7 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Product } from '@/types/order';
+import AddToCartButton from '@/components/AddToCartButton';
 
 import { headers } from 'next/headers';
 
@@ -55,7 +56,10 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           <p><strong>Total Amount:</strong> ${order.total}</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2">Products</h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-xl font-semibold">Products</h2>
+            <AddToCartButton products={order.products} />
+          </div>
           <ul>
             {order.products.map((product: Product) => (
               <li key={product.id} className="border-b last:border-b-0 py-2">

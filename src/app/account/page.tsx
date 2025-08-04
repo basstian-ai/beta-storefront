@@ -1,5 +1,6 @@
 // src/app/account/page.tsx
 import AuthGuard from '@/components/AuthGuard';
+import AccountTabs from '@/components/AccountTabs';
 import React from 'react';
 import Link from 'next/link';
 import { Order } from '@/types/order';
@@ -31,6 +32,7 @@ export default async function AccountPage() {
     <AuthGuard>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">My Account</h1>
+        <AccountTabs active="orders" />
         {accountData && (
           <div className="bg-white p-6 rounded-lg shadow mb-6">
             <h2 className="text-xl font-semibold mb-2">Profile</h2>

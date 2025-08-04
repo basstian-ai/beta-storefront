@@ -44,9 +44,13 @@ export async function POST(request: Request) {
     ...parsed.data,
     createdAt: new Date().toISOString(),
   };
+  const baseDir = process.env.VERCEL
+    ? '/tmp'
+    : path.join(process.cwd(), 'data');
+  const filePath = path.join(baseDir, 'quotes.json');
 
-  const filePath = path.join(process.cwd(), 'data', 'quotes.json');
   try {
+    await fs.mkdir(baseDir, { recursive: true });
     await fs.appendFile(filePath, JSON.stringify(record) + '\n');
   } catch (err) {
     console.error('Failed to write quote', err);

@@ -1,32 +1,13 @@
 // src/app/account/orders/[id]/page.tsx
 import AuthGuard from '@/components/AuthGuard';
 import React from 'react';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Product } from '@/types/order';
 import AddToCartButton from '@/components/AddToCartButton';
-
-import { headers } from 'next/headers';
-
-function getBaseUrl() {
-  const headersList = headers();
-  const host = headersList.get('x-forwarded-host') || headersList.get('host');
-  const proto = headersList.get('x-forwarded-proto') || 'http';
-  return `${proto}://${host}`;
-}
+import { fetchCartById } from '@/lib/services/dummyjson';
 
 async function getOrderDetails(id: string) {
-  const cookie = cookies().toString();
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/orders/${id}`, {
-    headers: {
-      cookie,
-    },
-  });
-  if (!res.ok) {
-    return null;
-  }
-  return res.json();
+  return fetchCartById(id);
 }
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {

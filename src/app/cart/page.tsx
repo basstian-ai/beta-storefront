@@ -8,6 +8,7 @@ import Image from 'next/image'; // For better image handling
 import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import React from 'react';
+import { createCheckoutSession } from '@/lib/services/dummyjson';
 
 export default function CartPage() {
   // Subscribe to cart store state and actions
@@ -45,15 +46,10 @@ export default function CartPage() {
   const handleCheckout = async () => {
     setCheckingOut(true);
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((i) => ({ productId: i.product.id, quantity: i.quantity })),
-        }),
-      });
-      const data = await response.json();
-      if (response.ok && data.url) {
+      const data = await createCheckoutSession(
+        items.map((i) => ({ productId: i.product.id, quantity: i.quantity }))
+      );
+      if (data.url) {
         window.location.href = data.url as string;
       } else {
         toast.error('Checkout failed');

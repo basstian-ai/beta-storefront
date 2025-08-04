@@ -1,3 +1,6 @@
+
+// src/bff/adapters/dummyjson.ts
+
 const API_BASE_URL = 'https://dummyjson.com';
 
 // Helper to transform a category slug string into a Category-like object (name/slug)

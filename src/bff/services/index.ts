@@ -1,5 +1,5 @@
 // src/bff/services/index.ts
-import * as dummyJsonAdapter from '../adapters/dummyjson';
+import * as dummyJsonAdapter from '@/lib/services/dummyjson';
 import {
   ProductSchema,
   CategorySchema,

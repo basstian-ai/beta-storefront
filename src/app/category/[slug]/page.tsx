@@ -7,6 +7,9 @@ import CategoryFilterableProducts from '@/components/CategoryFilterableProducts'
 import Link from 'next/link'; // Keep for fallback link
 import Breadcrumbs from '@/components/Breadcrumbs';
 
+export const dynamicParams = true;
+export const revalidate = 60;
+
 // ProductCard component will be moved to CategoryFilterableProducts.tsx or a shared components directory
 
 export async function generateStaticParams() {

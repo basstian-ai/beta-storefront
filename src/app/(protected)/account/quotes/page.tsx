@@ -1,29 +1,24 @@
+'use client';
+
 import AuthGuard from '@/components/AuthGuard';
 import OrderTable from '@/components/OrderTable';
 import AccountTabs from '@/components/AccountTabs';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { headers } from 'next/headers';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import type { Quote } from '@/types';
 
-async function getQuotes(): Promise<Quote[]> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return [] as Quote[];
-  }
-  const host = headers().get('host');
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-  const res = await fetch(`${protocol}://${host}/api/quotes?userId=${session.user.id}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) {
-    return [] as Quote[];
-  }
-  return res.json();
-}
+export default function QuotesPage() {
+  const { data: session } = useSession();
+  const [quotes, setQuotes] = useState<Quote[]>([]);
 
-export default async function QuotesPage() {
-  const quotes = await getQuotes();
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch(`/api/quotes?userId=${session.user.id}`)
+      .then((res) => res.json())
+      .then((data: Quote[]) => setQuotes(data))
+      .catch(() => setQuotes([]));
+  }, [session?.user?.id]);
+
   return (
     <AuthGuard>
       <div className="container mx-auto px-4 py-8">
@@ -39,3 +34,4 @@ export default async function QuotesPage() {
     </AuthGuard>
   );
 }
+

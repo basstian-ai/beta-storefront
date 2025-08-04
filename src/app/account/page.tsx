@@ -2,11 +2,10 @@
 import AuthGuard from '@/components/AuthGuard';
 import AccountTabs from '@/components/AccountTabs';
 import React from 'react';
-import Link from 'next/link';
-import { Order } from '@/types/order';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { fetchUser, fetchUserCarts } from '@/lib/services/dummyjson';
+import { fetchUser } from '@/lib/services/dummyjson';
+import OrderHistory from '@/components/OrderHistory';
 
 async function getAccountData() {
   const session = await getServerSession(authOptions);
@@ -16,17 +15,8 @@ async function getAccountData() {
   return fetchUser(session.user.id);
 }
 
-async function getOrders() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return { carts: [] };
-  }
-  return fetchUserCarts(session.user.id);
-}
-
 export default async function AccountPage() {
   const accountData = await getAccountData();
-  const ordersData = await getOrders();
 
   return (
     <AuthGuard>
@@ -43,19 +33,7 @@ export default async function AccountPage() {
         )}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
-          {ordersData?.carts?.length > 0 ? (
-            <ul>
-              {ordersData.carts.map((order: Order) => (
-                <li key={order.id} className="border-b last:border-b-0 py-2">
-                  <Link href={`/account/orders/${order.id}`} className="text-blue-500 hover:underline">
-                    Order #{order.id} - ${order.total}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-700">You have no orders.</p>
-          )}
+          <OrderHistory emptyMessage="You have no orders." />
         </div>
       </div>
     </AuthGuard>

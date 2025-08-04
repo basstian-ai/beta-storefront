@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchProductById } from '@/bff/adapters/dummyjson';
+import { fetchProductById } from '@/lib/services/dummyjson';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 

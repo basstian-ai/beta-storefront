@@ -1,5 +1,6 @@
 // src/app/category/[slug]/page.tsx
-import { getProducts, getCategories } from '@/bff/services';
+import { getCategories } from '@/bff/services';
+import { getProductDataForCategory } from '@/lib/product-utils';
 // ProductSchema will be used by the client component
 // Link will be used by client component
 // z will be used by client component
@@ -65,37 +66,13 @@ export default async function CategoryPage({
 }) {
   const { slug } = params;
 
-  // Fetch all categories
-  const categories = await getCategories();
-  // Find the current category by slug
-  const currentCategory = categories.find(cat => cat.slug === slug);
-
-  // Use the slug for the API call, as the API expects the slug string
-  const categoryApiName = slug; // This is the category slug from URL params
-
-  // Use the actual category name if found, otherwise fallback to a formatted slug
-  const humanReadableCategoryName = currentCategory?.name || slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-  // Fetch all products for this category to derive available brands
-  // Using limit: 0 to signify fetching all products (adapter might need to handle this if API has max limit)
-  const allProductsData = await getProducts({
-    category: categoryApiName,
-    limit: 0,
-  });
-  const availableBrands = Array.from(
-    new Set(
-      allProductsData.items
-        .map(p => p.brand)
-        .filter((brand): brand is string => typeof brand === 'string' && brand.length > 0) // Type-safe filter
-        .sort()
-    )
-  );
-
-  // Pass all products for client-side filtering initially, until BFF is updated for multi-brand.
-  // This is not ideal for large categories but fulfills the current structure.
-  // totalInitialProducts will be the total for the category.
-  const initialProducts = allProductsData.items;
-  const totalInitialProducts = allProductsData.total;
+  const {
+    humanReadableCategoryName,
+    initialProducts,
+    totalInitialProducts,
+    availableBrands,
+    categoryApiName,
+  } = await getProductDataForCategory(slug);
 
   // Fallback for no products (applies if the category has no products at all)
   if (!initialProducts || initialProducts.length === 0) {

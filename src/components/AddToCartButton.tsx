@@ -3,6 +3,7 @@
 import React from 'react';
 import { Product } from '@/types/order';
 import { useCartStore } from '@/stores/useCartStore';
+import toast from 'react-hot-toast';
 
 interface AddToCartButtonProps {
   products: Product[];
@@ -12,6 +13,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
   const { addItem } = useCartStore();
 
   const handleAddToCart = async () => {
+    let success = true;
     for (const orderProduct of products) {
       try {
         const res = await fetch(`/api/products/${orderProduct.id}`);
@@ -21,11 +23,19 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
           // The quantity comes from the original order.
           addItem(fullProduct, orderProduct.quantity);
         } else {
+          success = false;
           console.error(`Failed to fetch product details for product ID: ${orderProduct.id}`);
         }
       } catch (error) {
+        success = false;
         console.error(`Error fetching product details for product ID: ${orderProduct.id}`, error);
       }
+    }
+
+    if (success) {
+      toast.success('All products added to cart!');
+    } else {
+      toast.error('Some products could not be added to the cart.');
     }
   };
 

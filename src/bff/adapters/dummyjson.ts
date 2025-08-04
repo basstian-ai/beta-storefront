@@ -101,7 +101,7 @@ export async function fetchProducts(options: GetProductsOptions = {}) {
 
   let data: DummyJsonResponse;
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { next: { revalidate: 60 } });
     if (!response.ok) {
       return { products: [], total: 0, skip: 0, limit: 0 } as DummyJsonResponse;
     }
@@ -245,7 +245,7 @@ export async function searchProducts(query: string, sort?: string, skip = 0, lim
 export async function fetchCategories(fetchOptions?: RequestInit) {
   let rawResponseJson: unknown;
   try {
-    const response = await fetch(`${API_BASE_URL}/products/categories`, fetchOptions);
+    const response = await fetch(`${API_BASE_URL}/products/categories`, { ...fetchOptions, next: { revalidate: 60 } });
     if (!response.ok) {
       return [];
     }

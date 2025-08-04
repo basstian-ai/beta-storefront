@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'; // Removed 'vi'
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom'; // For extended matchers like .toHaveStyle, .toBeInTheDocument
 import PriceBox from './PriceBox';
-import { ProductSchema, PriceSchema } from '@/bff/types'; // Assuming types are accessible
+import { ProductSchema } from '@/bff/types'; // Assuming types are accessible
 import { z } from 'zod';
 
 // Mock product data
@@ -11,17 +11,13 @@ const mockB2BProduct: z.infer<typeof ProductSchema> = {
   id: 1,
   title: 'B2B Product',
   description: 'A product for B2B customers',
-  price: 100.00, // Original list price
+  price: 100.0, // Original list price
   category: 'electronics',
   slug: 'b2b-product',
   stock: 10,
-  effectivePrice: PriceSchema.parse({ // Parsed to ensure it matches the schema
-    amount: 90.00, // Discounted B2B price
-    currencyCode: 'USD',
-  }),
   // Optional fields can be omitted if not needed for this test or added with dummy values
   brand: 'BrandX',
-  discountPercentage: 10, // This would be the general discount, not the B2B one for this test
+  discountPercentage: 10,
   images: [],
   thumbnail: '',
   rating: 4.5,
@@ -61,10 +57,10 @@ const mockStandardProductNoDiscount: z.infer<typeof ProductSchema> = {
 
 describe('PriceBox Component', () => {
   it('should display B2B price, list price (line-through), and B2B badge for B2B products', () => {
-    render(<PriceBox product={mockB2BProduct} />);
+    render(<PriceBox product={mockB2BProduct} role="b2b" />);
 
-    // Check for discounted B2B price (effectivePrice.amount)
-    const b2bPriceElement = screen.getByText(`$${mockB2BProduct.effectivePrice!.amount.toFixed(2)}`);
+    // Check for discounted B2B price
+    const b2bPriceElement = screen.getByText('$90.00');
     expect(b2bPriceElement).toBeInTheDocument();
     expect(b2bPriceElement).toHaveClass('text-3xl'); // Assuming main price is larger
 
@@ -76,12 +72,15 @@ describe('PriceBox Component', () => {
     // Check for "Your B2B Price" badge
     expect(screen.getByText('Your B2B Price')).toBeInTheDocument();
 
+    // Quote button should be visible
+    expect(screen.getByRole('button', { name: 'Request Quote' })).toBeInTheDocument();
+
     // Check stock
     expect(screen.getByText(`${mockB2BProduct.stock} in stock`)).toBeInTheDocument();
   });
 
   it('should display standard discount, original price (line-through), and savings for standard products with discount', () => {
-    render(<PriceBox product={mockStandardProductWithDiscount} />);
+    render(<PriceBox product={mockStandardProductWithDiscount} role="retail" />);
 
     // Main price should be original price since no effectivePrice (B2B)
     // const mainPrice = (mockStandardProductWithDiscount.price * (1 - (mockStandardProductWithDiscount.discountPercentage || 0)/100)).toFixed(2);
@@ -105,12 +104,15 @@ describe('PriceBox Component', () => {
     // Ensure B2B badge is NOT present
     expect(screen.queryByText('Your B2B Price')).not.toBeInTheDocument();
 
+    // Quote button should be hidden for non-B2B
+    expect(screen.queryByRole('button', { name: 'Request Quote' })).not.toBeInTheDocument();
+
     // Check stock
     expect(screen.getByText(`${mockStandardProductWithDiscount.stock} in stock`)).toBeInTheDocument();
   });
 
   it('should display only the original price for standard products without any discount', () => {
-    render(<PriceBox product={mockStandardProductNoDiscount} />);
+    render(<PriceBox product={mockStandardProductNoDiscount} role="retail" />);
 
     // Main price should be the original price
     const originalPriceElement = screen.getByText(`$${mockStandardProductNoDiscount.price.toFixed(2)}`);
@@ -126,6 +128,9 @@ describe('PriceBox Component', () => {
 
     // Ensure B2B badge is NOT present
     expect(screen.queryByText('Your B2B Price')).not.toBeInTheDocument();
+
+    // Quote button should be hidden for non-B2B
+    expect(screen.queryByRole('button', { name: 'Request Quote' })).not.toBeInTheDocument();
 
     // Check stock (Out of Stock) - be specific about which element
     // Find the <p> element containing "Out of Stock"

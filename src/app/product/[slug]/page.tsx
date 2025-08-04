@@ -14,12 +14,15 @@ import WishlistButton from '@/components/WishlistButton';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
 import toast from 'react-hot-toast'; // For feedback
 import { useEffect, useState } from 'react'; // For client-side data fetching
+import { useSession } from 'next-auth/react';
 
 // generateStaticParams is removed as this is now a client component
 
 export default function ProductPage() {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : undefined;
+
+  const { data: session } = useSession();
 
   const [product, setProduct] = useState<z.infer<typeof ProductSchema> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -134,7 +137,7 @@ export default function ProductPage() {
         <div className="lg:col-span-1 mt-6 lg:mt-0">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">{product.title}</h1>
           {product.brand && <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>}
-          <PriceBox product={product} />
+          <PriceBox product={product} role={session?.user?.role} />
           <div className="mt-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Description</h3>
             <div className="prose prose-sm sm:prose-base max-w-none whitespace-pre-line text-gray-700">

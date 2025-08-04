@@ -4,19 +4,22 @@ import { z } from 'zod';
 import { ProductSchema } from '@/bff/types';
 import { useCartStore } from '@/stores/useCartStore'; // Import useCartStore
 import toast from 'react-hot-toast'; // Import toast
+import { applyB2BPrice } from '@/utils/applyB2BPrice';
 
 interface PriceBoxProps {
   product: z.infer<typeof ProductSchema>;
+  role?: string;
 }
 
-export default function PriceBox({ product }: PriceBoxProps) {
+export default function PriceBox({ product, role }: PriceBoxProps) {
   const [quantity, setQuantity] = useState(1);
   const addItemToCart = useCartStore((state) => state.addItem); // Get addItem action
 
   const originalPrice = product.price.toFixed(2);
-  const effectivePrice = product.effectivePrice?.amount?.toFixed(2);
-  const displayPrice = effectivePrice || originalPrice;
-  const isB2BScenario = product.effectivePrice && product.effectivePrice.amount < product.price;
+  const effectivePriceAmount = applyB2BPrice(product.price, role);
+  const effectivePrice = effectivePriceAmount.toFixed(2);
+  const displayPrice = effectivePrice;
+  const isB2BScenario = role === 'b2b' && effectivePriceAmount < product.price;
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1) {
@@ -131,6 +134,14 @@ export default function PriceBox({ product }: PriceBoxProps) {
       >
         {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
       </button>
+      {role === 'b2b' && (
+        <button
+          type="button"
+          className="mt-3 w-full border border-blue-600 text-blue-600 py-2.5 px-4 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Request Quote
+        </button>
+      )}
     </div>
   );
 }

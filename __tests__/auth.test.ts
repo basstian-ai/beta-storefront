@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest';
+import type { Session, User } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 import { authOptions } from '@/lib/auth';
+import { slugify } from '@/lib/utils';
 
 // Utility to simulate NextAuth callbacks
-function runJwtCallback(user: any) {
-  return authOptions.callbacks!.jwt!({ token: {}, user } as any);
+function runJwtCallback(user: Partial<User>) {
+  return authOptions.callbacks!.jwt!({ token: {} as JWT, user: user as User });
 }
 
-function runSessionCallback(token: any) {
-  return authOptions.callbacks!.session!({ session: { user: {} } as any, token } as any);
+function runSessionCallback(token: Partial<JWT>) {
+  return authOptions.callbacks!.session!({ session: { user: {} } as Session, token: token as JWT });
 }
 
 describe('auth session companyId', () => {
@@ -19,10 +22,11 @@ describe('auth session companyId', () => {
     };
 
     const token = await runJwtCallback(user);
-    expect(token.companyId).toBe('acme-inc');
+    const expectedSlug = slugify(user.company!.name!);
+    expect(token.companyId).toBe(expectedSlug);
 
     const session = await runSessionCallback(token);
-    expect(session.companyId).toBe('acme-inc');
-    expect(session.user.companyId).toBe('acme-inc');
+    expect(session.companyId).toBe(expectedSlug);
+    expect(session.user.companyId).toBe(expectedSlug);
   });
 });

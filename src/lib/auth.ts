@@ -65,7 +65,6 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (userFromBff && userFromBff.accessToken) {
-            console.log('Auth: User authorized by BFF:', userFromBff);
             return {
               id: String(userFromBff.id),
               name: [userFromBff.firstName, userFromBff.lastName].filter(Boolean).join(' ') || userFromBff.username,
@@ -95,7 +94,7 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.role = 'b2b';
-        const companyName = (user as any)?.company?.name;
+        const companyName = (user as NextAuthUser & { company?: { name?: string } })?.company?.name;
         if (companyName) {
           token.companyId = slugify(companyName);
         }

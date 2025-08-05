@@ -80,7 +80,8 @@ export default function PopularProductsCarouselClient({ products }: Props) {
         onClick={() => scrollBy(-250)}
         aria-controls="popular-carousel"
         aria-disabled={!canPrev}
-        className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow ${!canPrev ? 'opacity-40 pointer-events-none' : ''}`}
+        disabled={!canPrev}
+        className={`hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow ${!canPrev ? 'opacity-40 pointer-events-none' : ''} focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent`}
       >
         <span className="sr-only">Previous products</span>
         <ChevronLeft className="h-5 w-5" />
@@ -90,7 +91,8 @@ export default function PopularProductsCarouselClient({ products }: Props) {
         onClick={() => scrollBy(250)}
         aria-controls="popular-carousel"
         aria-disabled={!canNext}
-        className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow ${!canNext ? 'opacity-40 pointer-events-none' : ''}`}
+        disabled={!canNext}
+        className={`hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-2 rounded-full shadow ${!canNext ? 'opacity-40 pointer-events-none' : ''} focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent`}
       >
         <span className="sr-only">Next products</span>
         <ChevronRight className="h-5 w-5" />

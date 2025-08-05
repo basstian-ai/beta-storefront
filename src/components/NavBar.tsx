@@ -208,11 +208,12 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
                       </Transition>
                     </Menu>
                   ) : (
-                    <Link href="/login" passHref>
-                      <button type="button" className="rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary" title="Login / My Account">
-                        <span className="sr-only">Login / My Account</span>
-                        <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
+                    <Link
+                      href="/login"
+                      className="rounded-full bg-secondary p-1 text-primary hover:text-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-secondary"
+                      aria-label="Login / My Account"
+                    >
+                      <UserCircleIcon className="h-6 w-6" aria-hidden="true" />
                     </Link>
                   )}
                 </div>

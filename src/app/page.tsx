@@ -99,7 +99,10 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
               {categoriesToDisplay.map((category) => (
                 <Link key={category.slug} href={`/category/${category.slug}`} legacyBehavior>
-                  <a className="group block bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden">
+                  <a
+                    className="group block bg-white rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent"
+                    aria-label={`View ${category.name} category`}
+                  >
                     <div className="aspect-w-1 aspect-h-1 w-full relative"> {/* Added relative positioning for Image fill */}
                       {category.imageUrl && (
                         <Image

@@ -25,6 +25,17 @@ The Quick Order page lets authenticated B2B users add multiple products to the c
 ## Role logic
 Authentication includes a `role` field (`b2b` or `b2c`). B2B roles expose features like Quick Order and Request Quote, while B2C users proceed directly to checkout.
 
+## Auth session
+The authenticated session also exposes a `companyId` derived from the user's company name. Both `role` and `companyId` are available via `useSession()`:
+
+```ts
+{
+  user: { id: '1', role: 'b2b', companyId: 'acme-inc' },
+  role: 'b2b',
+  companyId: 'acme-inc'
+}
+```
+
 ## Environment variables
 | Variable | Purpose |
 | --- | --- |

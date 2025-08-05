@@ -94,9 +94,12 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.role = 'b2b';
-        const companyName = (user as NextAuthUser & { company?: { name?: string } })?.company?.name;
+        const companyName = (user as NextAuthUser & { company?: { name?: string } })?.company?.name?.trim();
         if (companyName) {
           token.companyId = slugify(companyName);
+        } else {
+          token.companyId = 'unknown-company';
+          console.warn('[auth] user has no company; defaulting companyId to "unknown-company"');
         }
       }
       return token;

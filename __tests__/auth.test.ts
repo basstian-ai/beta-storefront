@@ -29,4 +29,33 @@ describe('auth session companyId', () => {
     expect(session.companyId).toBe(expectedSlug);
     expect(session.user.companyId).toBe(expectedSlug);
   });
+
+  it('handles special characters in company name', async () => {
+    const user = {
+      id: '2',
+      accessToken: 'token',
+      company: { name: 'Müller & Søn AS' },
+    };
+
+    const token = await runJwtCallback(user);
+    expect(token.companyId).toBe('muller-son-as');
+
+    const session = await runSessionCallback(token);
+    expect(session.companyId).toBe('muller-son-as');
+    expect(session.user.companyId).toBe('muller-son-as');
+  });
+
+  it('defaults companyId when company is missing', async () => {
+    const user = {
+      id: '3',
+      accessToken: 'token',
+    };
+
+    const token = await runJwtCallback(user);
+    expect(token.companyId).toBe('unknown-company');
+
+    const session = await runSessionCallback(token);
+    expect(session.companyId).toBe('unknown-company');
+    expect(session.user.companyId).toBe('unknown-company');
+  });
 });

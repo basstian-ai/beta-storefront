@@ -5,6 +5,7 @@ import path from 'node:path';
 import { nanoid } from 'nanoid';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { sendEmail } from '@root/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,38 +67,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const sendgridKey = process.env.SENDGRID_KEY;
-  if (sendgridKey) {
-    try {
-      const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${sendgridKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          personalizations: [
-            { to: [{ email: parsed.data.user.email }] },
-          ],
-          from: {
-            email: process.env.SENDGRID_FROM || 'no-reply@example.com',
-          },
-          subject: `Quote request ${quoteId}`,
-          content: [
-            {
-              type: 'text/plain',
-              value: 'We have received your quote request.',
-            },
-          ],
-        }),
-      });
-      if (!res.ok) {
-        console.error('SendGrid error', await res.text());
-      }
-    } catch (err) {
-      console.error('SendGrid request failed', err);
-    }
-  }
+  await sendEmail({
+    to: parsed.data.user.email,
+    subject: `Quote request ${quoteId}`,
+    text: 'We have received your quote request.',
+  });
 
   return NextResponse.json({ success: true, quoteId });
 }

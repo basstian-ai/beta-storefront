@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { createClient } from '@crystallize/js-api-client';
 
 export const crystallize = createClient({

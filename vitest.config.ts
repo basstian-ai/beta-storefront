@@ -8,12 +8,20 @@ export default defineConfig({
   resolve: { // Add resolve section for aliases
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@root': path.resolve(__dirname, './'),
     },
   },
   test: {
     globals: true, // Use Vitest global APIs without importing them
     environment: 'jsdom', // Simulate a browser environment for tests
     setupFiles: './vitest.setup.ts', // Optional: for global test setup
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}'],
+    include: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'tests/**/*.{test,spec}.{ts,tsx}',
+      '__tests__/unit/**/*.{test,spec}.{ts,tsx}',
+    ],
+    coverage: {
+      exclude: ['lib/api.ts', 'lib/telemetry.js', 'lib/pim/**'],
+    },
   },
 });

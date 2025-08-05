@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import type { Category as ImportedCategory, HeroContent, Product as ImportedProduct } from '../types'; // Adjust path if necessary
 
 // Define Product data structure

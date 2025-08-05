@@ -2,6 +2,7 @@ import { NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { login as bffLogin } from "@/bff/services";
 import { error as logError } from "@/lib/logger";
+import { slugify } from "@/lib/utils";
 
 // Augment NextAuth types for v4
 // These declarations should ideally be in a *.d.ts file (e.g., next-auth.d.ts)
@@ -10,9 +11,11 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string;
     role?: string;
+    companyId?: string;
     user: {
       id?: string | number;
       role?: string;
+      companyId?: string;
     } & NextAuthUser;
   }
 
@@ -25,6 +28,9 @@ declare module "next-auth" {
     lastName?: string;
     gender?: string;
     image?: string;
+    company?: {
+      name?: string;
+    };
   }
 }
 
@@ -33,6 +39,7 @@ declare module "next-auth/jwt" {
     id?: string | number;
     accessToken?: string;
     role?: string;
+    companyId?: string;
   }
 }
 
@@ -58,7 +65,6 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (userFromBff && userFromBff.accessToken) {
-            console.log('Auth: User authorized by BFF:', userFromBff);
             return {
               id: String(userFromBff.id),
               name: [userFromBff.firstName, userFromBff.lastName].filter(Boolean).join(' ') || userFromBff.username,
@@ -69,6 +75,7 @@ export const authOptions: NextAuthOptions = {
               firstName: userFromBff.firstName,
               lastName: userFromBff.lastName,
               gender: userFromBff.gender,
+              company: userFromBff.company,
             };
           } else {
             logError('Auth: BFF login failed or did not return accessToken', { userFromBff });
@@ -87,6 +94,13 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.role = 'b2b';
+        const companyName = (user as NextAuthUser & { company?: { name?: string } })?.company?.name?.trim();
+        if (companyName) {
+          token.companyId = slugify(companyName);
+        } else {
+          token.companyId = 'unknown-company';
+          console.warn('[auth] user has no company; defaulting companyId to "unknown-company"');
+        }
       }
       return token;
     },
@@ -101,6 +115,12 @@ export const authOptions: NextAuthOptions = {
         session.role = token.role as string;
         if (session.user) {
           session.user.role = token.role as string;
+        }
+      }
+      if (token?.companyId) {
+        session.companyId = token.companyId as string;
+        if (session.user) {
+          session.user.companyId = token.companyId as string;
         }
       }
       return session;

@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 // import { unstable_noStore as noStore } from 'next/cache'; // Remove if using revalidate
 import { Toaster } from 'react-hot-toast'; // Import Toaster
 import RootClientProviders from '@/components/RootClientProviders';
+import { CompanyProvider } from '@/contexts/CompanyProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -47,13 +48,15 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <RootClientProviders>
-          <Toaster position="top-center" reverseOrder={false} />
-          <Suspense fallback={null}>
-            <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
-          </Suspense>
-          <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
-            {children}
-          </main>
+          <CompanyProvider>
+            <Toaster position="top-center" reverseOrder={false} />
+            <Suspense fallback={null}>
+              <NavBar initialCategories={categoriesForNav} categoryError={categoryError} />
+            </Suspense>
+            <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
+              {children}
+            </main>
+          </CompanyProvider>
         </RootClientProviders>
       </body>
     </html>

@@ -16,7 +16,7 @@ export default function HeroBanner({ title, description, ctaText, ctaLink, image
             <div className="mt-8">
               <a
                 href={ctaLink}
-                className="inline-block bg-accent text-secondary font-bold py-3 px-8 rounded-md hover:bg-accent-dark transition-colors duration-300"
+                className="inline-block bg-accent text-secondary font-bold py-3 px-8 rounded-md hover:bg-accent-dark transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-dark"
               >
                 {ctaText}
               </a>

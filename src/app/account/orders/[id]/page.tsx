@@ -26,7 +26,7 @@ async function getOrderDetails(id: string): Promise<OrderDetails | null> {
   const order = history.find(
     (r) =>
       r.type === 'order' &&
-      r.id === id &&
+      String(r.id) === String(id) &&
       String(r.userId) === String(session.user.id),
   );
   if (!order) {

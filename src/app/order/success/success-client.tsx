@@ -43,7 +43,7 @@ export default function OrderSuccessClient() {
 
   return (
     <div className="container mx-auto px-4 py-8 text-center">
-      <h1 className="text-2xl font-semibold mb-4">Thanks {session.customer?.name || 'customer'}!</h1>
+      <h1 className="text-2xl font-semibold mb-4">Thanks {session.customer_details?.name || session.customer?.name || 'customer'}!</h1>
       <p className="mb-6">Order #{session.id} confirmed.</p>
       <Link href="/" className="text-blue-600 hover:underline">Back to store</Link>
     </div>

@@ -7,4 +7,5 @@ export interface CheckoutSession {
   id: string;
   url?: string;
   customer: { name?: string | null } | null;
+  customer_details?: { email?: string | null; name?: string | null } | null;
 }

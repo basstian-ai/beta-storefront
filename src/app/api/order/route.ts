@@ -4,6 +4,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { sendEmail } from '@root/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,13 @@ const OrderSchema = z.object({
   session: z.object({
     id: z.string(),
     customer: z.object({ name: z.string().nullable().optional() }).nullable().optional(),
+    customer_details: z
+      .object({
+        email: z.string().email().nullable().optional(),
+        name: z.string().nullable().optional(),
+      })
+      .nullable()
+      .optional(),
   }),
 });
 
@@ -54,6 +62,16 @@ export async function POST(request: Request) {
       { message: 'Failed to store order' },
       { status: 500 },
     );
+  }
+
+  const email =
+    parsed.data.session.customer_details?.email || undefined;
+  if (email) {
+    await sendEmail({
+      to: email,
+      subject: `Order ${record.id} confirmed`,
+      text: 'Your order was successful.',
+    });
   }
 
   return NextResponse.json({ success: true, orderId: record.id });

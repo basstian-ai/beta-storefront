@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (!companyId) {
     return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
   }
-  let body: any;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cart = await addOrUpdateItems(companyId, body.items);
+    const { items } = body as { items?: unknown };
+    const cart = await addOrUpdateItems(companyId, items);
     return NextResponse.json(cart);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -49,7 +50,7 @@ export async function PATCH(request: Request) {
   if (!companyId) {
     return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
   }
-  let body: any;
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
@@ -57,7 +58,8 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const cart = await setStatus(companyId, body.status);
+    const { status } = body as { status?: unknown };
+    const cart = await setStatus(companyId, status);
     return NextResponse.json(cart);
   } catch (err) {
     if (err instanceof z.ZodError) {

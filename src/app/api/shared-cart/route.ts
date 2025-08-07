@@ -33,8 +33,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { items } = body as { items?: unknown };
-    const cart = await addOrUpdateItems(companyId, items);
+    const { items, contributor } = body as { items?: unknown; contributor?: string };
+    const cart = await addOrUpdateItems(companyId, items, contributor);
     return NextResponse.json(cart);
   } catch (err) {
     if (err instanceof z.ZodError) {

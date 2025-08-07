@@ -2,41 +2,46 @@
 'use client'; // This page needs client-side interactivity for cart management
 
 import AuthGuard from '@/components/AuthGuard';
-import { useCartStore } from '@/stores/useCartStore'; // Import store, CartItem type removed as it's not directly used here
 import Link from 'next/link';
-import Image from 'next/image'; // For better image handling
+import Image from 'next/image';
 import { TrashIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { createCheckoutSession } from '@/lib/services/dummyjson';
+import { useSharedCart } from '@/hooks/useSharedCart';
+import { AvatarGroup } from '@/components/ui/avatar';
 
 export default function CartPage() {
-  // Subscribe to cart store state and actions
-  const items = useCartStore((state) => state.items);
-  const updateItemQuantity = useCartStore((state) => state.updateItemQuantity);
-  const removeItem = useCartStore((state) => state.removeItem);
-  const getCartSubtotal = useCartStore((state) => state.getCartSubtotal);
-  const clearCart = useCartStore((state) => state.clearCart); // For "Clear Cart" button
-
-  const { data: session } = useSession();
+    const { data: session } = useSession();
+    const companyId =
+      (session as { companyId?: string } | null)?.companyId ||
+      (session?.user as { companyId?: string } | undefined)?.companyId;
+  const { cart, updateItemQuantity } = useSharedCart(companyId);
+  const items = cart?.items ?? [];
+  const status = cart?.status;
+  const contributors = cart?.contributors ?? [];
   const router = useRouter();
 
-  const subtotal = getCartSubtotal();
+  const subtotal = items.reduce(
+    (sum, item) =>
+      sum + (item.product.effectivePrice?.amount ?? item.product.price) * item.quantity,
+    0,
+  );
 
   const handleQuantityChange = (productId: number, newQuantity: number) => {
-    if (newQuantity < 0) return; // Prevent negative quantities
-    updateItemQuantity(productId, newQuantity);
+    if (newQuantity < 0) return;
+    updateItemQuantity(productId, newQuantity, session?.user?.image || undefined);
     if (newQuantity === 0) {
-        toast.success('Item removed from cart');
+      toast.success('Item removed from cart');
     } else {
-        toast.success('Cart updated');
+      toast.success('Cart updated');
     }
   };
 
   const handleRemoveItem = (productId: number, productName: string) => {
-    removeItem(productId);
+    updateItemQuantity(productId, 0, session?.user?.image || undefined);
     toast.error(`${productName} removed from cart`);
   };
 
@@ -97,10 +102,32 @@ export default function CartPage() {
     }
   };
 
+  const handleClearCart = async () => {
+    for (const item of items) {
+      await updateItemQuantity(item.product.id, 0, session?.user?.image || undefined);
+    }
+    toast.info('Cart cleared!');
+  };
+
   return (
     <AuthGuard>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Your Shopping Cart</h1>
+
+        <div className="flex items-center justify-between mb-4">
+          {contributors.length > 0 && <AvatarGroup urls={contributors} />}
+          {status && (
+            <span
+              className={`px-2 py-1 text-xs rounded-full ${
+                status === 'pendingApproval'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {status}
+            </span>
+          )}
+        </div>
 
         {items.length === 0 ? (
           <div className="text-center py-10">
@@ -245,7 +272,7 @@ export default function CartPage() {
               <div className="mt-4">
                  <button
                     type="button"
-                    onClick={() => { clearCart(); toast.info("Cart cleared!"); }}
+                    onClick={handleClearCart}
                     className="w-full text-sm text-red-600 hover:text-red-800 text-center"
                 >
                     Clear Cart

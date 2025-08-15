@@ -27,6 +27,8 @@
   margin-top: 0.5rem; /* Add some space above name */
   margin-bottom: 0.25rem; /* Add some space below name */
   font-size: 1.1rem; /* Slightly larger font for name */
+  height: 3rem; /* Reserve space for up to two lines */
+  overflow: hidden; /* Prevent tall titles from stretching the card */
 }
 
 .productCard p {

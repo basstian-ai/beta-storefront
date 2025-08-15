@@ -30,9 +30,9 @@ export default function ProductCard({ product, highlightTerm }: ProductCardProps
               />
             </div>
           )}
-          <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-blue-600">
-            {highlight(product.title, highlightTerm ?? '')}
-          </h3>
+            <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-blue-600 h-14 overflow-hidden">
+              {highlight(product.title, highlightTerm ?? '')}
+            </h3>
         </Link>
         <p className="mt-1 text-sm text-gray-600 h-10 overflow-hidden text-ellipsis">
           {product.description}

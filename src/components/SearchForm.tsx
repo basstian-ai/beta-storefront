@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { useSearchStatus } from '@/context/SearchStatusContext';
+import { useSearchStatus } from '@/contexts/SearchStatusContext';
 import { useDebouncedCallback } from 'use-debounce';
 import { mergeQueryString } from '@/utils/mergeQuery';
 

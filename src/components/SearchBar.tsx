@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Combobox } from '@headlessui/react';
-import { useSearchStatus } from '@/context/SearchStatusContext';
+import { useSearchStatus } from '@/contexts/SearchStatusContext';
 import { fetchSearchHints } from '@/lib/services/dummyjson';
 
 export default function SearchBar() {

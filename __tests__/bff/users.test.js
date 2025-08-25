@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getUsers } from '../../bff/users/index.js';
-import * as fetchDataModule from '../../bff/utils/fetchData.js';
+import * as fetchDataModule from '../../src/utils/fetchData.js';
 
 // Mock applicationinsights
 const mockTrackTrace = vi.fn();

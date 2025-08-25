@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchData } from '../../../bff/utils/fetchData.js'; // Adjusted path
+import { fetchData } from './fetchData.js';
 
 // global.fetch is already mocked in tests/setup.js,
 // but individual tests might want to override it.
@@ -20,7 +20,7 @@ describe('fetchData utility', () => {
     const url = 'https://dummyjson.com/test';
     const data = await fetchData(url);
     expect(data).toEqual({ success: true });
-    expect(global.fetch).toHaveBeenCalledWith(url);
+    expect(global.fetch).toHaveBeenCalledWith(url, { next: { revalidate: 60 } });
   });
 
   it('throws an error when response is not ok', async () => {

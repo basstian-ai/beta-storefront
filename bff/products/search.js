@@ -1,4 +1,4 @@
-import { fetchData } from '../utils/fetchData.js';
+import { fetchData } from '../../src/utils/fetchData.js';
 import appInsights from 'applicationinsights';
 
 /**

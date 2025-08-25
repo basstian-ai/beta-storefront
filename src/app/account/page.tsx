@@ -4,7 +4,7 @@ import AccountTabs from '@/components/AccountTabs';
 import React from 'react';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { fetchUser } from '@/lib/services/dummyjson';
+import { authAdapter } from '@/adapters/auth';
 import OrderHistory from '@/components/OrderHistory';
 
 async function getAccountData() {
@@ -12,7 +12,7 @@ async function getAccountData() {
   if (!session?.user?.id) {
     return null;
   }
-  return fetchUser(session.user.id);
+  return authAdapter.getUser(session.user.id);
 }
 
 export default async function AccountPage() {

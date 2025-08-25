@@ -6,4 +6,5 @@ export interface CommerceAdapter {
   fetchProductById(id: number | string): Promise<unknown>;
   fetchCategories(fetchOptions?: RequestInit): Promise<unknown>;
   fetchOrders(): Promise<unknown>;
+  createCheckoutSession(items: { productId: number; quantity: number }[]): Promise<unknown>;
 }

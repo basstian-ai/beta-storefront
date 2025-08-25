@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchProductById } from '@/lib/services/dummyjson';
+import { commerceAdapter } from '@/adapters/commerce';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   for (const item of items) {
-    const product = await fetchProductById(item.productId);
+    const product = await commerceAdapter.fetchProductById(item.productId);
     if (!product) {
       return NextResponse.json({ message: `Product ${item.productId} not found` }, { status: 400 });
     }

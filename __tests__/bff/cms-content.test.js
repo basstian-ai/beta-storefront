@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getCMSContent } from '../../bff/cms-content/index.js';
-import * as fetchDataModule from '../../src/utils/fetchData.js';
+import { getCMSContent } from '@/bff/cms-content/index.js';
+import * as fetchDataModule from '@/utils/fetchData';
 
 // Mock applicationinsights
 const mockTrackTrace = vi.fn();

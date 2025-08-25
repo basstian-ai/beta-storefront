@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getProducts } from '../../bff/products/index.js';
-import { getProduct } from '../../bff/products/index.js';
-import * as fetchDataModule from '../../src/utils/fetchData.js';
+import { getProducts } from '@/bff/products/index.js';
+import { getProduct } from '@/bff/products/index.js';
+import * as fetchDataModule from '@/utils/fetchData';
 
 // Mock applicationinsights
 const mockTrackTrace = vi.fn();

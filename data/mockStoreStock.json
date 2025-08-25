@@ -1,0 +1,20 @@
+[
+  {
+    "storeId": "oslo",
+    "storeName": "Oslo City",
+    "address": "Karl Johans gate 1, Oslo",
+    "stock": 5
+  },
+  {
+    "storeId": "bergen",
+    "storeName": "Bergen Sentrum",
+    "address": "Bryggen 1, Bergen",
+    "stock": 0
+  },
+  {
+    "storeId": "trondheim",
+    "storeName": "Trondheim Torg",
+    "address": "Kongens gate 9, Trondheim",
+    "stock": 2
+  }
+]

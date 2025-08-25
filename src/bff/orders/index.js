@@ -1,4 +1,4 @@
-import { fetchData } from '@/utils/fetchData';
+import { commerceAdapter } from '@/adapters/commerce';
 import appInsights from 'applicationinsights';
 
 /**
@@ -15,7 +15,7 @@ export async function getOrders() {
     });
 
     // Assuming a dummy endpoint for orders, replace with actual if available
-    const data = await fetchData('https://dummyjson.com/carts'); // Using carts as a proxy for orders
+    const data = await commerceAdapter.fetchOrders(); // Using carts as a proxy for orders
 
     client.trackEvent({
       name: 'OrdersFetchSuccess',

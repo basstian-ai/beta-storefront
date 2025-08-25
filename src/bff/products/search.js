@@ -1,4 +1,4 @@
-import { fetchData } from '@/utils/fetchData';
+import { searchAdapter } from '@/adapters/search';
 import appInsights from 'applicationinsights';
 
 /**
@@ -15,9 +15,7 @@ export async function searchProducts(query) {
       properties: { origin: 'bff/products', method: 'searchProducts' },
     });
 
-    const data = await fetchData(
-      `https://dummyjson.com/products/search?q=${encodeURIComponent(query)}`
-    );
+    const data = await searchAdapter.search(query);
 
     client.trackEvent({
       name: 'ProductSearchSuccess',

@@ -1,4 +1,4 @@
-import { getProducts, DEFAULT_LIMIT } from '@/bff/services';
+import { productService, DEFAULT_LIMIT } from '@/lib/services/productService';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const maxPrice = maxPriceParam ? Number(maxPriceParam) : undefined;
 
   try {
-    const results = await getProducts({
+    const results = await productService.listProducts({
       category,
       sort,
       skip,

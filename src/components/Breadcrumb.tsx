@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import styles from '../../styles/Breadcrumb.module.css'; // Import CSS module
+import styles from './Breadcrumb.module.css'; // Import CSS module
 
 interface BreadcrumbSegment {
   label: string;

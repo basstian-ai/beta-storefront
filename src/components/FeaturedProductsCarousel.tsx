@@ -1,7 +1,7 @@
 // components/FeaturedProductsCarousel.tsx
 import Image from 'next/image';
 import type { Product } from '@/types'; // Import the shared Product type
-import styles from '../../styles/FeaturedProductsCarousel.module.css'; // Import CSS module
+import styles from './FeaturedProductsCarousel.module.css'; // Import CSS module
 
 type Props = {
   products: Product[];

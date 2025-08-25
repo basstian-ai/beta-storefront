@@ -16,9 +16,7 @@ export default defineConfig({
     environment: 'jsdom', // Simulate a browser environment for tests
     setupFiles: './vitest.setup.ts', // Optional: for global test setup
     include: [
-      'src/**/*.{test,spec}.{ts,tsx}',
-      'tests/**/*.{test,spec}.{ts,tsx}',
-      '__tests__/unit/**/*.{test,spec}.{ts,tsx}',
+      'src/**/*.test.{ts,tsx,js,jsx}',
     ],
     coverage: {
       exclude: ['src/lib/api.ts', 'src/lib/telemetry.js', 'src/lib/pim/**'],

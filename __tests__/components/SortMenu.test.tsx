@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import SortMenu from '../../components/SortMenu';
+import SortMenu from '@/components/SortMenu';
 import { useRouter } from 'next/router';
 
 jest.mock('next/router', () => ({

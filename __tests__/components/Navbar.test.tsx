@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Navbar from '../../components/Navbar';
+import Navbar from '@/components/Navbar';
 import { Category } from '../../types';
 import { useRouter } from 'next/router';
 import '@testing-library/jest-dom';

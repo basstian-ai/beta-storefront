@@ -1,4 +1,5 @@
 import { SearchAdapter } from './index';
+import { fetchSearchHints } from '@/lib/services/dummyjson';
 import { fetchData } from '@/utils/fetchData';
 
 const dummyJsonSearchAdapter: SearchAdapter = {
@@ -10,6 +11,7 @@ const dummyJsonSearchAdapter: SearchAdapter = {
     if (typeof limit === 'number') url.searchParams.set('limit', String(limit));
     return fetchData(url.toString());
   },
+  fetchHints: fetchSearchHints,
 };
 
 export default dummyJsonSearchAdapter;

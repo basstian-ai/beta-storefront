@@ -6,7 +6,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Combobox } from '@headlessui/react';
 import { useSearchStatus } from '@/contexts/SearchStatusContext';
-import { fetchSearchHints } from '@/lib/services/dummyjson';
+import { searchAdapter } from '@/adapters/search';
 
 export default function SearchBar() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function SearchBar() {
       return;
     }
     try {
-      const names = await fetchSearchHints(trimmed);
+      const names = await searchAdapter.fetchHints(trimmed);
       setSuggestions(names);
       setOpen(true);
     } catch (e) {

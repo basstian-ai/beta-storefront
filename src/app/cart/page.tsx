@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { createCheckoutSession } from '@/lib/services/dummyjson';
+import { commerceAdapter } from '@/adapters/commerce';
 
 export default function CartPage() {
   // Subscribe to cart store state and actions
@@ -82,7 +82,7 @@ export default function CartPage() {
   const handleCheckout = async () => {
     setCheckingOut(true);
     try {
-      const data = await createCheckoutSession(
+      const data = await commerceAdapter.createCheckoutSession(
         items.map((i) => ({ productId: i.product.id, quantity: i.quantity }))
       );
       if (data.url) {

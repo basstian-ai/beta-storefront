@@ -4,7 +4,7 @@ import React from 'react';
 import { Product } from '@/types/order';
 import { useCartStore } from '@/stores/useCartStore';
 import toast from 'react-hot-toast';
-import { fetchProductById } from '@/lib/services/dummyjson';
+import { commerceAdapter } from '@/adapters/commerce';
 
 interface AddToCartButtonProps {
   products: Product[];
@@ -18,7 +18,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
     let success = true;
     for (const orderProduct of products) {
       try {
-        const fullProduct = await fetchProductById(orderProduct.id);
+        const fullProduct = await commerceAdapter.fetchProductById(orderProduct.id);
         if (fullProduct) {
           addItem(fullProduct, orderProduct.quantity);
         } else {

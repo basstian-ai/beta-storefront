@@ -1,6 +1,7 @@
 export interface AuthAdapter {
   getUsers(): Promise<unknown>;
   login(credentials: { username: string; password: string }): Promise<unknown>;
+  getUser(id: number | string): Promise<unknown>;
 }
 
 import dummyJsonAuthAdapter from './dummyjson';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Breadcrumb from '../../components/Breadcrumb'; // Adjusted path
+import Breadcrumb from '@/components/Breadcrumb';
 import '@testing-library/jest-dom';
 
 // Mock styles to prevent errors during testing if CSS modules are not transformed

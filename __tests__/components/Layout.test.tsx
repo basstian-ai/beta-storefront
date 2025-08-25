@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Layout from '../../components/Layout';
+import Layout from '@/components/Layout';
 import { Category } from '../../types';
 import '@testing-library/jest-dom';
 
 // Mock Navbar component
-jest.mock('../../components/Navbar', () => {
+jest.mock('@/components/Navbar', () => {
   return function DummyNavbar({ categories }: { categories: Category[] }) {
     return (
       <div data-testid="navbar">
@@ -16,7 +16,7 @@ jest.mock('../../components/Navbar', () => {
 });
 
 // Mock MobileMenu component
-jest.mock('../../components/MobileMenu', () => {
+jest.mock('@/components/MobileMenu', () => {
   return function DummyMobileMenu() {
     return <div data-testid="mobile-menu">Mobile Menu</div>;
   };

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { POST } from '../src/app/api/checkout/route';
+import { POST } from './route';
 
-vi.mock('../src/lib/stripe', () => {
+vi.mock('@/lib/stripe', () => {
   return {
     getStripe: () => ({
       checkout: { sessions: { create: vi.fn(() => Promise.resolve({ url: 'https://stripe.test/checkout' })) } },
@@ -10,7 +10,7 @@ vi.mock('../src/lib/stripe', () => {
 });
 
 
-vi.mock('../src/lib/services/dummyjson', () => ({
+vi.mock('@/lib/services/dummyjson', () => ({
 fetchProductById: vi.fn(async (id: number) => ({ id, title: 'Test', price: 10, thumbnail: 'img' })),
 }));
 

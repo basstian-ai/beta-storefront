@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { POST as postQuote } from '../src/app/api/quote/route';
-import { GET as getQuotes } from '../src/app/api/quotes/route';
-import { POST as postOrder } from '../src/app/api/order/route';
-import { GET as getOrders } from '../src/app/api/orders/route';
+import { POST as postQuote } from './quote/route';
+import { GET as getQuotes } from './quotes/route';
+import { POST as postOrder } from './order/route';
+import { GET as getOrders } from './orders/route';
 import { promises as fs } from 'node:fs';
 
-vi.mock('../src/app/api/auth/[...nextauth]/route', () => ({ authOptions: {} }));
+vi.mock('./auth/[...nextauth]/route', () => ({ authOptions: {} }));
 vi.mock('next-auth/next', () => ({
   getServerSession: vi.fn(async () => ({ user: { id: '1' } })),
 }));

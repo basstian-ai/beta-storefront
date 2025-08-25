@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 
-var capturedProviders: any; // use var so hoisting works with vi.mock
+const captured = vi.hoisted(() => ({ providers: undefined as any }));
 
 vi.mock('next-auth', () => ({
   default: (opts: any) => {
-    capturedProviders = opts.providers;
+    captured.providers = opts.providers;
     return () => new Response('ok');
   },
   // Export type helpers if needed
@@ -26,10 +26,10 @@ describe('Auth providers endpoint', () => {
     // The response of this GET call is not important for this specific test's assertions.
     await GET(new Request('http://localhost/api/auth/signin')); // Any valid sub-path for GET
 
-    expect(capturedProviders).toBeInstanceOf(Array);
-    expect(capturedProviders.length).toBe(1); // Assuming only one provider (Credentials)
+    expect(captured.providers).toBeInstanceOf(Array);
+    expect(captured.providers.length).toBe(1); // Assuming only one provider (Credentials)
 
-    const credentialsProviderConfig = capturedProviders[0];
+    const credentialsProviderConfig = captured.providers[0];
     expect(typeof credentialsProviderConfig).toBe('object');
 
     // Due to the mock: vi.mock('next-auth/providers/credentials', () => ({ default: () => ({ id: 'credentials' }) }));

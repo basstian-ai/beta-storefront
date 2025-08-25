@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import mockData from '@root/data/mockStoreStock.json';
+import mockData from '@/fixtures/mockStoreStock.json';
 
 export async function GET(
   _request: Request,

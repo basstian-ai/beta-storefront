@@ -13,8 +13,8 @@ This directory contains mock backend-for-frontend functions for fetching data fr
   - `search.js`: Searches for products by keyword using dummyjson.com.
 - **users/**
   - `index.js`: Fetches user data (simulated using dummyjson.com/users).
-- **data/**
-  - `mock-category-data.json`: Example category and product data used by the BFF.
+- **fixtures/**
+  - `mock-category-data.json`: Example category and product data used by the BFF (located under `src/fixtures`).
 - **helpers/** and **services/**: Shared utilities and server-side services.
 - `types.ts`: Shared types for the BFF.
 

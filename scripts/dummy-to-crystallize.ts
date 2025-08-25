@@ -48,8 +48,9 @@ async function main() {
       return;
     }
 
-  const outDir = path.join('crystallize-import', 'items');
-  const topicsDir = path.join('crystallize-import', 'topics');
+  const baseDir = path.join('tools', 'crystallize-import');
+  const outDir = path.join(baseDir, 'items');
+  const topicsDir = path.join(baseDir, 'topics');
 
   await Promise.all([
     fs.mkdir(outDir, { recursive: true }),
@@ -114,7 +115,7 @@ async function main() {
       'utf8'
     );
     }
-    console.log(`📝 Wrote ${selected.length} item specs to crystallize-import/items/`);
+    console.log(`📝 Wrote ${selected.length} item specs to tools/crystallize-import/items/`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('DummyJSON fetch failed:', message);

@@ -1,6 +1,6 @@
 'use client';
 import { Heart } from 'lucide-react';
-import { useWishlistStore } from '@/store/wishlist';
+import { useWishlistStore } from '@/stores/useWishlistStore';
 import { z } from 'zod';
 import { ProductSchema } from '@/bff/types';
 import { ADD_TO_WISHLIST, SAVED_TO_WISHLIST } from '@/constants/text';

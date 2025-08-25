@@ -1,6 +1,6 @@
-// src/store/WishlistStore.test.ts
+// src/stores/useWishlistStore.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useWishlistStore } from './wishlist';
+import { useWishlistStore } from './useWishlistStore';
 import { ProductSchema } from '@/bff/types';
 import { z } from 'zod';
 

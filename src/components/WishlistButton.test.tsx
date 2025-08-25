@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import WishlistButton from './WishlistButton';
 import { ProductSchema } from '@/bff/types';
 import { z } from 'zod';
-import { useWishlistStore } from '@/store/wishlist';
+import { useWishlistStore } from '@/stores/useWishlistStore';
 import { ADD_TO_WISHLIST, SAVED_TO_WISHLIST } from '@/constants/text';
 
 const mockProduct: z.infer<typeof ProductSchema> = {

@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useWishlistStore } from '@/store/wishlist';
+import { useWishlistStore } from '@/stores/useWishlistStore';
 import { useCartStore } from '@/stores/useCartStore';
 import { EMPTY_WISHLIST_MESSAGE, CONTINUE_SHOPPING } from '@/constants/text';
 import { HeartOff } from 'lucide-react';

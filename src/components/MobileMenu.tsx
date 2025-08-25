@@ -102,7 +102,7 @@ const MobileMenu = ({ categories }: MobileMenuProps) => {
         /* .mobile-menu-button svg {} */
 
         /* Hide MobileMenu on desktop */
-        @media (min-width: 769px) { /* Consistent with hiding parts of Navbar at max-width: 768px */
+        @media (min-width: 769px) { /* Consistent with hiding parts of NavBar at max-width: 768px */
           .mobile-menu-container {
             display: none;
           }

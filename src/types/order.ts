@@ -1,4 +1,17 @@
 // src/types/order.ts
+
+export interface CartItem {
+  productId: number;
+  quantity: number;
+}
+
+export interface CheckoutSession {
+  id: string;
+  url?: string;
+  customer: { name?: string | null } | null;
+  customer_details?: { email?: string | null; name?: string | null } | null;
+}
+
 export interface Product {
   id: number;
   title: string;

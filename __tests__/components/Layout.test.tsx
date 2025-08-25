@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Layout from '@/components/Layout';
-import { Category } from '../../types';
+import { Category } from '@/types';
 import '@testing-library/jest-dom';
 
 // Mock Navbar component

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import type { HeroContent } from '../types';
+import type { HeroContent } from '@/types';
 
 export default function HeroBanner({ title, description, ctaText, ctaLink, imageUrl, imageAlt = "Hero image" }: HeroContent) {
   return (

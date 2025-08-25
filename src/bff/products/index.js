@@ -1,4 +1,4 @@
-import { fetchData } from '@/utils/fetchData';
+import { commerceAdapter } from '@/adapters/commerce';
 import appInsights from 'applicationinsights';
 
 /**
@@ -14,7 +14,7 @@ export async function getProducts() {
       properties: { origin: 'bff/products', method: 'getProducts' },
     });
 
-    const data = await fetchData('https://dummyjson.com/products');
+    const data = await commerceAdapter.fetchProducts({});
 
     client.trackEvent({
       name: 'ProductsFetchSuccess',
@@ -49,7 +49,7 @@ export async function getProducts() {
  */
 export async function getProduct(id) {
   try {
-    const data = await fetchData(`https://dummyjson.com/products/${id}`);
+    const data = await commerceAdapter.fetchProductById(id);
     return data;
   } catch (error) {
     console.error(error);

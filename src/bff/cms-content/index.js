@@ -1,4 +1,4 @@
-import { fetchData } from '@/utils/fetchData';
+import { cmsAdapter } from '@/adapters/cms';
 import appInsights from 'applicationinsights';
 
 /**
@@ -15,7 +15,7 @@ export async function getCMSContent() {
     });
 
     // Assuming a dummy endpoint for CMS content, using posts as an example
-    const data = await fetchData('https://dummyjson.com/posts');
+    const data = await cmsAdapter.getContent();
 
     client.trackEvent({
       name: 'CmsContentFetchSuccess',

@@ -1,5 +1,7 @@
 // src/bff/services/index.ts
-import * as dummyJsonAdapter from '@/lib/services/dummyjson';
+import { commerceAdapter } from '@/adapters/commerce';
+import { authAdapter, DummyJsonLoginApiSchema } from '@/adapters/auth';
+import { searchAdapter } from '@/adapters/search';
 import {
   ProductSchema,
   CategorySchema,
@@ -29,7 +31,7 @@ async function initializeProductsCache(): Promise<void> {
   if (process.env.NODE_ENV !== 'production') {
     console.log('BFF> Initializing products cache for slug lookup...');
   }
-  const rawData = await dummyJsonAdapter.fetchAllProductsSimple();
+  const rawData = await commerceAdapter.fetchAllProductsSimple();
   const parsedData = PaginatedProductsSchema.parse(rawData);
 
   allProductsCache = parsedData.products.map(p => {
@@ -109,7 +111,7 @@ export async function getProducts(
   }
   // Pass all options, including `brands`, to the adapter.
   // The adapter will handle the DummyJSON specifics (e.g., client-side filtering for brands if API doesn't support it).
-  const rawData = await dummyJsonAdapter.fetchProducts(options);
+  const rawData = await commerceAdapter.fetchProducts(options);
 
   // The adapter now returns data where product.category is already an object.
   // So, PaginatedProductsSchema should correctly parse this.
@@ -143,7 +145,7 @@ export async function searchProducts(
     if (process.env.NODE_ENV !== 'production') {
       console.log('BFF> searchProducts (slug enhancement pass)', { query, sort, skip, limit });
     }
-    const rawData = await dummyJsonAdapter.searchProducts(query, sort, skip, limit);
+    const rawData = await searchAdapter.search(query, sort, skip, limit);
     const parsedData = PaginatedProductsSchema.parse(rawData);
     const session = await getSimulatedSession();
 
@@ -184,7 +186,7 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
     }
   }
 
-  const rawData = await dummyJsonAdapter.fetchProductById(productId);
+  const rawData = await commerceAdapter.fetchProductById(productId);
   if (!rawData) {
     throw new Error(`Product with id ${productId} not found.`);
   }
@@ -201,13 +203,13 @@ export async function getProductByIdOrSlug(idOrSlug: number | string): Promise<z
   return applyB2BPrice(productWithSlug, session);
 }
 
-export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof dummyJsonAdapter.DummyJsonLoginApiSchema>> {
+export async function login(credentials: { username?: string; password?: string }): Promise<z.infer<typeof DummyJsonLoginApiSchema>> {
   if (process.env.NODE_ENV !== 'production') {
     console.log('BFF> login service: Called with username:', credentials.username);
   }
   // The adapter's login function now returns an object matching DummyJsonLoginApiSchema
   // (i.e., with accessToken and refreshToken from the API).
-  const apiResponse = await dummyJsonAdapter.login(credentials);
+  const apiResponse = await authAdapter.login(credentials);
   if (process.env.NODE_ENV !== 'production') {
     console.log('BFF> login service: Response from adapter (contains accessToken, refreshToken):', apiResponse);
   }
@@ -219,7 +221,7 @@ export async function getCategories(fetchOptions?: RequestInit): Promise<z.infer
     console.log('BFF> getCategories service: Called with fetchOptions:', { fetchOptions });
   }
   try {
-    const rawDataFromAdapter = await dummyJsonAdapter.fetchCategories(fetchOptions); // Pass options
+    const rawDataFromAdapter = await commerceAdapter.fetchCategories(fetchOptions); // Pass options
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Service.getCategories] Data received from adapter:', JSON.stringify(rawDataFromAdapter));
     }

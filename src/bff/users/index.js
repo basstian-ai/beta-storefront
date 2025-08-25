@@ -1,4 +1,4 @@
-import { fetchData } from '@/utils/fetchData';
+import { authAdapter } from '@/adapters/auth';
 import appInsights from 'applicationinsights';
 
 /**
@@ -14,7 +14,7 @@ export async function getUsers() {
       properties: { origin: 'bff/users', method: 'getUsers' },
     });
 
-    const data = await fetchData('https://dummyjson.com/users');
+    const data = await authAdapter.getUsers();
 
     client.trackEvent({
       name: 'UsersFetchSuccess',

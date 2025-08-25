@@ -1,9 +1,9 @@
 # .github/workflows/vercel-preview.yml
-name: Vercel Preview Deployment
+#name: Vercel Preview Deployment
 
-on: [pull_request]
+#on: [pull_request]
 
-jobs:
+#jobs:
   preview-deploy: # Changed job name to be more descriptive
     runs-on: ubuntu-latest
     steps:

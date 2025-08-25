@@ -1,7 +1,8 @@
-import { getProducts, DEFAULT_LIMIT } from '@/bff/services';
+import { createProductService, DEFAULT_LIMIT, ProductServiceError } from '@/lib/services';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const service = createProductService();
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category') ?? undefined;
   const sort = (searchParams.get('sort') as 'relevance' | 'price_asc' | 'price_desc' | 'newest') ?? 'relevance';
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   const maxPrice = maxPriceParam ? Number(maxPriceParam) : undefined;
 
   try {
-    const results = await getProducts({
+    const results = await service.listProducts({
       category,
       sort,
       skip,
@@ -35,6 +36,9 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (error instanceof ProductServiceError) {
+      return NextResponse.json({ message: error.message, items: [] }, { status: error.status });
+    }
     console.error('Products API error:', error);
     return NextResponse.json(
       { message: 'Error fetching products', items: [] },

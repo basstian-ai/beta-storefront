@@ -28,6 +28,6 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"], // Adjusted include
+  "include": ["next-env.d.ts", "src/bff/**/*.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"], // Adjusted include
   "exclude": ["node_modules"]
 }

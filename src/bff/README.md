@@ -5,14 +5,14 @@ This directory contains mock backend-for-frontend functions for fetching data fr
 ## Directory Structure
 
 - **cms-content/**
-  - `index.js`: Fetches CMS content (simulated using dummyjson.com/posts).
+  - `index.ts`: Fetches CMS content (simulated using dummyjson.com/posts).
 - **orders/**
-  - `index.js`: Fetches order data (simulated using dummyjson.com/carts).
+  - `index.ts`: Fetches order data (simulated using dummyjson.com/carts).
 - **products/**
-  - `index.js`: Fetches product data (simulated using dummyjson.com/products).
-  - `search.js`: Searches for products by keyword using dummyjson.com.
+  - `index.ts`: Fetches product data (simulated using dummyjson.com/products).
+  - `search.ts`: Searches for products by keyword using dummyjson.com.
 - **users/**
-  - `index.js`: Fetches user data (simulated using dummyjson.com/users).
+  - `index.ts`: Fetches user data (simulated using dummyjson.com/users).
 - **fixtures/**
   - `mock-category-data.json`: Example category and product data used by the BFF (located under `src/fixtures`).
 - **helpers/** and **services/**: Shared utilities and server-side services.
@@ -20,7 +20,7 @@ This directory contains mock backend-for-frontend functions for fetching data fr
 
 ## Services
 
-Each service in its respective subdirectory (e.g., `products`, `users`) exports functions to fetch data. For example, `src/bff/products/index.js` exports a `getProducts` function.
+Each service in its respective subdirectory (e.g., `products`, `users`) exports functions to fetch data. For example, `src/bff/products/index.ts` exports a `getProducts` function.
 
 ## Utility Functions
 

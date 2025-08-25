@@ -14,8 +14,6 @@ This directory contains mock backend-for-frontend functions for fetching data fr
     - `search.js`: Searches for products by keyword using dummyjson.com.
   - **/users**
     - `index.js`: Fetches user data (simulated using dummyjson.com/users).
-  - **/utils**
-    - `fetchData.js`: A shared utility function for making fetch requests and handling basic response/error checking.
   - `README.md`: This file.
 
 ## Services
@@ -24,7 +22,7 @@ Each service in its respective subdirectory (e.g., `products`, `users`) exports 
 
 ## Utility Functions
 
-- `bff/utils/fetchData.js`: This utility centralizes the logic for making `fetch` requests to `dummyjson.com`. It handles the basic fetch operation, checks for network errors (`response.ok`), and parses the JSON response. Services use this utility to reduce code duplication.
+- `src/utils/fetchData.js`: This utility centralizes the logic for making `fetch` requests to `dummyjson.com`. It handles the basic fetch operation, checks for network errors (`response.ok`), and parses the JSON response. Services use this utility to reduce code duplication.
 
 ## Usage
 

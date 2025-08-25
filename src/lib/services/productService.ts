@@ -1,40 +1,19 @@
 import { z } from 'zod';
-import {
-  GetProductsOptions,
-  PaginatedProductsSchema,
-  ProductSchema,
-  ServiceProductsResponseSchema,
-} from '@/bff/types';
-import { fetchProducts, fetchProductById } from './dummyjson';
+import { GetProductsOptions, ProductSchema, ServiceProductsResponseSchema } from '@/bff/types';
 
 export interface ProductService {
-  listProducts(
-    options?: GetProductsOptions,
-  ): Promise<z.infer<typeof ServiceProductsResponseSchema>>;
-  getProduct(id: number): Promise<z.infer<typeof ProductSchema>>;
+  listProducts(options?: GetProductsOptions): Promise<z.infer<typeof ServiceProductsResponseSchema>>;
+  getProduct(id: string): Promise<z.infer<typeof ProductSchema>>;
+  readonly supports: { price: boolean; stock: boolean; facets: boolean };
 }
 
 export const DEFAULT_LIMIT = 20;
 
-export class DummyJsonProductService implements ProductService {
-  async listProducts(
-    options: GetProductsOptions = {},
-  ): Promise<z.infer<typeof ServiceProductsResponseSchema>> {
-    const data = await fetchProducts(options);
-    const parsed = PaginatedProductsSchema.parse(data);
-    return ServiceProductsResponseSchema.parse({
-      items: parsed.products,
-      total: parsed.total,
-      skip: parsed.skip,
-      limit: parsed.limit,
-    });
-  }
+export type ServiceKind = 'dummyjson';
 
-  async getProduct(id: number): Promise<z.infer<typeof ProductSchema>> {
-    const data = await fetchProductById(id);
-    return ProductSchema.parse(data);
+export class ProductServiceError extends Error {
+  constructor(message: string, public readonly status = 500) {
+    super(message);
+    this.name = 'ProductServiceError';
   }
 }
-
-export const productService: ProductService = new DummyJsonProductService();
-

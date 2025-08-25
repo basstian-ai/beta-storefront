@@ -14,6 +14,7 @@ interface PriceBoxProps {
 export default function PriceBox({ product, role }: PriceBoxProps) {
   const [quantity, setQuantity] = useState(1);
   const addItemToCart = useCartStore((state) => state.addItem); // Get addItem action
+  const setFulfillment = useCartStore((state) => state.setFulfillment);
 
   const originalPrice = product.price.toFixed(2);
   const effectivePriceAmount = applyB2BPrice(product.price, role);
@@ -46,6 +47,7 @@ export default function PriceBox({ product, role }: PriceBoxProps) {
   };
 
   const handleAddToCart = () => {
+    setFulfillment({ type: 'delivery' });
     addItemToCart(product, quantity);
     toast.success(`Added ${quantity} x ${product.title} to cart!`);
   };

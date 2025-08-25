@@ -11,10 +11,20 @@ export interface CartItem {
   pricePerUnit: number; // Price at the time of adding to cart
 }
 
+export interface FulfillmentInfo {
+  type: 'delivery' | 'pickup';
+  store?: {
+    storeId: string;
+    storeName: string;
+    address: string;
+  };
+}
+
 // Define the state structure for the cart
 interface CartState {
   items: CartItem[];
   lastUpdated: number | null;
+  fulfillment: FulfillmentInfo | null;
   // addItem's signature matches the request, quantity is the amount to add
   addItem: (product: z.infer<typeof ProductSchema>, quantityToAdd?: number) => void;
   // updateQuantity's signature matches updateItemQuantity
@@ -24,6 +34,7 @@ interface CartState {
   getTotalItems: () => number;
   getCartSubtotal: () => number;
   getCartTotalDiscount: () => number; // Added selector for total discount
+  setFulfillment: (info: FulfillmentInfo) => boolean;
 }
 
 const SEVEN_DAYS_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -33,8 +44,13 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       lastUpdated: null,
+      fulfillment: null,
 
       addItem: (product, quantityToAdd = 1) => {
+        const stateBefore = get();
+        if (!stateBefore.fulfillment) {
+          set({ fulfillment: { type: 'delivery' }, lastUpdated: Date.now() });
+        }
         set((state) => {
           const existingItemIndex = state.items.findIndex(
             (item) => item.product.id === product.id
@@ -108,7 +124,7 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: () => {
-        set({ items: [], lastUpdated: Date.now() }); // Ensures lastUpdated is set on clear
+        set({ items: [], lastUpdated: Date.now(), fulfillment: null }); // Ensures lastUpdated is set on clear
       },
 
       getTotalItems: () => {
@@ -129,6 +145,11 @@ export const useCartStore = create<CartState>()(
           return total + item.product.price * item.quantity;
         }, 0);
         return totalOriginalPrice - getCartSubtotal();
+      },
+
+      setFulfillment: (info) => {
+        set({ fulfillment: info, lastUpdated: Date.now() });
+        return true;
       }
     }),
     {
@@ -163,7 +184,11 @@ export const useCartStore = create<CartState>()(
           }
         };
       },
-      partialize: (state) => ({ items: state.items, lastUpdated: state.lastUpdated }),
+      partialize: (state) => ({
+        items: state.items,
+        lastUpdated: state.lastUpdated,
+        fulfillment: state.fulfillment,
+      }),
     }
   )
 );

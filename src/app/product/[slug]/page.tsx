@@ -30,6 +30,7 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null);
 
   const addItemToCart = useCartStore((state) => state.addItem);
+  const setFulfillment = useCartStore((state) => state.setFulfillment);
 
   useEffect(() => {
     if (slug) {
@@ -55,12 +56,13 @@ export default function ProductPage() {
   }, [slug]);
 
   const handleAddToCart = () => {
-    if (product) {
-      addItemToCart(product, 1);
-      toast.success(`${product.title} added to cart!`);
-    } else {
+    if (!product) {
       toast.error('Product data not available to add to cart.');
+      return;
     }
+    setFulfillment({ type: 'delivery' });
+    addItemToCart(product, 1);
+    toast.success(`${product.title} added to cart!`);
   };
 
   let productLdJsonScript = null;
@@ -156,7 +158,7 @@ export default function ProductPage() {
             </button>
             <WishlistButton product={product} />
             <CopyLinkButton />
-            <PickupInStore productId={product.id} />
+            <PickupInStore product={product} />
           </div>
         </div>
       </div>

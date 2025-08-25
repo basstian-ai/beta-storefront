@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getCheckoutSession } from '@/bff/services/stripe';
 import type { CheckoutSession } from '@/types/order';
+import { useCartStore } from '@/stores/useCartStore';
+import { useRef } from 'react';
 
 export default function OrderSuccessClient() {
   const params = useSearchParams();
@@ -11,6 +13,8 @@ export default function OrderSuccessClient() {
   const [session, setSession] = useState<CheckoutSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fulfillmentRef = useRef(useCartStore.getState().fulfillment);
+  const clearCart = useCartStore((state) => state.clearCart);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -29,6 +33,10 @@ export default function OrderSuccessClient() {
       .finally(() => setLoading(false));
   }, [sessionId]);
 
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
+
   if (!sessionId) {
     return <div className="container mx-auto px-4 py-8 text-center">Missing session ID.</div>;
   }
@@ -45,6 +53,11 @@ export default function OrderSuccessClient() {
     <div className="container mx-auto px-4 py-8 text-center">
       <h1 className="text-2xl font-semibold mb-4">Thanks {session.customer_details?.name || session.customer?.name || 'customer'}!</h1>
       <p className="mb-6">Order #{session.id} confirmed.</p>
+      {fulfillmentRef.current?.type === 'pickup' ? (
+        <p className="mb-6">Pickup in store: {fulfillmentRef.current.store?.storeName}</p>
+      ) : (
+        <p className="mb-6">Home delivery</p>
+      )}
       <Link href="/" className="text-blue-600 hover:underline">Back to store</Link>
     </div>
   );

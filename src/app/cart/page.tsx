@@ -15,10 +15,11 @@ import { createCheckoutSession } from '@/lib/services/dummyjson';
 export default function CartPage() {
   // Subscribe to cart store state and actions
   const items = useCartStore((state) => state.items);
-  const updateItemQuantity = useCartStore((state) => state.updateItemQuantity);
+  const updateItemQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const getCartSubtotal = useCartStore((state) => state.getCartSubtotal);
   const clearCart = useCartStore((state) => state.clearCart); // For "Clear Cart" button
+  const fulfillment = useCartStore((state) => state.fulfillment);
 
   const { data: session } = useSession();
   const router = useRouter();
@@ -217,6 +218,11 @@ export default function CartPage() {
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-medium text-gray-900">Order total</dt>
                   <dd className="text-base font-medium text-gray-900">${subtotal.toFixed(2)}</dd>
+                </div>
+                <div className="pt-4 text-sm text-gray-700">
+                  {fulfillment?.type === 'pickup'
+                    ? `Pickup in store: ${fulfillment.store?.storeName}`
+                    : 'Home delivery'}
                 </div>
               </dl>
 

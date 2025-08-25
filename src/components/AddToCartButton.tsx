@@ -11,16 +11,15 @@ interface AddToCartButtonProps {
 }
 
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
-  const { addItem } = useCartStore();
+  const { addItem, setFulfillment } = useCartStore();
 
   const handleAddToCart = async () => {
+    setFulfillment({ type: 'delivery' });
     let success = true;
     for (const orderProduct of products) {
       try {
         const fullProduct = await fetchProductById(orderProduct.id);
         if (fullProduct) {
-          // The cart store expects a product object that matches ProductSchema.
-          // The quantity comes from the original order.
           addItem(fullProduct, orderProduct.quantity);
         } else {
           success = false;

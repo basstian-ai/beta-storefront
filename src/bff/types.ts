@@ -78,3 +78,24 @@ export const ServiceProductsResponseSchema = z.object({
   skip: z.number(),
   limit: z.number(),
 });
+
+export const UsersResponseSchema = z.object({
+  users: z.array(UserSchema),
+  total: z.number(),
+  skip: z.number(),
+  limit: z.number(),
+});
+
+export const OrdersResponseSchema = z.object({
+  carts: z.array(z.unknown()),
+  total: z.number().optional(),
+  skip: z.number().optional(),
+  limit: z.number().optional(),
+});
+
+export const CMSContentResponseSchema = z.object({
+  posts: z.array(z.unknown()),
+  total: z.number().optional(),
+  skip: z.number().optional(),
+  limit: z.number().optional(),
+});

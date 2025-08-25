@@ -1,12 +1,16 @@
 import { searchAdapter } from '@/adapters/search';
 import appInsights from 'applicationinsights';
+import { z } from 'zod';
+import { PaginatedProductsSchema, ProductSchema } from '../types';
+
+export type Product = z.infer<typeof ProductSchema>;
 
 /**
  * Searches for products via dummyjson.com.
- * @param {string} query - Keyword to search for.
- * @returns {Promise<Object[]>} Array of product objects from dummyjson.
+ * @param query - Keyword to search for.
+ * @returns Array of product objects from dummyjson.
  */
-export async function searchProducts(query) {
+export async function searchProducts(query: string): Promise<Product[]> {
   const client = appInsights.defaultClient;
   try {
     client.trackTrace({
@@ -16,26 +20,26 @@ export async function searchProducts(query) {
     });
 
     const data = await searchAdapter.search(query);
+    const parsed = PaginatedProductsSchema.parse(data);
 
     client.trackEvent({
       name: 'ProductSearchSuccess',
-      properties: { query, resultCount: data?.products?.length ?? 0 },
+      properties: { query, resultCount: parsed.products.length },
     });
 
-    if (data?.products?.length) {
+    if (parsed.products.length) {
       client.trackMetric({
         name: 'ProductsFound',
-        value: data.products.length,
+        value: parsed.products.length,
       });
     }
 
-    return data.products || [];
+    return parsed.products;
   } catch (error) {
     client.trackException({
-      exception: error,
+      exception: error as Error,
       properties: { origin: 'bff/products', method: 'searchProducts' },
     });
     throw error;
   }
 }
-

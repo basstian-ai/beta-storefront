@@ -1,11 +1,15 @@
 import { commerceAdapter } from '@/adapters/commerce';
 import appInsights from 'applicationinsights';
+import { z } from 'zod';
+import { OrdersResponseSchema } from '../types';
+
+export type OrdersResponse = z.infer<typeof OrdersResponseSchema>;
 
 /**
  * Fetches order data (carts) from dummyjson.com.
- * @returns {Promise<Object>} A promise that resolves to the order data.
+ * @returns A promise that resolves to the order data.
  */
-export async function getOrders() {
+export async function getOrders(): Promise<OrdersResponse> {
   const client = appInsights.defaultClient;
   try {
     client.trackTrace({
@@ -16,26 +20,27 @@ export async function getOrders() {
 
     // Assuming a dummy endpoint for orders, replace with actual if available
     const data = await commerceAdapter.fetchOrders(); // Using carts as a proxy for orders
+    const parsed = OrdersResponseSchema.parse(data);
 
     client.trackEvent({
       name: 'OrdersFetchSuccess',
       properties: {
         source: 'dummyjson',
-        resultCount: data?.carts?.length ?? 0, // Adjusted to carts
+        resultCount: parsed.carts.length, // Adjusted to carts
       },
     });
 
-    if (data?.carts?.length) { // Adjusted to carts
+    if (parsed.carts.length) {
       client.trackMetric({
         name: 'OrdersReturned', // Metric name can remain OrdersReturned
-        value: data.carts.length, // Adjusted to carts
+        value: parsed.carts.length, // Adjusted to carts
       });
     }
 
-    return data;
+    return parsed;
   } catch (error) {
     client.trackException({
-      exception: error,
+      exception: error as Error,
       properties: { origin: 'bff/orders', method: 'getOrders' },
     });
     throw error; // Re-throw the error so the caller can handle it

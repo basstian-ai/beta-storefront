@@ -1,11 +1,15 @@
 import { authAdapter } from '@/adapters/auth';
 import appInsights from 'applicationinsights';
+import { z } from 'zod';
+import { UsersResponseSchema } from '../types';
+
+export type UsersResponse = z.infer<typeof UsersResponseSchema>;
 
 /**
  * Fetches user data from dummyjson.com.
- * @returns {Promise<Object>} A promise that resolves to the user data.
+ * @returns A promise that resolves to the user data.
  */
-export async function getUsers() {
+export async function getUsers(): Promise<UsersResponse> {
   const client = appInsights.defaultClient;
   try {
     client.trackTrace({
@@ -15,26 +19,27 @@ export async function getUsers() {
     });
 
     const data = await authAdapter.getUsers();
+    const parsed = UsersResponseSchema.parse(data);
 
     client.trackEvent({
       name: 'UsersFetchSuccess',
       properties: {
         source: 'dummyjson',
-        resultCount: data?.users?.length ?? 0,
+        resultCount: parsed.users.length,
       },
     });
 
-    if (data?.users?.length) {
+    if (parsed.users.length) {
       client.trackMetric({
         name: 'UsersReturned',
-        value: data.users.length,
+        value: parsed.users.length,
       });
     }
 
-    return data;
+    return parsed;
   } catch (error) {
     client.trackException({
-      exception: error,
+      exception: error as Error,
       properties: { origin: 'bff/users', method: 'getUsers' },
     });
     throw error; // Re-throw the error so the caller can handle it

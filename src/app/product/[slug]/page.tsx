@@ -11,6 +11,7 @@ import ProductGallery from '@/components/ProductGallery'; // Changed from Galler
 import PriceBox from '@/components/PriceBox';
 import CopyLinkButton from '@/components/CopyLinkButton';
 import WishlistButton from '@/components/WishlistButton';
+import PickupInStore from '@/components/PickupInStore';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
 import toast from 'react-hot-toast'; // For feedback
 import { useEffect, useState } from 'react'; // For client-side data fetching
@@ -155,6 +156,7 @@ export default function ProductPage() {
             </button>
             <WishlistButton product={product} />
             <CopyLinkButton />
+            <PickupInStore productId={product.id} />
           </div>
         </div>
       </div>

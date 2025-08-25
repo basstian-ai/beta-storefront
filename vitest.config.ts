@@ -18,6 +18,8 @@ export default defineConfig({
     include: [
       'src/**/*.test.{ts,tsx,js,jsx}',
     ],
+    // Ensure tests are colocated with their routes; prevent loose tests in api root
+    exclude: ['src/app/api/*.test.{ts,tsx,js,jsx}'],
     coverage: {
       exclude: ['src/lib/api.ts', 'src/lib/telemetry.js', 'src/lib/pim/**'],
     },

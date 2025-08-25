@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Fragment } from 'react';
 import { useCartStore } from '@/stores/useCartStore'; // Import cart store
-import { useWishlistStore } from '@/store/wishlist';
+import { useWishlistStore } from '@/stores/useWishlistStore';
 import { useHasMounted } from '@/hooks/useHasMounted'; // Import useHasMounted
 
 interface CategoryNavItem {

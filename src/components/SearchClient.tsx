@@ -5,7 +5,7 @@ import { useSearchStatus } from '@/contexts/SearchStatusContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from './ProductCard';
 import SearchResultsSkeleton from './SearchResultsSkeleton';
-import { fetchJSON } from '@/utils/fetchJSON';
+import { fetchData } from '@/utils/fetchData';
 import { mergeQueryString } from '@/utils/mergeQuery';
 
 export type SortKey = 'relevance' | 'price-asc' | 'price-desc';
@@ -56,7 +56,7 @@ export default function SearchClient({ initial, q, sort, total, skip, limit }: P
     if (nextSkip >= count) return;
     setIsLoadingMore(true);
     try {
-      const { data, error } = await fetchJSON<{
+      const { data, error } = await fetchData<{
         items: SearchResult[];
         total: number;
         skip: number;

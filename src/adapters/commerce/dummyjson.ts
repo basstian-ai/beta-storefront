@@ -13,7 +13,13 @@ const dummyJsonCommerceAdapter: CommerceAdapter = {
   fetchProducts,
   fetchProductById,
   fetchCategories,
-  fetchOrders: () => fetchData('https://dummyjson.com/carts'),
+  fetchOrders: async () => {
+    const { data, error } = await fetchData<unknown>('https://dummyjson.com/carts');
+    if (error || !data) {
+      throw error;
+    }
+    return data;
+  },
   createCheckoutSession,
 };
 

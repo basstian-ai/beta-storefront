@@ -24,7 +24,7 @@ Each service in its respective subdirectory (e.g., `products`, `users`) exports 
 
 ## Utility Functions
 
-- `src/utils/fetchData.js`: This utility centralizes the logic for making `fetch` requests to `dummyjson.com`. It handles the basic fetch operation, checks for network errors (`response.ok`), and parses the JSON response. Services use this utility to reduce code duplication.
+- `src/utils/fetchData.ts`: This utility centralizes the logic for making `fetch` requests to `dummyjson.com`. It handles the basic fetch operation, checks for network errors (`response.ok`), parses the JSON response, and returns a typed `FetchResult` object. Services use this utility to reduce code duplication.
 
 ## Usage
 

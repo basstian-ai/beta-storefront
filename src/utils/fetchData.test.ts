@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { fetchData } from './fetchData.js';
+import { fetchData } from './fetchData';
 
 // global.fetch is already mocked in tests/setup.js,
 // but individual tests might want to override it.
@@ -18,21 +18,25 @@ describe('fetchData utility', () => {
 
   it('fetches data successfully from a URL', async () => {
     const url = 'https://dummyjson.com/test';
-    const data = await fetchData(url);
+    const { data, error } = await fetchData<{ success: boolean }>(url);
+    expect(error).toBeUndefined();
     expect(data).toEqual({ success: true });
     expect(global.fetch).toHaveBeenCalledWith(url, { next: { revalidate: 60 } });
   });
 
-  it('throws an error when response is not ok', async () => {
+  it('returns an error when response is not ok', async () => {
     // Specific mock for this test case
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         status: 404,
+        text: () => Promise.resolve('Not found'),
       })
     );
     const url = 'https://dummyjson.com/notfound';
-    // Make sure the path in the expected error message matches the actual path
-    await expect(fetchData(url)).rejects.toThrow('HTTP error! status: 404 while fetching https://dummyjson.com/notfound');
+    const { data, error } = await fetchData(url);
+    expect(data).toBeUndefined();
+    expect(error).toBeInstanceOf(Error);
+    expect(error?.message).toBe('404: Not found');
   });
 });

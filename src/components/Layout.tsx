@@ -2,7 +2,7 @@
 import React from 'react'; // Import React
 import Navbar from './Navbar';
 import MobileMenu from './MobileMenu'; // Import MobileMenu
-import { Category } from '../../types';
+import { Category } from '@/types';
 
 interface LayoutProps {
   categories: Category[]; // Assuming categories are still needed for Navbar

@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 // However, if some items were to remain actual <Link>s, it would be kept.
 // For this implementation, focusing on div onClick, it's not used.
 // import Link from 'next/link';
-import { Category } from '../../types';
+import { Category } from '@/types';
 
 interface MobileMenuProps {
   categories: Category[];

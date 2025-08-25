@@ -23,7 +23,7 @@ const transformCategoryStringToObject = (categorySlug: string): { slug: string; 
 
 import { z } from 'zod';
 // Import GetProductsOptions type
-import { GetProductsOptions } from '../types';
+import { GetProductsOptions } from '@/bff/types';
 
 // Schema for DummyJSON /auth/login API actual response
 // This schema now reflects the actual API response including accessToken and refreshToken

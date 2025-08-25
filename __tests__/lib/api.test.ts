@@ -4,14 +4,14 @@ import {
   fetchSearchResults,
   CategoryPageData,
   Product,
-  Category as ApiCategory,  // Renaming to avoid conflict with Category from ../types if used by fetchCategories
+  Category as ApiCategory,  // Renaming to avoid conflict with Category from @/types if used by fetchCategories
   Facets
 } from '@/lib/api'; // Using @ alias assuming it's configured for __tests__
-// import { Category as ImportedCategoryType } from '../../types'; // This seems unused if ApiCategory handles the alias for fetchCategories tests or if fetchCategories is updated.
-// For now, assuming fetchCategories tests will align with types from @/lib/api or its direct ../types import.
-// If fetchCategories strictly returns the type from ../../types, then ImportedCategoryType is needed.
-// Based on lib/api.ts, fetchCategories returns ImportedCategory[] which IS from ../types. So, this import is needed.
-import { Category as ImportedCategoryType } from '../../types';
+// import { Category as ImportedCategoryType } from '@/types'; // This seems unused if ApiCategory handles the alias for fetchCategories tests or if fetchCategories is updated.
+// For now, assuming fetchCategories tests will align with types from @/lib/api or its direct @/types import.
+// If fetchCategories strictly returns the type from @/types, then ImportedCategoryType is needed.
+// Based on lib/api.ts, fetchCategories returns ImportedCategory[] which IS from @/types. So, this import is needed.
+import { Category as ImportedCategoryType } from '@/types';
 import { ActiveFilters } from '@/components/FacetFilters';
 import importedMockData from '@/bff/data/mock-category-data.json';
 const MOCK_CATEGORIES_DATA_JSON = importedMockData as CategoryPageData[];

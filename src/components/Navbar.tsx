@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import styles from '../../styles/Navbar.module.css';
-import { Category } from '../../types'; // Import Category type
+import { Category } from '@/types'; // Import Category type
 
 interface NavbarProps {
   categories: Category[]; // Add categories prop

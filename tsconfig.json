@@ -14,11 +14,12 @@
     "jsx": "preserve", // Ensure this is set
     "incremental": true,
     "baseUrl": ".", // Added
-    "paths": {
-      "@/*": ["src/*"],
-      "@/lib/*": ["src/lib/*"],
-      "@root/*": ["./*"]
-    },
+      "paths": {
+        "@/*": ["src/*"],
+        "@/lib/*": ["src/lib/*"],
+        "@/types/*": ["src/types/*"],
+        "@root/*": ["./*"]
+      },
     "types": ["node"], // Removed "jest"
     "forceConsistentCasingInFileNames": true, // Added
     "plugins": [

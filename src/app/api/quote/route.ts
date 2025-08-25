@@ -5,7 +5,7 @@ import path from 'node:path';
 import { nanoid } from 'nanoid';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { sendEmail } from '@root/lib/email';
+import { sendEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 

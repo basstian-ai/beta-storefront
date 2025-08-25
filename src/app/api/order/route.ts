@@ -4,7 +4,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { sendEmail } from '@root/lib/email';
+import { sendEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 

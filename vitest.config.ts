@@ -21,7 +21,7 @@ export default defineConfig({
       '__tests__/unit/**/*.{test,spec}.{ts,tsx}',
     ],
     coverage: {
-      exclude: ['lib/api.ts', 'lib/telemetry.js', 'lib/pim/**'],
+      exclude: ['src/lib/api.ts', 'src/lib/telemetry.js', 'src/lib/pim/**'],
     },
   },
 });

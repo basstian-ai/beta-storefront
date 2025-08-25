@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 
 export const flushSpy = vi.fn();
 
-import { SearchStatusProvider } from '@/context/SearchStatusContext';
+import { SearchStatusProvider } from '@/contexts/SearchStatusContext';
 
 const AllProviders = ({ children }: { children: React.ReactNode }) => (
   <SearchStatusProvider>

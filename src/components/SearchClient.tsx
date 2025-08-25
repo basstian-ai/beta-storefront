@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useSearchStatus } from '@/context/SearchStatusContext';
+import { useSearchStatus } from '@/contexts/SearchStatusContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductCard from './ProductCard';
 import SearchResultsSkeleton from './SearchResultsSkeleton';

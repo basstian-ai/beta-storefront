@@ -47,6 +47,7 @@ export default function NavBar({ initialCategories, categoryError }: NavBarProps
 
   const navigation = [
     { name: 'Home', href: '/', current: pathname === '/' },
+    { name: 'Find Store', href: '/stores', current: pathname === '/stores' },
     ...allCategoryItems,
   ];
 

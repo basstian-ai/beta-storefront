@@ -131,9 +131,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <footer className="py-8 text-center text-gray-500 border-t">
-        <p>&copy; {new Date().getFullYear()} BetaStore. All rights reserved.</p>
-      </footer>
     </div>
   );
 }

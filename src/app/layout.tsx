@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import { Toaster } from 'react-hot-toast'; // Import Toaster
 import RootClientProviders from '@/components/RootClientProviders';
 import { CompanyProvider } from '@/contexts/CompanyProvider';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -56,6 +57,7 @@ export default async function RootLayout({
             <main className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-6">
               {children}
             </main>
+            <Footer />
           </CompanyProvider>
         </RootClientProviders>
       </body>

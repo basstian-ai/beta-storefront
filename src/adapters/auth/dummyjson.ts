@@ -3,7 +3,13 @@ import { login, DummyJsonLoginApiSchema, fetchUser } from '@/lib/services/dummyj
 import { fetchData } from '@/utils/fetchData';
 
 const dummyJsonAuthAdapter: AuthAdapter = {
-  getUsers: () => fetchData('https://dummyjson.com/users'),
+  getUsers: async () => {
+    const { data, error } = await fetchData<unknown>('https://dummyjson.com/users');
+    if (error || !data) {
+      throw error;
+    }
+    return data;
+  },
   login,
   getUser: fetchUser,
 };

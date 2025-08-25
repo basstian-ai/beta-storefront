@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import type { Category as ImportedCategory, HeroContent, Product as ImportedProduct } from '../types'; // Adjust path if necessary
+import type { Category as ImportedCategory, HeroContent, Product as ImportedProduct } from '@root/types';
 
 // Define Product data structure
 export interface Product {
@@ -43,7 +43,7 @@ export interface CategoryPageData {
 
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
-import MOCK_CATEGORIES_DATA_JSON from '../bff/data/mock-category-data.json';
+import MOCK_CATEGORIES_DATA_JSON from '@root/bff/data/mock-category-data.json';
 import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
 const applyFiltersToProducts = (

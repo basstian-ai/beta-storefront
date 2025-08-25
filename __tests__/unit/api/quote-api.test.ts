@@ -3,7 +3,7 @@ import { POST } from '@/app/api/quote/route';
 
 vi.mock('next-auth/next', () => ({ getServerSession: vi.fn() }));
 vi.mock('@/app/api/auth/[...nextauth]/route', () => ({ authOptions: {} }));
-vi.mock('@root/lib/email', () => ({ sendEmail: vi.fn() }));
+vi.mock('@/lib/email', () => ({ sendEmail: vi.fn() }));
 vi.mock('node:fs', () => {
   const promises = {
     mkdir: vi.fn().mockResolvedValue(undefined),
@@ -14,7 +14,7 @@ vi.mock('node:fs', () => {
 vi.mock('nanoid', () => ({ nanoid: () => 'test-quote-id' }));
 
 import { getServerSession } from 'next-auth/next';
-import { sendEmail } from '@root/lib/email';
+import { sendEmail } from '@/lib/email';
 import { promises as fs } from 'node:fs';
 
 describe('quote API validation', () => {

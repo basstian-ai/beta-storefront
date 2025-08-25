@@ -15,7 +15,8 @@ const customJestConfig = {
     // Handle image imports
     '\\.(gif|ttf|eot|svg|png)$': '<rootDir>/__mocks__/fileMock.js',
     // Handle module aliases
-    '^@/(.*)$': '<rootDir>/$1', // Added to explicitly handle @/ paths
+    '^@/(.*)$': '<rootDir>/src/$1', // Map @ to src directory
+    '^@root/(.*)$': '<rootDir>/$1',
     // Mock specific Next.js modules
     '^next/router$': '<rootDir>/__mocks__/next/router.js',
     '^next/link$': '<rootDir>/__mocks__/next/link.js',

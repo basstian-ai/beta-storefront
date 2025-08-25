@@ -8,7 +8,9 @@ export interface SharedCart {
   status: string;
 }
 
-const baseDir = process.env.VERCEL ? '/tmp' : path.join(process.cwd(), 'data');
+const baseDir = process.env.VERCEL
+  ? '/tmp'
+  : path.join(process.cwd(), 'src', 'fixtures');
 const filePath = path.join(baseDir, 'companyHistory.json');
 
 const cartItemSchema = z.object({

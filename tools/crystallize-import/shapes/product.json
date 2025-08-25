@@ -1,0 +1,12 @@
+{
+  "name": "Product",
+  "identifier": "product",
+  "type": "product",
+  "components": [
+    {
+      "id": "description",
+      "name": "Description",
+      "type": "richText"
+    }
+  ]
+}

@@ -43,7 +43,7 @@ export interface CategoryPageData {
 
 // Import the mock data from the JSON file
 // Note: Ensure tsconfig.json has "resolveJsonModule": true and "esModuleInterop": true (usually default in Next.js)
-import MOCK_CATEGORIES_DATA_JSON from '@/bff/data/mock-category-data.json';
+import MOCK_CATEGORIES_DATA_JSON from '@/fixtures/mock-category-data.json';
 import { ActiveFilters } from '@/components/FacetFilters'; // Import ActiveFilters
 
 const applyFiltersToProducts = (

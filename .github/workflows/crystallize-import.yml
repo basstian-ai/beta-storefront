@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'scripts/**'
-      - 'crystallize-import/**'
+      - 'tools/crystallize-import/**'
       - '.github/workflows/crystallize-import.yml'
       - 'package.json'
 
@@ -41,8 +41,8 @@ jobs:
       - name: Check import files
 
         run: |
-          test -f crystallize-import/shapes/product.json
-          test -f crystallize-import/priceVariants.json
+          test -f tools/crystallize-import/shapes/product.json
+          test -f tools/crystallize-import/priceVariants.json
 
       - name: Import to Crystallize
         run: |
@@ -56,7 +56,7 @@ jobs:
             --access-token-secret  "$CRYSTALLIZE_ACCESS_TOKEN_SECRET" \
             --tenant               "$TENANT" \
             --batch-size 50 --max-tries 5 --update \
-            --path crystallize-import \
+            --path tools/crystallize-import \
             > import.json
         env:
           CRYSTALLIZE_TENANT_IDENTIFIER: ${{ secrets.CRYSTALLIZE_TENANT_IDENTIFIER }}

@@ -2,8 +2,14 @@ import { SearchAdapter } from './index';
 import { fetchData } from '@/utils/fetchData';
 
 const dummyJsonSearchAdapter: SearchAdapter = {
-  search: (query: string, _sort?: string, _skip?: number, _limit?: number) =>
-    fetchData(`https://dummyjson.com/products/search?q=${encodeURIComponent(query)}`),
+  search: (query: string, sort?: string, skip?: number, limit?: number) => {
+    const url = new URL('https://dummyjson.com/products/search');
+    url.searchParams.set('q', query);
+    if (sort) url.searchParams.set('sort', sort);
+    if (typeof skip === 'number') url.searchParams.set('skip', String(skip));
+    if (typeof limit === 'number') url.searchParams.set('limit', String(limit));
+    return fetchData(url.toString());
+  },
 };
 
 export default dummyJsonSearchAdapter;

@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { z } from 'zod';
+import { ProductSchema } from '@/bff/types';
+import { useCartStore } from '@/stores/useCartStore';
+import toast from 'react-hot-toast';
 
 interface StoreAvailability {
   storeId: string;
@@ -8,18 +12,19 @@ interface StoreAvailability {
 }
 
 interface Props {
-  productId: number | string;
+  product: z.infer<typeof ProductSchema>;
 }
 
-export default function PickupInStore({ productId }: Props) {
+export default function PickupInStore({ product }: Props) {
   const [stores, setStores] = useState<StoreAvailability[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { addItem, setFulfillment } = useCartStore();
 
   const fetchAvailability = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/stock/${productId}`);
+      const res = await fetch(`/api/stock/${product.id}`);
       if (!res.ok) throw new Error('Network response was not ok');
       const data = (await res.json()) as StoreAvailability[];
       setStores(data);
@@ -39,20 +44,38 @@ export default function PickupInStore({ productId }: Props) {
         <>
           <ul className="border border-gray-200 rounded-md divide-y divide-gray-200">
             {stores.map((store) => (
-              <li key={store.storeId} className="p-4 flex justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{store.storeName}</p>
-                  <p className="text-sm text-gray-500">{store.address}</p>
+              <li key={store.storeId} className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-900">{store.storeName}</p>
+                    <p className="text-sm text-gray-500">{store.address}</p>
+                  </div>
+                  <span
+                    className={
+                      store.stock > 0
+                        ? 'text-sm font-medium text-green-600'
+                        : 'text-sm font-medium text-red-600'
+                    }
+                  >
+                    {store.stock > 0 ? `${store.stock} in stock` : 'Out of stock'}
+                  </span>
                 </div>
-                <span
-                  className={
-                    store.stock > 0
-                      ? 'text-sm font-medium text-green-600'
-                      : 'text-sm font-medium text-red-600'
-                  }
-                >
-                  {store.stock > 0 ? `${store.stock} in stock` : 'Out of stock'}
-                </span>
+                {store.stock > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!setFulfillment({ type: 'pickup', store })) {
+                        toast.error('Cart has items for delivery or another store');
+                        return;
+                      }
+                      addItem(product, 1);
+                      toast.success(`Added for pickup at ${store.storeName}`);
+                    }}
+                    className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+                  >
+                    Pick up here
+                  </button>
+                )}
               </li>
             ))}
           </ul>

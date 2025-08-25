@@ -1,10 +1,32 @@
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import PickupInStore from './PickupInStore';
+
+const addItem = vi.fn();
+const setFulfillment = vi.fn().mockReturnValue(true);
+
+vi.mock('@/stores/useCartStore', () => ({
+  useCartStore: () => ({ addItem, setFulfillment }),
+}));
 
 const mockStores = [
   { storeId: '1', storeName: 'Test Store', address: '123 Main St', stock: 2 }
 ];
+
+const mockProduct = {
+  id: 1,
+  title: 'Test Product',
+  slug: 'test-product',
+  description: 'desc',
+  price: 10,
+  discountPercentage: 0,
+  rating: 4,
+  stock: 5,
+  brand: 'Brand',
+  category: { name: 'Cat', slug: 'cat' },
+  thumbnail: 'http://example.com/thumb.jpg',
+  images: ['http://example.com/img.jpg'],
+};
 
 describe('PickupInStore', () => {
   beforeEach(() => {
@@ -12,6 +34,8 @@ describe('PickupInStore', () => {
       ok: true,
       json: () => Promise.resolve(mockStores)
     }));
+    addItem.mockClear();
+    setFulfillment.mockClear();
   });
 
   afterEach(() => {
@@ -19,21 +43,22 @@ describe('PickupInStore', () => {
   });
 
   it('loads store availability when button clicked', async () => {
-    render(<PickupInStore productId={1} />);
+    render(<PickupInStore product={mockProduct} />);
     fireEvent.click(screen.getByRole('button', { name: /check availability/i }));
     await waitFor(() => {
       expect(screen.getByText('Test Store')).toBeInTheDocument();
     });
   });
 
-  it('closes store availability when close button clicked', async () => {
-    render(<PickupInStore productId={1} />);
+  it('adds item for pickup when store selected', async () => {
+    render(<PickupInStore product={mockProduct} />);
     fireEvent.click(screen.getByRole('button', { name: /check availability/i }));
     await waitFor(() => {
       expect(screen.getByText('Test Store')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole('button', { name: /close/i }));
-    expect(screen.queryByText('Test Store')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /check availability/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /pick up here/i }));
+    await waitFor(() => {
+      expect(setFulfillment).toHaveBeenCalled();
+    });
   });
 });

@@ -12,6 +12,7 @@ interface Row {
 
 export default function QuickOrderForm() {
   const addItem = useCartStore((state) => state.addItem);
+  const setFulfillment = useCartStore((state) => state.setFulfillment);
   const [rows, setRows] = useState<Row[]>([
     { sku: '', quantity: 1 },
     { sku: '', quantity: 1 },
@@ -56,6 +57,10 @@ export default function QuickOrderForm() {
       }
       try {
         const product = await getProductByIdOrSlug(sku);
+        if (!setFulfillment({ type: 'delivery' })) {
+          updatedRows[i].error = 'Cart reserved for pickup';
+          continue;
+        }
         addItem(product, quantity);
       } catch {
         updatedRows[i].error = 'Invalid SKU';

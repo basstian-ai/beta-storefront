@@ -41,7 +41,7 @@ const mockProduct2: z.infer<typeof ProductSchema> = {
 // Helper to get the raw string that would be stored by persist middleware
 // This is a simplified version; actual serialization might include versioning.
 // The key part is that `state` contains `items` and `lastUpdated`.
-const getPersistedStateString = (state: { items: CartItem[], lastUpdated: number | null }) => {
+const getPersistedStateString = (state: { items: CartItem[], lastUpdated: number | null, fulfillment: any }) => {
   return JSON.stringify({ state, version: 0 }); // Zustand persist typically includes a version
 };
 
@@ -157,6 +157,7 @@ describe('useCartStore with localStorage persistence', () => {
         { product: mockProduct2, quantity: 1 },
       ],
       lastUpdated: freshTimestamp,
+      fulfillment: { type: 'delivery' },
     };
     localStorage.setItem('cart_v1', getPersistedStateString(cartStateWithItems));
     // Clear setItem history from any previous (e.g. beforeEach) operations.
@@ -194,7 +195,8 @@ describe('useCartStore with localStorage persistence', () => {
     // 1. Simulate an expired cart in localStorage
     const expiredCartStateForStorage = {
       items: [{ product: mockProduct1, quantity: 1 }],
-      lastUpdated: expiredTimestamp
+      lastUpdated: expiredTimestamp,
+      fulfillment: { type: 'delivery' }
     };
     localStorage.setItem('cart_v1', getPersistedStateString(expiredCartStateForStorage)); // Use global mock
 

@@ -14,10 +14,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({ products }) => {
   const { addItem, setFulfillment } = useCartStore();
 
   const handleAddToCart = async () => {
-    if (!setFulfillment({ type: 'delivery' })) {
-      toast.error('Cart contains pickup items. Clear cart to add delivery items.');
-      return;
-    }
+    setFulfillment({ type: 'delivery' });
     let success = true;
     for (const orderProduct of products) {
       try {

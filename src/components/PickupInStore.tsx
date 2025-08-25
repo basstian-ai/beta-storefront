@@ -64,10 +64,7 @@ export default function PickupInStore({ product }: Props) {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!setFulfillment({ type: 'pickup', store })) {
-                        toast.error('Cart has items for delivery or another store');
-                        return;
-                      }
+                      setFulfillment({ type: 'pickup', store });
                       addItem(product, 1);
                       toast.success(`Added for pickup at ${store.storeName}`);
                     }}

@@ -148,18 +148,6 @@ export const useCartStore = create<CartState>()(
       },
 
       setFulfillment: (info) => {
-        const state = get();
-        if (
-          state.items.length > 0 &&
-          state.fulfillment &&
-          (state.fulfillment.type !== info.type ||
-            (info.type === 'pickup' &&
-              state.fulfillment.type === 'pickup' &&
-              state.fulfillment.store?.storeId !== info.store?.storeId))
-        ) {
-          console.warn('Cannot change fulfillment mode/store with existing cart items');
-          return false;
-        }
         set({ fulfillment: info, lastUpdated: Date.now() });
         return true;
       }

@@ -57,10 +57,7 @@ export default function QuickOrderForm() {
       }
       try {
         const product = await getProductByIdOrSlug(sku);
-        if (!setFulfillment({ type: 'delivery' })) {
-          updatedRows[i].error = 'Cart reserved for pickup';
-          continue;
-        }
+        setFulfillment({ type: 'delivery' });
         addItem(product, quantity);
       } catch {
         updatedRows[i].error = 'Invalid SKU';

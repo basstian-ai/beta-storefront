@@ -47,10 +47,7 @@ export default function PriceBox({ product, role }: PriceBoxProps) {
   };
 
   const handleAddToCart = () => {
-    if (!setFulfillment({ type: 'delivery' })) {
-      toast.error('Cart reserved for pickup. Clear cart to add delivery items.');
-      return;
-    }
+    setFulfillment({ type: 'delivery' });
     addItemToCart(product, quantity);
     toast.success(`Added ${quantity} x ${product.title} to cart!`);
   };

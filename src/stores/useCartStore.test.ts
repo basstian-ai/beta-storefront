@@ -228,4 +228,17 @@ describe('useCartStore with localStorage persistence', () => {
     expect(localStorage.getItem).toHaveBeenCalledWith(testKey);
     expect(localStorage.getItem).toHaveBeenCalledTimes(1);
   });
+
+  it('allows changing fulfillment mode with existing items', () => {
+    const { addItem, setFulfillment } = useCartStore.getState();
+    addItem(mockProduct1, 1);
+    expect(useCartStore.getState().fulfillment?.type).toBe('delivery');
+    setFulfillment({
+      type: 'pickup',
+      store: { storeId: '1', storeName: 'Test', address: 'Street' }
+    });
+    expect(useCartStore.getState().fulfillment?.type).toBe('pickup');
+    setFulfillment({ type: 'delivery' });
+    expect(useCartStore.getState().fulfillment?.type).toBe('delivery');
+  });
 });

@@ -60,10 +60,7 @@ export default function ProductPage() {
       toast.error('Product data not available to add to cart.');
       return;
     }
-    if (!setFulfillment({ type: 'delivery' })) {
-      toast.error('Cart already reserved for pickup. Clear cart to switch to delivery.');
-      return;
-    }
+    setFulfillment({ type: 'delivery' });
     addItemToCart(product, 1);
     toast.success(`${product.title} added to cart!`);
   };
